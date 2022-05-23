@@ -1,0 +1,40 @@
+version: '3.3'
+services:
+  mysql:
+    image: mysql:5.7
+    ports:
+      - 3306:3306
+    environment:
+      - MYSQL_ROOT_PASSWORD=34ab349lkk5031
+      - MYSQL_PASSWORD=password
+      - MYSQL_USER=user
+      - MYSQL_DATABASE=market
+
+  database:
+    image: mysql:5.7
+    entrypoint: ''
+    command: bash -c "mysql -u user -ppassword market --host mysql < /tmp/market.sql"
+    volumes:
+      - ./market.sql:/tmp/market.sql
+    depends_on:
+      - mysql
+    restart: on-failure
+  
+  api:
+    image: maven:3.8.3-openjdk-17
+    working_dir: /root/market
+    command: mvn spring-boot:run
+    volumes:
+      - $HOME/.m2:/root/.m2
+      - .:/root/market
+    depends_on:
+      - database
+      - mysql
+    restart: on-failure
+    ports:
+      - 8080:8080
+    environment:
+      - MYSQL_HOST=mysql
+      - MYSQL_PASSWORD=password
+      - MYSQL_USER=user
+      - MYSQL_DATABASE=market
