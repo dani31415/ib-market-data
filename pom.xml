@@ -45,6 +45,11 @@
         	<artifactId>spring-boot-devtools</artifactId>
         	<optional>true</optional>
     	</dependency>
+		<dependency>
+			<groupId>com.opencsv</groupId>
+			<artifactId>opencsv</artifactId>
+			<version>5.2</version>
+		</dependency>
 	</dependencies>
 
 	<build>
