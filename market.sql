@@ -18,18 +18,18 @@ CREATE PROCEDURE configureDatabase()
 
             CREATE TABLE symbol (
                 id INT AUTO_INCREMENT PRIMARY KEY,    
-                shortName VARCHAR(16) NOT NULL
+                short_name VARCHAR(16) NOT NULL
             ) CHARACTER SET utf8mb4;
 
             CREATE TABLE item  (
-                `symbolId` INT,
+                `symbol_id` INT,
                 `date` date,
                 `open` float,
-                `hight` float,
+                `high` float,
                 `low` float,
                 `close` float,
-                `volume` int,
-                PRIMARY KEY (`symbolId`, `date`)
+                `volume` int(15),
+                PRIMARY KEY (`symbol_id`, `date`)
             ) CHARACTER SET utf8mb4;
         END IF;
 

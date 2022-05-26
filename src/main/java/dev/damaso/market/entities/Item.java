@@ -1,6 +1,6 @@
 package dev.damaso.market.entities;
 
-import java.sql.Date;
+import java.util.Date;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -16,8 +16,8 @@ public class Item {
     public Date date;
 
     public float open;
-    public float hight;
+    public float high;
     public float low;
     public float close;
-    public int volume;
+    public long volume;
 }
