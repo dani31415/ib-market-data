@@ -17,8 +17,8 @@ CREATE PROCEDURE configureDatabase()
             INSERT INTO configuration VALUES ('schemaVersion','1');
 
             CREATE TABLE symbol (
-                id INT AUTO_INCREMENT PRIMARY KEY,    
-                short_name VARCHAR(16) NOT NULL
+                `id` INT AUTO_INCREMENT PRIMARY KEY,
+                `short_name` VARCHAR(16) NOT NULL
             ) CHARACTER SET utf8mb4;
 
             CREATE TABLE item  (
@@ -28,8 +28,12 @@ CREATE PROCEDURE configureDatabase()
                 `high` float,
                 `low` float,
                 `close` float,
-                `volume` int(15),
+                `volume` bigint,
                 PRIMARY KEY (`symbol_id`, `date`)
+            ) CHARACTER SET utf8mb4;
+
+            CREATE TABLE imported_file (
+                `file_name` VARCHAR(255) PRIMARY KEY
             ) CHARACTER SET utf8mb4;
         END IF;
 

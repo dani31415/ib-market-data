@@ -6,13 +6,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import dev.damaso.market.entities.Symbol;
+import dev.damaso.market.entities.ImportedFile;
 import dev.damaso.market.entities.Item;
+import dev.damaso.market.repositories.ImportedFileRepository;
 import dev.damaso.market.repositories.ItemRepository;
 import dev.damaso.market.repositories.SymbolRepository;
 
 import java.io.*;
-import java.nio.file.Path;
 import java.text.SimpleDateFormat;
+import java.util.Optional;
 import java.util.TimeZone;
 import java.util.Vector;
 import java.util.zip.*;
@@ -20,7 +22,6 @@ import java.util.zip.*;
 @Component
 public class LoadData {
     private int counter;
-    // private Vector<Item> items;
 
     @Autowired
     SymbolRepository symbolRepository;
@@ -28,34 +29,15 @@ public class LoadData {
     @Autowired
     ItemRepository itemRepository;
 
+    @Autowired
+    ImportedFileRepository importedFileRepository;
+
     public void run() throws Exception {
         readData();
         System.out.println("Total read: " + counter);
     }
 
-    /* public void saveData() throws Exception {
-        FileOutputStream fos = new FileOutputStream(".data/data.dat");
-        BufferedOutputStream bos = new BufferedOutputStream(fos);
-        DataOutputStream dos = new DataOutputStream(bos);
-        dos.writeInt(items.size());
-        for (int i=0; i<items.size(); i++) {
-            Item item = items.get(i);
-            dos.writeUTF(item.symbol);
-            dos.writeLong(item.date.getTime());
-            dos.writeFloat(item.open);
-            dos.writeFloat(item.high);
-            dos.writeFloat(item.low);
-            dos.writeFloat(item.close);
-            dos.writeLong(item.volume);
-        }
-        dos.flush();
-        bos.flush();
-        dos.close();
-        fos.close();
-        System.out.println("Total written: " + counter);
-    }*/
-
-    public int getSymbolId(String shortName) {
+    public Symbol getSymbol(String shortName) {
         Symbol symbol = symbolRepository.findSymbolByShortName(shortName);
         if (symbol==null) {
             symbol = new Symbol();
@@ -63,7 +45,7 @@ public class LoadData {
             symbol = symbolRepository.save(symbol);
         }
         // System.out.println(symbol.id);
-        return symbol.id;
+        return symbol;
     }
 
     public void readZip(String fileName) throws Exception {
@@ -79,30 +61,49 @@ public class LoadData {
             if (entry!=null) {
                 long size = entry.getSize();
                 String name = entry.getName();
-                byte [] bs = new byte[(int)size];
-                dis.readFully(bs);
-                System.out.println("Read " + size + " bytes for file " + name);
-                CSVReader csvReader = new CSVReader(new InputStreamReader(new ByteArrayInputStream(bs)));
-                String [] values;
-                String [] headers = csvReader.readNext();
-                while ((values = csvReader.readNext()) != null) {
-                    Item item = new Item();
-                    item.symbolId = getSymbolId(values[0]);
-                    item.date = sdf.parse(values[1]);
-                    item.open = Float.parseFloat(values[2]);
-                    item.high = Float.parseFloat(values[3]);
-                    item.low = Float.parseFloat(values[4]);
-                    item.close = Float.parseFloat(values[5]);
-                    item.volume = Long.parseLong(values[6]);
-                    // records.add(Arrays.asList(values));
-                    // System.out.println(values.length);
-                    items.add(item);
-                    counter++;
-                    if ((counter % 1000) == 0) {
-                        System.out.println(counter);
-                        itemRepository.saveAll(items);
-                        items.clear();
-                    }              
+                Optional<ImportedFile> optinalImportedFile = importedFileRepository.findById(name);
+                
+                if (!optinalImportedFile.isPresent()) {
+                    byte [] bs = new byte[(int)size];
+                    dis.readFully(bs);
+                    System.out.println("Read " + size + " bytes for file " + name);
+                    CSVReader csvReader = new CSVReader(new InputStreamReader(new ByteArrayInputStream(bs)));
+                    String [] values;
+                    String [] headers = csvReader.readNext();
+                    while ((values = csvReader.readNext()) != null) {
+                        Item item = new Item();
+                        Symbol symbol = getSymbol(values[0]);
+                        item.symbolId = symbol.id;
+                        item.date = sdf.parse(values[1]);
+                        item.open = Float.parseFloat(values[2]);
+                        item.high = Float.parseFloat(values[3]);
+                        item.low = Float.parseFloat(values[4]);
+                        item.close = Float.parseFloat(values[5]);
+                        item.volume = Long.parseLong(values[6]);
+                        // if (symbol.firstItemDate==null || symbol.firstItemDate.compareTo(item.date)>0) {
+                        //     symbol.firstItemDate=item.date;
+                        // }
+                        // if (symbol.lastItemDate==null || symbol.lastItemDate.compareTo(item.date)<0) {
+                        //     symbol.lastItemDate=item.date;
+                        // }
+                        // symbolRepository.save(symbol);
+                        items.add(item);
+                        counter++;
+                        if ((counter % 1000) == 0) {
+                            System.out.println(counter);
+                            itemRepository.saveAll(items);
+                            items.clear();
+                        }              
+                    }
+                    // Save pending before imported file name
+                    itemRepository.saveAll(items);
+                    items.clear();
+                    // Remember the file was imported successfully
+                    ImportedFile importedFile = new ImportedFile();
+                    importedFile.fileName = name;
+                    importedFileRepository.save(importedFile);
+                } else {
+                    System.out.println("Ignored " + name);
                 }
             }
         } while (entry!=null);
@@ -111,7 +112,6 @@ public class LoadData {
     }
 
     private void readData() throws Exception {
-        // this.items = new Vector<Item>();
         this.counter = 0;
 
         System.out.println("Searching zip files in " + (new File(".data/.").getAbsolutePath()));
