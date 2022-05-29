@@ -14,6 +14,7 @@ public class Symbol {
     public Integer id;
 
     public String shortName;
+    public String ib_conid;
     public Date firstItemDate;
     public Date lastItemDate;
 }

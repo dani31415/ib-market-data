@@ -1,5 +1,7 @@
 package dev.damaso.market.controllers;
 
+import java.util.Collection;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.crossstore.ChangeSetPersister.NotFoundException;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -8,6 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import dev.damaso.market.entities.Configuration;
 import dev.damaso.market.entities.Item;
+import dev.damaso.market.entities.LastItem;
 import dev.damaso.market.external.ibgw.Api;
 import dev.damaso.market.external.ibgw.HistoryResult;
 import dev.damaso.market.external.ibgw.SearchResult;
@@ -63,4 +66,11 @@ public class Ping {
 		HistoryResult history = api.iserverMarketdataHistory(conid, days+"d", "1d");
 		return history;
 	}
+
+	@GetMapping("/lastItems")
+	public Collection<LastItem> lastItems() {
+		Collection<LastItem> result = itemRepository.findMaxDateGroupBySymbol();
+		return result;
+	}
+
 }

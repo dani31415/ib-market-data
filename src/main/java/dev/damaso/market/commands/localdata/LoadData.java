@@ -80,6 +80,7 @@ public class LoadData {
                         item.low = Float.parseFloat(values[4]);
                         item.close = Float.parseFloat(values[5]);
                         item.volume = Long.parseLong(values[6]);
+                        item.source = 0; // from file
                         // if (symbol.firstItemDate==null || symbol.firstItemDate.compareTo(item.date)>0) {
                         //     symbol.firstItemDate=item.date;
                         // }

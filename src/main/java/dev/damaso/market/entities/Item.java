@@ -20,4 +20,5 @@ public class Item {
     public float low;
     public float close;
     public long volume;
+    public int source;
 }
