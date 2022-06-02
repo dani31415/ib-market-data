@@ -18,7 +18,8 @@ CREATE PROCEDURE configureDatabase()
 
             CREATE TABLE symbol (
                 `id` INT AUTO_INCREMENT PRIMARY KEY,
-                `short_name` VARCHAR(16) NOT NULL
+                `short_name` VARCHAR(16) NOT NULL,
+                `ib_conid` VARCHAR(20)
             ) CHARACTER SET utf8mb4;
 
             CREATE TABLE item  (
@@ -29,6 +30,7 @@ CREATE PROCEDURE configureDatabase()
                 `low` float,
                 `close` float,
                 `volume` bigint,
+                `source` tinyint(2),
                 PRIMARY KEY (`symbol_id`, `date`)
             ) CHARACTER SET utf8mb4;
 

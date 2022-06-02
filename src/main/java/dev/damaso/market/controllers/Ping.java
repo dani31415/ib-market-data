@@ -11,11 +11,13 @@ import org.springframework.web.bind.annotation.RestController;
 import dev.damaso.market.entities.Configuration;
 import dev.damaso.market.entities.Item;
 import dev.damaso.market.entities.LastItem;
+import dev.damaso.market.entities.Symbol;
 import dev.damaso.market.external.ibgw.Api;
 import dev.damaso.market.external.ibgw.HistoryResult;
 import dev.damaso.market.external.ibgw.SearchResult;
 import dev.damaso.market.repositories.ConfigurationRepository;
 import dev.damaso.market.repositories.ItemRepository;
+import dev.damaso.market.repositories.SymbolRepository;
 
 @RestController
 public class Ping {
@@ -24,6 +26,9 @@ public class Ping {
 
 	@Autowired
 	ItemRepository itemRepository;
+
+	@Autowired
+	SymbolRepository symbolRepository;
 
 	@Autowired
 	Api api;
@@ -39,12 +44,28 @@ public class Ping {
 		Iterable<Item> iterable = itemRepository.findAll();
 		int counter = 0;
 		for (Item item : iterable) {
-			counter += item.volume;
+			counter ++;
 		}
 		return "" + counter;
 	}
 
-    @GetMapping("/searchSymbol")
+    @GetMapping("/allItemsIB")
+	public String allItemsIB() {
+		Iterable<Item> iterable = itemRepository.findAllIB();
+		int counter = 0;
+		for (Item item : iterable) {
+			counter ++;
+		}
+		return "" + counter;
+	}
+
+    @GetMapping("/allSymbolsIB")
+	public Iterable<Symbol> allSymbolsIB() {
+		Iterable<Symbol> iterable = symbolRepository.findAllIB();
+		return iterable;
+	}
+
+	@GetMapping("/searchSymbol")
 	public SearchResult[] searchSymbol(@RequestParam String symbol) {
 		SearchResult[] result = api.iserverSecdefSearch(symbol);
 		return result;
