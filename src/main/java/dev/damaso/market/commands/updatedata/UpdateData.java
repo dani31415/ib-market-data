@@ -6,6 +6,7 @@ import java.util.Date;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpClientErrorException;
 
 import dev.damaso.market.entities.Item;
 import dev.damaso.market.entities.ItemId;
@@ -44,6 +45,8 @@ public class UpdateData {
                     int result = saveResult(historyResult, symbol.id);
                     System.out.println("Saved for id=" + symbol.id + " " + result + " items");
                 }
+            } catch (HttpClientErrorException.Unauthorized ex) {
+                throw ex;
             } catch (Exception ex) {
                 System.out.println(ex);
             }
