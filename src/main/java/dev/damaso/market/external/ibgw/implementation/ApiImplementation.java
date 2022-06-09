@@ -9,6 +9,7 @@ import org.springframework.web.client.RestTemplate;
 import dev.damaso.market.external.ibgw.Api;
 import dev.damaso.market.external.ibgw.HistoryResult;
 import dev.damaso.market.external.ibgw.SearchResult;
+import dev.damaso.market.utils.RestTemplateConfiguration;
 
 public class ApiImplementation implements Api {
     @Value("${ibgw.baseurl}")
@@ -16,6 +17,9 @@ public class ApiImplementation implements Api {
 
     @Autowired
     RestTemplate restTemplate;
+
+    @Autowired
+    RestTemplateConfiguration restTemplateConfiguration;
 
     @Override
     public SearchResult[] iserverSecdefSearch(String symbol) {        
@@ -46,8 +50,15 @@ public class ApiImplementation implements Api {
 
     @Override
     public void iserverReauthenticate() {
-        String url = "%s/v1/api/iserver/reauthenticate".formatted(baseUrl);
-        ResponseEntity<Void> response = restTemplate.getForEntity(url, Void.class);
-        response.getBody();
+        try {
+            RestTemplate restTemplate0 = restTemplateConfiguration.getRestTemplate();
+            System.out.println("Reauthenticating...");
+            String url = "%s/v1/api/iserver/reauthenticate".formatted(baseUrl);
+            ResponseEntity<Void> response = restTemplate0.getForEntity(url, Void.class);
+            response.getBody();
+            System.out.println("Reauthenticated.");
+        } catch (Exception ex) {
+            throw new Error(ex);
+        }
     }
 }
