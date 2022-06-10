@@ -32,7 +32,7 @@ public class UpdateData {
     SymbolRepository symbolRepository;
 
     public void run() throws Exception {
-        reauthenticate();
+        api.reauthenticateHelper();
         Collection<LastItem> lastItems = itemRepository.findMaxDateGroupBySymbol();
         Date now = new Date();
         for(LastItem lastItem : lastItems) {
@@ -115,25 +115,5 @@ public class UpdateData {
             counter++;
         }
         return counter;
-    }
-
-    private void reauthenticate() {
-        // api.ssoValidate();
-        api.iserverReauthenticate();
-        AuthStatusResult authStatusResult = api.iserverAuthStatus();
-        int counter = 0;
-        while (!authStatusResult.authenticated && counter<2000) {
-            counter ++;
-            authStatusResult = api.iserverAuthStatus();
-            if (!authStatusResult.authenticated) {
-                try {
-                    Thread.sleep(100);
-                } catch (InterruptedException ex) {
-                }    
-            }
-        }
-        if (!authStatusResult.authenticated) {
-            throw new Error("Failed reauthentication.");
-        }
     }
 }

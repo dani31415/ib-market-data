@@ -80,4 +80,26 @@ public class ApiImplementation implements Api {
         ResponseEntity<Void> response = restTemplate0.getForEntity(url, Void.class);
     }
 
+    @Override
+    public void reauthenticateHelper() {
+        AuthStatusResult authStatusResult = iserverAuthStatus();
+        if (!authStatusResult.authenticated) {
+            iserverReauthenticate();
+            int counter = 0;
+            do {
+                authStatusResult = iserverAuthStatus();
+                if (!authStatusResult.authenticated) {
+                    counter ++;
+                    try {
+                        Thread.sleep(100);
+                    } catch (InterruptedException ex) {
+                    }    
+                }
+            } while (!authStatusResult.authenticated && counter<2000);
+            if (!authStatusResult.authenticated) {
+                throw new Error("Failed reauthentication.");
+            }
+        }
+    }
+
 }
