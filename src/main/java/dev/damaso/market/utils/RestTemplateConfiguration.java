@@ -19,15 +19,19 @@ import org.springframework.web.client.RestTemplate;
 @Configuration
 public class RestTemplateConfiguration {
     @Bean
-    public RestTemplate getRestTemplate() throws KeyStoreException, NoSuchAlgorithmException, KeyManagementException {
-        // https://stackoverflow.com/questions/4072585/disabling-ssl-certificate-validation-in-spring-resttemplate
-        TrustStrategy acceptingTrustStrategy = (x509Certificates, s) -> true;
-        SSLContext sslContext = org.apache.http.ssl.SSLContexts.custom().loadTrustMaterial(null, acceptingTrustStrategy).build();
-        SSLConnectionSocketFactory csf = new SSLConnectionSocketFactory(sslContext, new NoopHostnameVerifier());
-        CloseableHttpClient httpClient = HttpClients.custom().setSSLSocketFactory(csf).build();
-        HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory();
-        requestFactory.setHttpClient(httpClient);
-        RestTemplate restTemplate = new RestTemplate(requestFactory);
-        return restTemplate;
+    public RestTemplate getRestTemplate() {
+        try {
+            // https://stackoverflow.com/questions/4072585/disabling-ssl-certificate-validation-in-spring-resttemplate
+            TrustStrategy acceptingTrustStrategy = (x509Certificates, s) -> true;
+            SSLContext sslContext = org.apache.http.ssl.SSLContexts.custom().loadTrustMaterial(null, acceptingTrustStrategy).build();
+            SSLConnectionSocketFactory csf = new SSLConnectionSocketFactory(sslContext, new NoopHostnameVerifier());
+            CloseableHttpClient httpClient = HttpClients.custom().setSSLSocketFactory(csf).build();
+            HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory();
+            requestFactory.setHttpClient(httpClient);
+            RestTemplate restTemplate = new RestTemplate(requestFactory);
+            return restTemplate;
+        } catch (Exception ex) {
+            throw new Error(ex);
+        }
     }
 }

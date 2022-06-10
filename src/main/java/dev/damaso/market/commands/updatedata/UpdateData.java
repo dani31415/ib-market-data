@@ -16,6 +16,7 @@ import dev.damaso.market.external.ibgw.Api;
 import dev.damaso.market.external.ibgw.HistoryResult;
 import dev.damaso.market.external.ibgw.HistoryResultData;
 import dev.damaso.market.external.ibgw.SearchResult;
+import dev.damaso.market.external.ibgw.AuthStatusResult;
 import dev.damaso.market.repositories.ItemRepository;
 import dev.damaso.market.repositories.SymbolRepository;
 
@@ -31,9 +32,9 @@ public class UpdateData {
     SymbolRepository symbolRepository;
 
     public void run() throws Exception {
+        reauthenticate();
         Collection<LastItem> lastItems = itemRepository.findMaxDateGroupBySymbol();
         Date now = new Date();
-        api.iserverReauthenticate();
         for(LastItem lastItem : lastItems) {
             try {
                 Symbol symbol = getSymbolById(lastItem.getSymbolId());
@@ -114,5 +115,25 @@ public class UpdateData {
             counter++;
         }
         return counter;
+    }
+
+    private void reauthenticate() {
+        // api.ssoValidate();
+        api.iserverReauthenticate();
+        AuthStatusResult authStatusResult = api.iserverAuthStatus();
+        int counter = 0;
+        while (!authStatusResult.authenticated && counter<2000) {
+            counter ++;
+            authStatusResult = api.iserverAuthStatus();
+            if (!authStatusResult.authenticated) {
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException ex) {
+                }    
+            }
+        }
+        if (!authStatusResult.authenticated) {
+            throw new Error("Failed reauthentication.");
+        }
     }
 }

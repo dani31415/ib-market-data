@@ -4,4 +4,6 @@ public interface Api {
     SearchResult[] iserverSecdefSearch(String symbol);
     HistoryResult iserverMarketdataHistory(String conid, String period, String var);
     void iserverReauthenticate();
+    void ssoValidate();
+    AuthStatusResult iserverAuthStatus();
 }
