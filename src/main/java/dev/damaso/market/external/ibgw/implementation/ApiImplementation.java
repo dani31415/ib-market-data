@@ -91,6 +91,7 @@ public class ApiImplementation implements Api {
                 if (!authStatusResult.authenticated) {
                     counter ++;
                     try {
+                        System.out.println("Reattempt %d...".formatted(counter));
                         Thread.sleep(100);
                     } catch (InterruptedException ex) {
                     }    
