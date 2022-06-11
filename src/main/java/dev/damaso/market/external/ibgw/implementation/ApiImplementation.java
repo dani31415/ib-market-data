@@ -88,13 +88,13 @@ public class ApiImplementation implements Api {
             int counter = 0;
             do {
                 authStatusResult = iserverAuthStatus();
-                if (!authStatusResult.authenticated) {
-                    counter ++;
-                    try {
-                        System.out.println("Reattempt %d...".formatted(counter));
-                        Thread.sleep(100);
-                    } catch (InterruptedException ex) {
-                    }    
+                counter++;
+                if (!authStatusResult.connected) {
+                    System.out.println("No connected.");
+                    sleep();
+                } else if (!authStatusResult.authenticated) {
+                    System.out.println("Reattempt %d...".formatted(counter));
+                    sleep();
                 }
             } while (!authStatusResult.authenticated && counter<2000);
             if (!authStatusResult.authenticated) {
@@ -103,4 +103,10 @@ public class ApiImplementation implements Api {
         }
     }
 
+    private void sleep() {
+        try {
+            Thread.sleep(100);
+        } catch (InterruptedException ex) {
+        }    
+    }
 }
