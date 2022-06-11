@@ -78,7 +78,8 @@ public class ApiImplementation implements Api {
     public void ssoValidate() {
         RestTemplate restTemplate0 = restTemplateConfiguration.getRestTemplate();
         String url = "%s/v1/api/sso/validate".formatted(baseUrl);
-        ResponseEntity<Void> response = restTemplate0.getForEntity(url, Void.class);
+        ResponseEntity<String> response = restTemplate0.getForEntity(url, String.class);
+        System.out.println(response.getBody());
     }
 
     @Override
@@ -88,6 +89,7 @@ public class ApiImplementation implements Api {
             iserverReauthenticate();
             int counter = 0;
             do {
+                ssoValidate();
                 authStatusResult = iserverAuthStatus();
                 counter++;
                 if (!authStatusResult.connected) {
