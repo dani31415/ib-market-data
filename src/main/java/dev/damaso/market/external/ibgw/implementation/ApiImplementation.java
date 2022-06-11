@@ -102,10 +102,10 @@ public class ApiImplementation implements Api {
                 authStatusResult = iserverAuthStatus();
                 counter++;
                 if (!authStatusResult.connected) {
-                    System.out.println("No connected.");
+                    System.out.println("No connected %d...".formatted(counter));
                     sleep();
                 } else if (!authStatusResult.authenticated) {
-                    System.out.println("Reattempt %d...".formatted(counter));
+                    System.out.println("No authenticated %d...".formatted(counter));
                     sleep();
                 }
             } while (!authStatusResult.authenticated && counter<2000);
