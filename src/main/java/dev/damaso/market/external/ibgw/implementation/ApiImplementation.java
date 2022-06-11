@@ -66,11 +66,12 @@ public class ApiImplementation implements Api {
     public void iserverReauthenticate() {
         RestTemplate restTemplate0 = restTemplateConfiguration.getRestTemplate();
         String url = "%s/v1/api/iserver/reauthenticate".formatted(baseUrl);
-        ResponseEntity<Void> response = restTemplate0.exchange(
+        ResponseEntity<String> response = restTemplate0.exchange(
             url,
             HttpMethod.POST,
             null,
-            Void.class);
+            String.class);
+        System.out.println(response.getBody());
     }
 
     @Override
