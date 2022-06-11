@@ -83,13 +83,22 @@ public class ApiImplementation implements Api {
     }
 
     @Override
+    public void logout() {
+        RestTemplate restTemplate0 = restTemplateConfiguration.getRestTemplate();
+        String url = "%s/v1/api/logout".formatted(baseUrl);
+        ResponseEntity<String> response = restTemplate0.getForEntity(url, String.class);
+        System.out.println(response.getBody());
+    }
+
+    @Override
     public void reauthenticateHelper() {
         AuthStatusResult authStatusResult = iserverAuthStatus();
         if (!authStatusResult.authenticated) {
+            logout();
             iserverReauthenticate();
+            ssoValidate();
             int counter = 0;
             do {
-                ssoValidate();
                 authStatusResult = iserverAuthStatus();
                 counter++;
                 if (!authStatusResult.connected) {

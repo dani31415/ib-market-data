@@ -6,5 +6,6 @@ public interface Api {
     void iserverReauthenticate();
     void ssoValidate();
     AuthStatusResult iserverAuthStatus();
+    void logout();
     void reauthenticateHelper();
 }
