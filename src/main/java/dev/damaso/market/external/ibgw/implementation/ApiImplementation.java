@@ -1,5 +1,7 @@
 package dev.damaso.market.external.ibgw.implementation;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpMethod;
@@ -8,6 +10,7 @@ import org.springframework.web.client.RestTemplate;
 
 import dev.damaso.market.external.ibgw.Api;
 import dev.damaso.market.external.ibgw.HistoryResult;
+import dev.damaso.market.external.ibgw.MarketdataSnapshotResult;
 import dev.damaso.market.external.ibgw.SearchResult;
 import dev.damaso.market.external.ibgw.AuthStatusResult;
 import dev.damaso.market.utils.RestTemplateConfiguration;
@@ -91,6 +94,14 @@ public class ApiImplementation implements Api {
     }
 
     @Override
+    public void tickle() {
+        RestTemplate restTemplate0 = restTemplateConfiguration.getRestTemplate();
+        String url = "%s/v1/api/tickle".formatted(baseUrl);
+        ResponseEntity<String> response = restTemplate0.postForEntity(url, null, String.class);
+        System.out.println(response.getBody());
+    }
+
+    @Override
     public void reauthenticateHelper() {
         AuthStatusResult authStatusResult = iserverAuthStatus();
         if (!authStatusResult.authenticated) {
@@ -113,6 +124,13 @@ public class ApiImplementation implements Api {
                 throw new Error("Failed reauthentication.");
             }
         }
+    }
+
+    public MarketdataSnapshotResult[] iserverMarketdataSnapshot(List<String> conids) {
+        String strConids = String.join(",", conids);
+        String url = "%s/v1/api/iserver/marketdata/snapshot?fields=31,84,85,86,88&conids=%s".formatted(baseUrl, strConids);
+        ResponseEntity<MarketdataSnapshotResult[]> response = restTemplate.getForEntity(url, MarketdataSnapshotResult[].class);
+        return response.getBody();
     }
 
     private void sleep() {

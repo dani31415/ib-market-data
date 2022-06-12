@@ -16,7 +16,6 @@ import dev.damaso.market.external.ibgw.Api;
 import dev.damaso.market.external.ibgw.HistoryResult;
 import dev.damaso.market.external.ibgw.HistoryResultData;
 import dev.damaso.market.external.ibgw.SearchResult;
-import dev.damaso.market.external.ibgw.AuthStatusResult;
 import dev.damaso.market.repositories.ItemRepository;
 import dev.damaso.market.repositories.SymbolRepository;
 

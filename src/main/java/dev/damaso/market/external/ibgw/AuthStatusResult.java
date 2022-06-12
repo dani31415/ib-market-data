@@ -1,6 +1,10 @@
 package dev.damaso.market.external.ibgw;
 
 public class AuthStatusResult {
-    public boolean authenticated;
+    public Boolean authenticated;
     public boolean connected;
+    public Boolean competing;
+    public String message;
+    public String fail;
+    public String[] prompts;
 }

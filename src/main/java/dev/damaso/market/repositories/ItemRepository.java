@@ -1,6 +1,8 @@
 package dev.damaso.market.repositories;
 
+import java.util.Date;
 import java.util.Collection;
+import java.util.List;
 
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.jpa.repository.Query;
@@ -19,4 +21,7 @@ public interface ItemRepository extends CrudRepository<Item, ItemId> {
 
     @Query(nativeQuery = true, value = "SELECT i.* FROM item i INNER JOIN symbol s ON i.symbol_id=s.id WHERE s.ib_conid IS NOT NULL ORDER BY date ASC, symbol_id ASC")
     Iterable<Item> findAllIB();
+
+    @Query("SELECT DISTINCT i.date FROM Item i ORDER BY date ASC")
+    List<Date> findAllDates();
 }

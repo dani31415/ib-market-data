@@ -5,6 +5,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
 import dev.damaso.market.commands.localdata.LoadData;
+import dev.damaso.market.commands.snapshot.Snapshot;
 import dev.damaso.market.commands.updatedata.UpdateData;
 import dev.damaso.market.repositories.ConfigurationRepository;
 
@@ -19,6 +20,9 @@ public class CommandLine implements CommandLineRunner {
 	@Autowired
 	UpdateData updateData;
 
+    @Autowired
+    Snapshot snapshot;
+
     @Override
     public void run(String... args) throws Exception {
         if (args.length==0) {
@@ -28,6 +32,8 @@ public class CommandLine implements CommandLineRunner {
             loadData.run();
         } else if (args[0].equals("update-data")) {
             updateData.run();
+        } else if (args[0].equals("snapshot")) {
+            snapshot.run();
         } else {
             throw new Exception("Unknown command " + args[0]);
             // System.out.println("Command line");

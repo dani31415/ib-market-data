@@ -39,6 +39,24 @@ CREATE PROCEDURE configureDatabase()
             ) CHARACTER SET utf8mb4;
         END IF;
 
+        -- Version 0 --> 1
+        IF @schemaVersion = '1' THEN 
+            UPDATE configuration SET value='2' WHERE `key`='schemaVersion';
+
+            CREATE TABLE symbol_snapshot (
+                `update_id` DATETIME,
+                `symbol_id` INT,
+                `ib_conid` VARCHAR(20),
+                `status` TINYINT(4),
+                last_price FLOAT,
+                bid_price FLOAT,
+                bid_size FLOAT,
+                ask_price FLOAT,
+                ask_size FLOAT,
+                PRIMARY KEY (`update_id`, `symbol_id`)
+            ) CHARACTER SET utf8mb4;
+        END IF;
+
     END //
 
 DELIMITER ;
