@@ -3,6 +3,8 @@ package dev.damaso.market.commands.updatedata;
 import java.time.temporal.ChronoUnit;
 import java.util.Collection;
 import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.TimeZone;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -90,11 +92,14 @@ public class UpdateData {
         int counter = 0;
         for (HistoryResultData data : historyResult.data) {
             Date date = data.getT();
-            java.sql.Date sqlDate = new java.sql.Date(date.getYear(), date.getMonth(), date.getDate());
+            GregorianCalendar gc = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
+            gc.clear(); // clear hour, minutes, seconds, etc...
+            gc.set(date.getYear(), date.getMonth(), date.getDate());
+            // java.sql.Date sqlDate = new java.sql.Date(date.getYear(), date.getMonth(), date.getDate());
             // System.out.println("Saving id=" + symbolId + " and date " + sqlDate);
             ItemId id = new ItemId();
             id.symbolId = symbolId;
-            id.date = sqlDate;
+            id.date = gc.getTime();
             // Optional<Item> optionalItem0 = itemRepository.findById(id);
             // if (optionalItem0.isPresent()) {
             //     Item item0 = optionalItem0.get();
@@ -108,7 +113,7 @@ public class UpdateData {
             item.high = data.h;
             item.low = data.l;
             item.volume = 100*data.v;
-            item.date = sqlDate;
+            item.date = gc.getTime();
             item.source = 1; // from ib
             itemRepository.save(item);
             counter++;
