@@ -1,6 +1,8 @@
 package dev.damaso.market.external.ibgw;
 
-import java.util.Date;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 
 public class HistoryResultData {
     public float o;
@@ -8,12 +10,14 @@ public class HistoryResultData {
     public float h;
     public float l;
     public long v;
-    private Date t;
+    private LocalDateTime t;
 
-    public Date getT() {
+    public LocalDateTime getT() {
         return t;
     }
     public void setT(long t) {
-        this.t = new Date(t);
+        this.t = Instant.ofEpochMilli(t)
+                .atZone(ZoneId.of("UTC"))
+                .toLocalDateTime();
     }
 }

@@ -13,9 +13,9 @@ import dev.damaso.market.repositories.ItemRepository;
 import dev.damaso.market.repositories.SymbolRepository;
 
 import java.io.*;
-import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Optional;
-import java.util.TimeZone;
 import java.util.Vector;
 import java.util.zip.*;
 
@@ -50,8 +50,8 @@ public class LoadData {
 
     public void readZip(String fileName) throws Exception {
         Vector<Item> items = new Vector<>();
-        SimpleDateFormat sdf = new SimpleDateFormat("dd-MMM-yyyy");
-        sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
+
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd-MMM-yyyy");
         FileInputStream fis = new FileInputStream(fileName);
         ZipInputStream zis = new ZipInputStream(fis);
         DataInputStream dis = new DataInputStream(zis);
@@ -74,7 +74,7 @@ public class LoadData {
                         Item item = new Item();
                         Symbol symbol = getSymbol(values[0]);
                         item.symbolId = symbol.id;
-                        item.date = sdf.parse(values[1]);
+                        item.date = LocalDate.parse(values[1], dtf);
                         item.open = Float.parseFloat(values[2]);
                         item.high = Float.parseFloat(values[3]);
                         item.low = Float.parseFloat(values[4]);

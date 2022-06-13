@@ -1,10 +1,10 @@
 package dev.damaso.market.entities;
 
 import java.io.Serializable;
-import java.util.Date;
+import java.time.LocalDate;
 
 public class ItemId implements Serializable {
     public int symbolId;
 
-    public Date date;
+    public LocalDate date;
 }

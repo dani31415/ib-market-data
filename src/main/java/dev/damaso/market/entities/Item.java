@@ -1,6 +1,6 @@
 package dev.damaso.market.entities;
 
-import java.util.Date;
+import java.time.LocalDate;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -13,7 +13,7 @@ public class Item {
     public int symbolId;
 
     @Id
-    public Date date;
+    public LocalDate date;
 
     public float open;
     public float high;
