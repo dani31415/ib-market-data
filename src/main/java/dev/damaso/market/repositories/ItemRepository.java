@@ -1,6 +1,6 @@
 package dev.damaso.market.repositories;
 
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 
@@ -23,5 +23,5 @@ public interface ItemRepository extends CrudRepository<Item, ItemId> {
     Iterable<Item> findAllIB();
 
     @Query("SELECT DISTINCT i.date FROM Item i ORDER BY date ASC")
-    List<Date> findAllDates();
+    List<LocalDate> findAllDates();
 }

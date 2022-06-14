@@ -1,11 +1,9 @@
 package dev.damaso.market.controllers;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
-import java.util.TimeZone;
 import java.util.Vector;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,17 +39,14 @@ public class Queries {
 
     @GetMapping("/dates")
     public Collection<OrderDateDTO> dates() {
-        Collection<Date> result = itemRepository.findAllDates();
-        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-        DateFormat dayOfWeek = new SimpleDateFormat("E");
-        dayOfWeek.setTimeZone(TimeZone.getTimeZone("UTC"));
+        Collection<LocalDate> result = itemRepository.findAllDates();
         Vector<OrderDateDTO> resultDTO = new Vector<>();
         int order = 0;
-        for (Date date : result) {
+        for (LocalDate date : result) {
             OrderDateDTO orderDate = new OrderDateDTO();
             orderDate.order = order;
-            orderDate.date = dateFormat.format(date);
-            orderDate.dayOfWeek = dayOfWeek.format(date);
+            orderDate.date = date.toString();
+            orderDate.dayOfWeek = date.getDayOfWeek().toString();
             order++;
             resultDTO.add(orderDate);
         }
