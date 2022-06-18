@@ -55,6 +55,11 @@
 			<artifactId>httpclient</artifactId>
 			<version>4.5.13</version>
 		</dependency>
+		<dependency>
+			<groupId>org.jetbrains.bio</groupId>
+			<artifactId>npy</artifactId>
+			<version>0.3.5</version>
+		</dependency>
 	</dependencies>
 
 	<build>
