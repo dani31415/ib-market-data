@@ -13,4 +13,5 @@ public interface Api {
     void logout();
     void tickle();
     void reauthenticateHelper();
+    void iserverMarketdataUnsubscribeall();
 }

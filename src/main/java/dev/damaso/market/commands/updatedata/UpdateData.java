@@ -8,6 +8,7 @@ import java.util.Date;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 
 import dev.damaso.market.entities.Item;
 import dev.damaso.market.entities.ItemId;
@@ -32,7 +33,7 @@ public class UpdateData {
     SymbolRepository symbolRepository;
 
     public void run() throws Exception {
-        api.reauthenticateHelper();
+        // api.reauthenticateHelper();
         Collection<LastItem> lastItems = itemRepository.findMaxDateGroupBySymbol();
         Date now = new Date();
         for(LastItem lastItem : lastItems) {
@@ -42,16 +43,44 @@ public class UpdateData {
                     long days = getDays(lastItem.getDate(), now) + 2;
                     System.out.println(symbol.ib_conid);
                     System.out.println("Get from " + lastItem.getDate() + " and " + days + "days");
-                    HistoryResult historyResult = api.iserverMarketdataHistory(symbol.ib_conid, "" + days + "d", "1d");
+                    HistoryResult historyResult = iserverMarketdataHistory(symbol.ib_conid, days);
                     int result = saveResult(historyResult, symbol.id);
                     System.out.println("Saved for id=" + symbol.id + " " + result + " items");
                 }
-            } catch (HttpClientErrorException.Unauthorized ex) {
-                throw ex;
-            } catch (Exception ex) {
+            } catch (HttpServerErrorException.InternalServerError ex) {
                 System.out.println(ex);
+            } catch (Exception ex) {
+                throw ex;
             }
         }
+    }
+
+    private HistoryResult iserverMarketdataHistory(String ib_conid, long days) {
+        HistoryResult historyResult = null;
+        int attempts = 0;
+        int maxAttempts = 5;
+        Exception lastException = null;
+        do {
+            attempts++;
+            try {
+                historyResult = api.iserverMarketdataHistory(ib_conid, "" + days + "d", "1d");
+            } catch (HttpClientErrorException.Unauthorized ex) {
+                lastException = ex;
+                api.reauthenticateHelper();
+            } catch (HttpServerErrorException.ServiceUnavailable ex) {
+                lastException = ex;
+                api.iserverMarketdataUnsubscribeall();
+            }
+            if (historyResult==null && attempts<maxAttempts) {
+                sleep(5000);
+            }
+        } while (historyResult==null && attempts<maxAttempts);
+
+        if (historyResult==null) {
+            throw new Error(lastException);
+        }
+
+        return historyResult;
     }
 
     private long getDays(Date date1, Date date2) {
@@ -115,5 +144,12 @@ public class UpdateData {
             counter++;
         }
         return counter;
+    }
+
+    private void sleep(long milli) {
+        try {
+            Thread.sleep(milli);
+        } catch (InterruptedException ex) {
+        }    
     }
 }

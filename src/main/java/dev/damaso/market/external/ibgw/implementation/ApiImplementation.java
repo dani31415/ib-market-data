@@ -133,6 +133,11 @@ public class ApiImplementation implements Api {
         return response.getBody();
     }
 
+    public void iserverMarketdataUnsubscribeall() {
+        String url = "%s/v1/api/iserver/marketdata/unsubscribeall".formatted(baseUrl);
+        restTemplate.getForEntity(url, Void.class);
+    }
+
     private void sleep() {
         try {
             Thread.sleep(100);
