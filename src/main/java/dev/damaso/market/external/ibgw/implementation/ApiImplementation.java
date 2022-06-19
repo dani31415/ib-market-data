@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import dev.damaso.market.external.ibgw.Api;
@@ -103,26 +104,36 @@ public class ApiImplementation implements Api {
 
     @Override
     public void reauthenticateHelper() {
-        AuthStatusResult authStatusResult = iserverAuthStatus();
-        if (!authStatusResult.authenticated) {
-            logout();
-            iserverReauthenticate();
-            ssoValidate();
-            int counter = 0;
+        boolean authenticated;
+        authenticated = iserverAuthenticated();
+        if (!authenticated) {
+            int outerConter = 0;
             do {
-                authStatusResult = iserverAuthStatus();
-                counter++;
-                if (!authStatusResult.connected) {
-                    System.out.println("No connected %d...".formatted(counter));
-                    sleep();
-                } else if (!authStatusResult.authenticated) {
-                    System.out.println("No authenticated %d...".formatted(counter));
-                    sleep();
-                }
-            } while (!authStatusResult.authenticated && counter<2000);
-            if (!authStatusResult.authenticated) {
+                int innerCounter = 0;
+                outerConter++;
+                iserverReauthenticate();
+                do {
+                    innerCounter++;
+                    authenticated = iserverAuthenticated();
+                    if (!authenticated) {
+                        System.out.println("No authenticated %d...".formatted(innerCounter));
+                        sleep();
+                    }
+                } while (!authenticated && innerCounter<50);
+            } while (!authenticated && outerConter<10);
+
+            if (!authenticated) {
                 throw new Error("Failed reauthentication.");
             }
+        }
+    }
+
+    private boolean iserverAuthenticated() {
+        try {
+            AuthStatusResult authStatusResult = iserverAuthStatus();
+            return authStatusResult.authenticated;
+        } catch (HttpClientErrorException.Unauthorized ex) {
+            return false;
         }
     }
 
