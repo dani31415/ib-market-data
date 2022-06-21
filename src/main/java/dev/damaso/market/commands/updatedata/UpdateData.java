@@ -66,7 +66,12 @@ public class UpdateData {
                 historyResult = api.iserverMarketdataHistory(ib_conid, "" + days + "d", "1d");
             } catch (HttpClientErrorException.Unauthorized ex) {
                 lastException = ex;
-                System.out.println("Attempt to reauthorize.");
+                System.out.println("Unauthorized. Attempt to reauthorize.");
+                api.reauthenticateHelper();
+            } catch (HttpClientErrorException.BadRequest ex) {
+                lastException = ex;
+                System.out.println(ex.getMessage().contains("Init session first"));
+                System.out.println("BadRequest. Attempt to reauthorize.");
                 api.reauthenticateHelper();
             } catch (HttpServerErrorException.ServiceUnavailable ex) {
                 lastException = ex;
