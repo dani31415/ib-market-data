@@ -86,7 +86,7 @@ public class Queries {
 	}
 
     @GetMapping("/ib/items")
-    public byte [] allItemsIB(@RequestParam(required=false) String from) throws Exception {
+    public byte [] allItemsIB(@RequestParam(required=false) String from, @RequestParam(required=false) Boolean interpolate) throws Exception {
         Iterable<Symbol> iterableSymbols = symbolRepository.findAllIB();
         List<Symbol> symbols = new ArrayList<Symbol>();
         iterableSymbols.forEach(symbols::add);
@@ -131,6 +131,13 @@ public class Queries {
             fs[i+2] = item.volume<1?0:(float)Math.log(item.volume);
         }
 
+        if (interpolate!=null && interpolate.booleanValue()) {
+            for (int i = 0; i < symbols.size(); i++) {
+                interpolate(fs, i, dates.size(), 0);
+                interpolate(fs, i, dates.size(), 1);
+            }
+        }
+
         int [] shape = {symbols.size(), dates.size(), 3};
         Path path = new File("data.npy").toPath();
         NpyFile.write(path, fs, shape);
@@ -139,4 +146,24 @@ public class Queries {
         return bs;
 	}
 
+    private void interpolate(float [] fs, int symbolOrder, int dateSize, int field) {
+        int lastZero = -1;
+
+        for (int i = 0; i < dateSize; i++) {
+            int iIdx = 3 * (symbolOrder * dateSize + i) + field;
+            if (fs[iIdx]==0 && i>0) {
+                if (lastZero<0) lastZero = i-1;
+            } else if (lastZero>=0) {
+                // Interpolate from lastZero to i
+                if (lastZero>0) {
+                    for (int j=lastZero+1; j < i; j++) {
+                        int jIdx = 3 * (symbolOrder * dateSize + j) + field;
+                        int lastZeroIdx = 3 * (symbolOrder * dateSize + lastZero) + field;
+                        fs[jIdx] = fs[lastZeroIdx] + (fs[iIdx] - fs[lastZeroIdx]) * (j-lastZero) / (i-lastZero);
+                    }
+                }
+                lastZero = -1;
+            }
+        }
+    }
 }
