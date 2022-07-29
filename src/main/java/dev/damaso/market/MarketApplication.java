@@ -21,7 +21,7 @@ public class MarketApplication {
 				.web(webApplicationType)
 				.run(args);
 			// SpringApplication.run(MarketApplication.class, args);
-		} catch (Exception ex) {
+		} catch (Throwable ex) {
 			if (!ex.getClass().toString().contains("SilentExitException")) {
 				ex.printStackTrace();
 				// Ensure status code is detected by whoever calls the application

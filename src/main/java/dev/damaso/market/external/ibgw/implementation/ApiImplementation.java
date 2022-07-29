@@ -120,7 +120,7 @@ public class ApiImplementation implements Api {
                         sleep();
                     }
                 } while (!authenticated && innerCounter<50);
-            } while (!authenticated && outerConter<10);
+            } while (!authenticated && outerConter<2);
 
             if (!authenticated) {
                 throw new Error("Failed reauthentication.");
