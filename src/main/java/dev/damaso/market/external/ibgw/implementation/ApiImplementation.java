@@ -139,7 +139,7 @@ public class ApiImplementation implements Api {
 
     public MarketdataSnapshotResult[] iserverMarketdataSnapshot(List<String> conids) {
         String strConids = String.join(",", conids);
-        String url = "%s/v1/api/iserver/marketdata/snapshot?fields=31,84,85,86,88&conids=%s".formatted(baseUrl, strConids);
+        String url = "%s/v1/api/iserver/marketdata/snapshot?fields=31,84,85,86,88,7295&conids=%s".formatted(baseUrl, strConids);
         ResponseEntity<MarketdataSnapshotResult[]> response = restTemplate.getForEntity(url, MarketdataSnapshotResult[].class);
         return response.getBody();
     }

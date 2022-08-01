@@ -20,4 +20,7 @@ public class MarketdataSnapshotResult {
 
     @JsonProperty("31")
     public String lastPrice;
+
+    @JsonProperty("7295")
+    public String todayOpeningPrice;
 }

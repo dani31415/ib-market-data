@@ -16,7 +16,8 @@ public interface ItemRepository extends CrudRepository<Item, ItemId> {
     @Cacheable("items")
     Iterable<Item> findAll();
 
-    @Query(nativeQuery = true, value = "SELECT max(i.date) AS date, i.symbol_id as symbolId FROM item i GROUP BY i.symbol_id")
+    // Exclude snapshot data since it is incomplete
+    @Query(nativeQuery = true, value = "SELECT max(i.date) AS date, i.symbol_id as symbolId FROM item i WHERE i.source!=2 GROUP BY i.symbol_id")
     Collection<LastItem> findMaxDateGroupBySymbol();
 
     @Query(nativeQuery = true, value = "SELECT i.* FROM item i INNER JOIN symbol s ON i.symbol_id=s.id WHERE s.ib_conid IS NOT NULL ORDER BY date ASC, symbol_id ASC")

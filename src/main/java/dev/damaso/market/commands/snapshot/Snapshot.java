@@ -1,17 +1,22 @@
 package dev.damaso.market.commands.snapshot;
 
 import java.text.NumberFormat;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Vector;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import dev.damaso.market.entities.Item;
+import dev.damaso.market.entities.ItemId;
 import dev.damaso.market.entities.Symbol;
 import dev.damaso.market.entities.SymbolSnapshot;
 import dev.damaso.market.entities.SymbolSnapshotStatusEnum;
@@ -80,7 +85,26 @@ public class Snapshot {
                 System.out.println(ms.ibConid);
             }
             symbolSnapshotRepository.save(ms);
+            saveTodayOpeningPrice(ms.symbolId, msr.todayOpeningPrice);
             result.add(ms);
+        }
+    }
+
+    void saveTodayOpeningPrice(int symbolId, String todayOpeningPrice) {
+        float open = convertFloat(todayOpeningPrice);
+        LocalDateTime date = LocalDateTime.now().atZone(ZoneId.of("UTC")).toLocalDateTime();
+
+        ItemId id = new ItemId();
+        id.symbolId = symbolId;
+        id.date = date.toLocalDate();
+        Optional<Item> optionalItem = itemRepository.findById(id);
+        if (!optionalItem.isPresent()) {
+            Item item = new Item();
+            item.symbolId = symbolId;
+            item.date = date.toLocalDate();
+            item.open = open;
+            item.source = 2; // from snapshot
+            itemRepository.save(item);    
         }
     }
 
@@ -121,7 +145,7 @@ public class Snapshot {
     void iserverMarketdataSnapshotHelper(List<String> conids, List<MarketdataSnapshotResult> result) {
         MarketdataSnapshotResult[] msrs = api.iserverMarketdataSnapshot(conids); 
         for (MarketdataSnapshotResult msr : msrs) {
-            if (msr.bidPrice == null || msr.askPrice == null || msr.bidSize == null || msr.askSize == null) {
+            if (msr.bidPrice == null || msr.askPrice == null || msr.bidSize == null || msr.askSize == null || msr.todayOpeningPrice == null) {
             } else {
                 result.add(msr);
             }
