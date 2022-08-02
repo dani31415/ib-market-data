@@ -133,6 +133,7 @@ public class ApiImplementation implements Api {
             AuthStatusResult authStatusResult = iserverAuthStatus();
             return authStatusResult.authenticated;
         } catch (HttpClientErrorException.Unauthorized ex) {
+            System.out.println("Unauthorized to get auth status.");
             return false;
         }
     }
