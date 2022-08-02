@@ -112,6 +112,7 @@ public class ApiImplementation implements Api {
                 int innerCounter = 0;
                 outerConter++;
                 iserverReauthenticate();
+                ssoValidate();
                 do {
                     innerCounter++;
                     authenticated = iserverAuthenticated();
