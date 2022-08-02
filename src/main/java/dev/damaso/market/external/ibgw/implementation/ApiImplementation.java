@@ -121,6 +121,9 @@ public class ApiImplementation implements Api {
                         sleep();
                     }
                 } while (!authenticated && innerCounter<100);
+                if (!authenticated && outerConter<2) {
+                    logout();
+                }
             } while (!authenticated && outerConter<2);
 
             if (!authenticated) {
