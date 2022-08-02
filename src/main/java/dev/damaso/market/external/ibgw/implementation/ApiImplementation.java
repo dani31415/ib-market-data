@@ -122,6 +122,7 @@ public class ApiImplementation implements Api {
                     }
                 } while (!authenticated && innerCounter<100);
                 if (!authenticated && outerConter<2) {
+                    // This seems to do the trick when it is stuck
                     logout();
                 }
             } while (!authenticated && outerConter<2);
