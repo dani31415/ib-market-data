@@ -48,7 +48,7 @@ public class Snapshot {
         List<MarketdataSnapshotResult> marketData0;
         Iterable<Symbol> symbols = symbolRepository.findAllIB();
         Map<String,Integer> conidToSymbol = new HashMap<>();
-        int minimumResults = 4000;
+        int minimumResults = 3000;
 
         Iterator<Symbol> iterator = symbols.iterator();
         while (iterator.hasNext()) {
