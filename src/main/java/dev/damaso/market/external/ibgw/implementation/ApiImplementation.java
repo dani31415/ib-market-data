@@ -112,7 +112,7 @@ public class ApiImplementation implements Api {
                 int innerCounter = 0;
                 outerConter++;
                 iserverReauthenticate();
-                ssoValidate();
+                // ssoValidate();
                 do {
                     innerCounter++;
                     authenticated = iserverAuthenticated();
@@ -120,7 +120,7 @@ public class ApiImplementation implements Api {
                         System.out.println("No authenticated %d...".formatted(innerCounter));
                         sleep();
                     }
-                } while (!authenticated && innerCounter<50);
+                } while (!authenticated && innerCounter<100);
             } while (!authenticated && outerConter<2);
 
             if (!authenticated) {
