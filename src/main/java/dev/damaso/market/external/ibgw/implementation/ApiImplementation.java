@@ -130,6 +130,13 @@ public class ApiImplementation implements Api {
             if (!authenticated) {
                 throw new Error("Failed reauthentication.");
             }
+            System.out.println("Successfully authenticated.");
+            // Let's do a dummy call
+            try {
+                ssoValidate();
+            } catch (Throwable th) {
+                th.printStackTrace();
+            }
         }
     }
 
