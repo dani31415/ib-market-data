@@ -56,6 +56,8 @@ public class Snapshot {
             conidToSymbol.put(symbol.ib_conid, symbol.id);
         }
 
+        int noChanged = 0;
+        boolean doContinue = false;
         do {
             iterator = symbols.iterator();
             int batchSize = 200;
@@ -69,16 +71,40 @@ public class Snapshot {
                     System.out.println("Total: " + marketData.size());
                 }
             } while (conids.size()>0);
-            if (marketData.size()==0 || marketData0.size()<marketData.size() || marketData.size()<minimumResults) {
+            // Do continue?
+            doContinue = marketData.size()==0 || marketData0.size()<marketData.size() || marketData.size()<minimumResults;
+            if (marketData0.size()<marketData.size()) {
+                noChanged = 0;
+            } else {
+                noChanged ++;
+                System.out.println("No changed times: " + noChanged);
+                if (noChanged>10) {
+                    // Stop after 10 consecutive no changes, no matter what
+                    doContinue = false;
+                }
+            }
+
+            if (doContinue) {
                 sleep(5000);
             }
-        } while (marketData.size()==0 || marketData0.size()<marketData.size() || marketData.size()<minimumResults);
-        System.out.println("Total: " + marketData.size());
+        } while (doContinue);
+        System.out.println("TOTAL: " + marketData.size());
 
         Date now = new Date();
         List<SymbolSnapshot> result = new Vector<>();
+        int cNormal = 0;
+        int cClosed = 0;
+        int cHalted = 0;
         for (MarketdataSnapshotResult msr : marketData) {
             SymbolSnapshot ms = convert(msr);
+            if (ms.status == SymbolSnapshotStatusEnum.NORMAL) {
+                cNormal ++;
+            } else if (ms.status == SymbolSnapshotStatusEnum.CLOSED) {
+                cClosed ++;
+            } else {
+                cHalted ++;
+            }
+
             ms.updateId = now;
             ms.symbolId = conidToSymbol.get(ms.ibConid);
             if (ms.lastPrice==0) {
@@ -88,6 +114,9 @@ public class Snapshot {
             saveTodayOpeningPrice(ms.symbolId, msr.todayOpeningPrice);
             result.add(ms);
         }
+        System.out.print("Number of open: " + cNormal);
+        System.out.print("Number of closed: " + cClosed);
+        System.out.print("Number of halted: " + cHalted);
     }
 
     void saveTodayOpeningPrice(int symbolId, String todayOpeningPrice) {
