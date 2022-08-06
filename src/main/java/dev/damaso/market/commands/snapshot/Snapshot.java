@@ -114,9 +114,9 @@ public class Snapshot {
             saveTodayOpeningPrice(ms.symbolId, msr.todayOpeningPrice);
             result.add(ms);
         }
-        System.out.print("Number of open: " + cNormal);
-        System.out.print("Number of closed: " + cClosed);
-        System.out.print("Number of halted: " + cHalted);
+        System.out.println("Number of open: " + cNormal);
+        System.out.println("Number of closed: " + cClosed);
+        System.out.println("Number of halted: " + cHalted);
     }
 
     void saveTodayOpeningPrice(int symbolId, String todayOpeningPrice) {
