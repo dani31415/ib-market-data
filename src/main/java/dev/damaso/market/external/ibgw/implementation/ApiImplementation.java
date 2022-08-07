@@ -1,5 +1,9 @@
 package dev.damaso.market.external.ibgw.implementation;
 
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -167,5 +171,19 @@ public class ApiImplementation implements Api {
             Thread.sleep(100);
         } catch (InterruptedException ex) {
         }    
+    }
+
+    public boolean nasdaqIsOpen() {
+        LocalDate localDate = LocalDate.now(ZoneId.of("America/New_York"));
+        DayOfWeek dow = localDate.getDayOfWeek();
+        if (dow == DayOfWeek.SATURDAY || dow == DayOfWeek.SUNDAY) {
+            return false;
+        }
+        LocalDateTime localDateTime = LocalDateTime.now(ZoneId.of("America/New_York"));
+        double hour = 0.0 + localDateTime.getHour() +localDateTime.getMinute()/60.0;
+        if (hour>9.5 && hour<16) { // 9:30 -- 16:00
+            return true;
+        }
+        return false;
     }
 }

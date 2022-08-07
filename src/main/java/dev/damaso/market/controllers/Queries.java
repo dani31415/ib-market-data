@@ -1,21 +1,15 @@
 package dev.damaso.market.controllers;
 
-import java.time.DayOfWeek;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 import java.io.File;
-import java.io.IOException;
-import java.math.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -29,6 +23,7 @@ import org.jetbrains.bio.npy.NpyFile;
 import dev.damaso.market.entities.Item;
 import dev.damaso.market.entities.Symbol;
 import dev.damaso.market.entities.SymbolSnapshot;
+import dev.damaso.market.external.ibgw.Api;
 import dev.damaso.market.repositories.ItemRepository;
 import dev.damaso.market.repositories.SymbolRepository;
 import dev.damaso.market.repositories.SymbolSnapshotRepository;
@@ -43,6 +38,9 @@ public class Queries {
 
     @Autowired
     SymbolRepository symbolRepository;
+
+    @Autowired
+    Api api;
 
     @GetMapping("/snapshot")
 	public List<SymbolSnapshot> snapshot() {
@@ -172,16 +170,6 @@ public class Queries {
 
     @GetMapping("/nasdaq/open")
     public boolean nasdaqOpen() throws Exception {
-        LocalDate localDate = LocalDate.now(ZoneId.of("America/New_York"));
-        DayOfWeek dow = localDate.getDayOfWeek();
-        if (dow == DayOfWeek.SATURDAY || dow == DayOfWeek.SUNDAY) {
-            return false;
-        }
-        LocalDateTime localDateTime = LocalDateTime.now(ZoneId.of("America/New_York"));
-        double hour = 0.0 + localDateTime.getHour() +localDateTime.getMinute()/60.0;
-        if (hour>9.5 && hour<16) { // 9:30 -- 16:00
-            return true;
-        }
-        return false;
+        return api.nasdaqIsOpen();
     }
 }

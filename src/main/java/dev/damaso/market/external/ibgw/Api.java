@@ -14,4 +14,5 @@ public interface Api {
     void tickle();
     void reauthenticateHelper();
     void iserverMarketdataUnsubscribeall();
+    boolean nasdaqIsOpen();
 }

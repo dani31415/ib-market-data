@@ -111,7 +111,9 @@ public class Snapshot {
                 System.out.println(ms.ibConid);
             }
             symbolSnapshotRepository.save(ms);
-            saveTodayOpeningPrice(ms.symbolId, msr.todayOpeningPrice);
+            if (api.nasdaqIsOpen()) {
+                saveTodayOpeningPrice(ms.symbolId, msr.todayOpeningPrice);
+            }
             result.add(ms);
         }
         System.out.println("Number of open: " + cNormal);
