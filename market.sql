@@ -39,7 +39,7 @@ CREATE PROCEDURE configureDatabase()
             ) CHARACTER SET utf8mb4;
         END IF;
 
-        -- Version 0 --> 1
+        -- Version 1 --> 2
         IF @schemaVersion = '1' THEN 
             UPDATE configuration SET value='2' WHERE `key`='schemaVersion';
 
@@ -54,6 +54,26 @@ CREATE PROCEDURE configureDatabase()
                 ask_price FLOAT,
                 ask_size FLOAT,
                 PRIMARY KEY (`update_id`, `symbol_id`)
+            ) CHARACTER SET utf8mb4;
+        END IF;
+
+        -- Version 2 --> 3
+        IF @schemaVersion = '2' THEN 
+            UPDATE configuration SET value='3' WHERE `key`='schemaVersion';
+
+            CREATE TABLE `order` (
+                `id` INT AUTO_INCREMENT PRIMARY KEY,
+                `group_guid` VARCHAR(36) NOT NULL,
+                `symbol_id` INT NOT NULL,
+                `ib_conid` VARCHAR(20) NOT NULL,
+                `date` DATE NOT NULL,
+                `order` INT NOT NULL,
+                `status` VARCHAR(36) NOT NULL,
+                last_price FLOAT,
+                bid_price FLOAT,
+                ask_price FLOAT,
+                open_price FLOAT,
+                INDEX (`group_guid`, `symbol_id`)
             ) CHARACTER SET utf8mb4;
         END IF;
 

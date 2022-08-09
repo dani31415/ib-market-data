@@ -125,8 +125,9 @@ public class ApiImplementation implements Api {
                         sleep();
                     }
                 } while (!authenticated && innerCounter<100);
-                if (!authenticated && outerConter<2) {
+                if (!authenticated) {
                     // This seems to do the trick when it is stuck
+                    System.out.println("Logout...");
                     logout();
                 }
             } while (!authenticated && outerConter<2);
