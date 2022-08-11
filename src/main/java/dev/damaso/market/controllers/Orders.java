@@ -1,6 +1,7 @@
 package dev.damaso.market.controllers;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Optional;
 
@@ -49,6 +50,7 @@ public class Orders {
         order.symbolId = symbol.id;
         order.ib_conid = symbol.ib_conid;
         order.date = LocalDate.now(ZoneId.of("America/New_York"));
+        order.createdAt = LocalDateTime.now(ZoneId.of("UTC"));
         order.status = "created";
         orderRepository.save(order);
         return true;
@@ -65,6 +67,7 @@ public class Orders {
         Order order = orderRepository.findById(id).orElseThrow(NotFoundException::new);
         ObjectReader objectReader = objectMapper.readerForUpdating(order);
         Order updatedOrder = objectReader.readValue(inputJson);
+        updatedOrder.updatedAt = LocalDateTime.now(ZoneId.of("UTC"));
         orderRepository.save(updatedOrder);
         return updatedOrder;
     }

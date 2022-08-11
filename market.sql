@@ -77,6 +77,19 @@ CREATE PROCEDURE configureDatabase()
             ) CHARACTER SET utf8mb4;
         END IF;
 
+        -- Version 3 --> 4
+        IF @schemaVersion = '3' THEN 
+            UPDATE configuration SET value='4' WHERE `key`='schemaVersion';
+
+            ALTER TABLE `order` ADD COLUMN quantity FLOAT;
+            ALTER TABLE `order` ADD COLUMN `description` TEXT;
+            ALTER TABLE `order` ADD COLUMN renewal_date DATETIME;
+            ALTER TABLE `order` ADD COLUMN `created_at` DATETIME;
+            ALTER TABLE `order` ADD COLUMN `updated_at` DATETIME;
+            ALTER TABLE `order` ADD COLUMN `buy_order_id` VARCHAR(100);
+            ALTER TABLE `order` ADD COLUMN `sell_order_id` VARCHAR(100);
+        END IF;
+
     END //
 
 DELIMITER ;

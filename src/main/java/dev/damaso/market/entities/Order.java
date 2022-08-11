@@ -1,6 +1,7 @@
 package dev.damaso.market.entities;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -27,4 +28,14 @@ public class Order {
     public Float askPrice;
     public Float bidPrice;
     public Float openPrice;
+    public Float quantity;
+
+    public String description;
+
+    public LocalDate renewalDate;
+    public LocalDateTime createdAt;
+    public LocalDateTime updatedAt;
+    
+    public String buyOrderId;
+    public String sellOrderId;
 }
