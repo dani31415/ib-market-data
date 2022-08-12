@@ -38,4 +38,9 @@ public class Order {
     
     public String buyOrderId;
     public String sellOrderId;
+
+    public Float buyOrderPrice;
+    public Float buyPositionPrice;
+    public Float sellOrderPrice;
+    public Float sellPositionPrice;
 }

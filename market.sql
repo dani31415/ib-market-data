@@ -90,6 +90,16 @@ CREATE PROCEDURE configureDatabase()
             ALTER TABLE `order` ADD COLUMN `sell_order_id` VARCHAR(100);
         END IF;
 
+        -- Version 4 --> 5
+        IF @schemaVersion = '4' THEN 
+            UPDATE configuration SET value='5' WHERE `key`='schemaVersion';
+
+            ALTER TABLE `order` ADD COLUMN buy_order_price FLOAT;
+            ALTER TABLE `order` ADD COLUMN buy_position_price FLOAT;
+            ALTER TABLE `order` ADD COLUMN sell_order_price FLOAT;
+            ALTER TABLE `order` ADD COLUMN sell_position_price FLOAT;
+        END IF;
+
     END //
 
 DELIMITER ;
