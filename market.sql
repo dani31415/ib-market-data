@@ -100,6 +100,20 @@ CREATE PROCEDURE configureDatabase()
             ALTER TABLE `order` ADD COLUMN sell_position_price FLOAT;
         END IF;
 
+        -- Version 5 --> 6
+        IF @schemaVersion = '5' THEN 
+            UPDATE configuration SET value='6' WHERE `key`='schemaVersion';
+
+            ALTER TABLE `order` ADD COLUMN ask_price_at_buy_order FLOAT;
+            ALTER TABLE `order` ADD COLUMN last_price_at_buy_order FLOAT;
+            ALTER TABLE `order` ADD COLUMN ask_price_at_buy FLOAT;
+            ALTER TABLE `order` ADD COLUMN last_price_at_buy FLOAT;
+            ALTER TABLE `order` ADD COLUMN bid_price_at_sell_order FLOAT;
+            ALTER TABLE `order` ADD COLUMN last_price_at_sell_order FLOAT;
+            ALTER TABLE `order` ADD COLUMN bid_price_at_sell FLOAT;
+            ALTER TABLE `order` ADD COLUMN last_price_at_sell FLOAT;
+        END IF;
+
     END //
 
 DELIMITER ;
