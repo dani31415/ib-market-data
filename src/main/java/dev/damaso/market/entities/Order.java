@@ -52,4 +52,11 @@ public class Order {
     public Float lastPriceAtSellOrder;
     public Float bidPriceAtSell;
     public Float lastPriceAtSell;
+
+    public LocalDateTime buyOrderAt;
+    public LocalDateTime buyAt;
+    public LocalDateTime sellOrderAt;
+    public LocalDateTime sellAt;
+
+    public String modelName;
 }

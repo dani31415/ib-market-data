@@ -114,6 +114,17 @@ CREATE PROCEDURE configureDatabase()
             ALTER TABLE `order` ADD COLUMN last_price_at_sell FLOAT;
         END IF;
 
+        -- Version 6 --> 7
+        IF @schemaVersion = '6' THEN 
+            UPDATE configuration SET value='7' WHERE `key`='schemaVersion';
+
+            ALTER TABLE `order` ADD COLUMN buy_order_at DATETIME;
+            ALTER TABLE `order` ADD COLUMN buy_at DATETIME;
+            ALTER TABLE `order` ADD COLUMN sell_order_at DATETIME;
+            ALTER TABLE `order` ADD COLUMN sell_at DATETIME;
+            ALTER TABLE `order` ADD COLUMN model_name VARCHAR(100);
+        END IF;
+
     END //
 
 DELIMITER ;
