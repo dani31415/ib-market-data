@@ -47,6 +47,7 @@ public class Orders {
         Order order = new Order();
         order.groupGuid = orderRequest.guid;
         order.order = orderRequest.order;
+        order.modelName = orderRequest.modelName;
         order.symbolId = symbol.id;
         order.ib_conid = symbol.ib_conid;
         order.date = LocalDate.now(ZoneId.of("America/New_York"));

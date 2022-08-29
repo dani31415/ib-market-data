@@ -4,4 +4,5 @@ public class OrderRequestDTO {
     public String guid;
     public String symbol;
     public int order;
+    public String modelName;
 }
