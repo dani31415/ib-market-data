@@ -59,4 +59,7 @@ public class Order {
     public LocalDateTime sellAt;
 
     public String modelName;
+
+    public Integer nextRenewalOrderId;
+    public Integer previousRenewalOrderId;
 }

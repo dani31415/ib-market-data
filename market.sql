@@ -125,6 +125,13 @@ CREATE PROCEDURE configureDatabase()
             ALTER TABLE `order` ADD COLUMN model_name VARCHAR(100);
         END IF;
 
+        -- Version 7 --> 8
+        IF @schemaVersion = '7' THEN 
+            UPDATE configuration SET value='8' WHERE `key`='schemaVersion';
+
+            ALTER TABLE `order` ADD COLUMN next_renewal_order_id INT;
+            ALTER TABLE `order` ADD COLUMN previous_renewal_order_id INT;
+        END IF;
     END //
 
 DELIMITER ;
