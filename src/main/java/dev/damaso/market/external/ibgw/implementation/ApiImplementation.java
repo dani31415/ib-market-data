@@ -146,13 +146,8 @@ public class ApiImplementation implements Api {
     }
 
     private boolean iserverAuthenticated() {
-        try {
-            AuthStatusResult authStatusResult = iserverAuthStatus();
-            return authStatusResult.authenticated;
-        } catch (HttpClientErrorException.Unauthorized ex) {
-            System.out.println("Unauthorized to get auth status.");
-            return false;
-        }
+        AuthStatusResult authStatusResult = iserverAuthStatus();
+        return authStatusResult.authenticated;
     }
 
     public MarketdataSnapshotResult[] iserverMarketdataSnapshot(List<String> conids) {

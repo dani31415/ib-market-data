@@ -33,7 +33,9 @@ public class UpdateData {
     SymbolRepository symbolRepository;
 
     public void run() throws Exception {
-        // api.reauthenticateHelper();
+        // Stops quickly if there is no access to ib
+        api.reauthenticateHelper();
+
         Collection<LastItem> lastItems = itemRepository.findMaxDateGroupBySymbol();
         Date now = new Date();
         for(LastItem lastItem : lastItems) {
@@ -48,6 +50,7 @@ public class UpdateData {
                     System.out.println("Saved for id=" + symbol.id + " " + result + " items");
                 }
             } catch (HttpServerErrorException.InternalServerError ex) {
+                // Some symbols raise this exception. We can safely continue with other symbols.
                 System.out.println(ex);
             } catch (Exception ex) {
                 throw ex;
@@ -56,6 +59,11 @@ public class UpdateData {
     }
 
     private HistoryResult iserverMarketdataHistory(String ib_conid, long days) {
+        HistoryResult historyResult = api.iserverMarketdataHistory(ib_conid, "" + days + "d", "1d");
+        return historyResult;
+    }
+
+    private HistoryResult iserverMarketdataHistory2(String ib_conid, long days) {
         HistoryResult historyResult = null;
         int attempts = 0;
         int maxAttempts = 5;
