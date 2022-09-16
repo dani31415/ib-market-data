@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import dev.damaso.market.external.ibgw.Api;
@@ -53,7 +52,23 @@ public class ApiImplementation implements Api {
             url,
             null,
             AuthStatusResult.class);
-        return response.getBody();
+        AuthStatusResult authStatusResult = response.getBody();
+        System.out.println(String.format("authenticated=%b, connected=%b, competing=%b",
+            authStatusResult.authenticated,
+            authStatusResult.connected,
+            authStatusResult.competing)
+        );
+        System.out.println(authStatusResult.fail);
+        System.out.println(authStatusResult.message);
+        if (authStatusResult.prompts != null) {
+            for (String prompts : authStatusResult.prompts) {
+                System.out.println(prompts);
+            }
+        }
+        if (authStatusResult.fail!=null && authStatusResult.fail.length()>0) {
+            throw new Error(authStatusResult.fail);
+        }
+        return authStatusResult;
     }
 
     @Override
