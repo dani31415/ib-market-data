@@ -139,7 +139,7 @@ public class ApiImplementation implements Api {
                         System.out.println("No authenticated %d...".formatted(innerCounter));
                         sleep();
                     }
-                } while (!authenticated && innerCounter<100);
+                } while (!authenticated && innerCounter<10);
                 if (!authenticated) {
                     // This seems to do the trick when it is stuck
                     System.out.println("Logout...");
@@ -179,7 +179,7 @@ public class ApiImplementation implements Api {
 
     private void sleep() {
         try {
-            Thread.sleep(100);
+            Thread.sleep(1000);
         } catch (InterruptedException ex) {
         }    
     }
