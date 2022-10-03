@@ -18,6 +18,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 
 import dev.damaso.market.entities.Order;
+import dev.damaso.market.entities.OrderWithSymbol;
 import dev.damaso.market.entities.Symbol;
 import dev.damaso.market.repositories.OrderRepository;
 import dev.damaso.market.repositories.SymbolRepository;
@@ -58,7 +59,7 @@ public class Orders {
     }
 
     @GetMapping("/orders")
-    public Iterable<Order> getOrders(@RequestParam(required=false) String status) throws Exception {
+    public Iterable<OrderWithSymbol> getOrders(@RequestParam(required=false) String status) throws Exception {
         return orderRepository.findAllByStatus(status);
     }
 
