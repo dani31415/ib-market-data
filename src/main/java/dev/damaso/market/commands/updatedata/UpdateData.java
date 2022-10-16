@@ -59,6 +59,9 @@ public class UpdateData {
                 System.out.println(ex);
             } catch (Exception ex) {
                 System.out.println("Exception.");
+                System.out.println(ex.getClass().getName());
+                System.out.println(ex.getClass().getPackageName());
+                System.out.println(ex.getMessage());
                 throw ex;
             } catch (Throwable ex) {
                 System.out.println("Throwable.");
