@@ -1,5 +1,6 @@
 package dev.damaso.market.commands.updatedata;
 
+import java.net.SocketTimeoutException;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Collection;
@@ -51,6 +52,9 @@ public class UpdateData {
                 }
             } catch (HttpServerErrorException.InternalServerError ex) {
                 // Some symbols raise this exception. We can safely continue with other symbols.
+                System.out.println(ex);
+            } catch (SocketTimeoutException ex) {
+                // We do not get the infor for the symbol, but continue
                 System.out.println(ex);
             } catch (Exception ex) {
                 throw ex;
