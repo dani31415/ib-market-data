@@ -55,8 +55,13 @@ public class UpdateData {
                 System.out.println(ex);
             } catch (SocketTimeoutException ex) {
                 // We do not get the infor for the symbol, but continue
+                System.out.println("Time out.");
                 System.out.println(ex);
             } catch (Exception ex) {
+                System.out.println("Exception.");
+                throw ex;
+            } catch (Throwable ex) {
+                System.out.println("Throwable.");
                 throw ex;
             }
         }
