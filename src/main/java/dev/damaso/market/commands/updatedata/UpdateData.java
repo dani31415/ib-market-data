@@ -62,7 +62,12 @@ public class UpdateData {
                 System.out.println(ex.getClass().getName());
                 System.out.println(ex.getClass().getPackageName());
                 System.out.println(ex.getMessage());
-                throw ex;
+                String message = ex.getMessage();
+                if (message.contains("Read timed out")) {
+                    // cotinue
+                } else {
+                    throw ex;
+                }
             } catch (Throwable ex) {
                 System.out.println("Throwable.");
                 throw ex;
