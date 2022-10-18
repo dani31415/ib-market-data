@@ -132,6 +132,14 @@ CREATE PROCEDURE configureDatabase()
             ALTER TABLE `order` ADD COLUMN next_renewal_order_id INT;
             ALTER TABLE `order` ADD COLUMN previous_renewal_order_id INT;
         END IF;
+
+        -- Version 8 --> 9
+        IF @schemaVersion = '8' THEN 
+            UPDATE configuration SET value='9' WHERE `key`='schemaVersion';
+
+            -- ALTER TABLE `symbol` ADD COLUMN available INT(1) DEFAULT 1;
+            ALTER TABLE `order` ADD COLUMN buy_order_at_date date as (date(buy_order_at));
+        END IF;
     END //
 
 DELIMITER ;
