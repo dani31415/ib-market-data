@@ -6,16 +6,19 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import org.hibernate.annotations.NotFound;
+import org.hibernate.annotations.NotFoundAction;
+
 
 @Entity
 @Table(name = "\"order\"")
 public class OrderWithSymbol extends BaseOrder {
     @ManyToOne()
-
     @JoinColumn(name = "symbol_id")
     public Symbol symbol;
 
     @ManyToOne()
+    @NotFound(action = NotFoundAction.IGNORE)
     @JoinColumns({
         @JoinColumn(name = "symbol_id", referencedColumnName = "symbol_id", insertable = false, updatable = false),
         @JoinColumn(name = "buy_order_at_date", referencedColumnName = "date", insertable = false, updatable = false)
@@ -23,6 +26,7 @@ public class OrderWithSymbol extends BaseOrder {
     public Item buyOrderItem;
 
     @ManyToOne()
+    @NotFound(action = NotFoundAction.IGNORE)
     @JoinColumns({
         @JoinColumn(name = "symbol_id", referencedColumnName = "symbol_id", insertable = false, updatable = false),
         @JoinColumn(name = "sell_order_at_date", referencedColumnName = "date", insertable = false, updatable = false)
