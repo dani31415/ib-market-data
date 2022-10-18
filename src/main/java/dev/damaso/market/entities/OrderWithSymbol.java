@@ -21,4 +21,11 @@ public class OrderWithSymbol extends BaseOrder {
         @JoinColumn(name = "buy_order_at_date", referencedColumnName = "date", insertable = false, updatable = false)
     })
     public Item buyOrderItem;
+
+    @ManyToOne()
+    @JoinColumns({
+        @JoinColumn(name = "symbol_id", referencedColumnName = "symbol_id", insertable = false, updatable = false),
+        @JoinColumn(name = "sell_order_at_date", referencedColumnName = "date", insertable = false, updatable = false)
+    })
+    public Item sellOrderItem;
 }

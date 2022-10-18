@@ -139,6 +139,7 @@ CREATE PROCEDURE configureDatabase()
 
             -- ALTER TABLE `symbol` ADD COLUMN available INT(1) DEFAULT 1;
             ALTER TABLE `order` ADD COLUMN buy_order_at_date date as (date(buy_order_at));
+            ALTER TABLE `order` ADD COLUMN sell_order_at_date date as (date(sell_order_at));
         END IF;
     END //
 
