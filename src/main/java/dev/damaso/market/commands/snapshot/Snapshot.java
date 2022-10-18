@@ -100,10 +100,6 @@ public class Snapshot {
         int cClosed = 0;
         int cHalted = 0;
         for (MarketdataSnapshotResult msr : marketData) {
-            if (!msr.hasTradingPermissions.equals("1")) {
-                System.out.println("Trading permissions");
-                System.out.println(msr.hasTradingPermissions);
-            }
             SymbolSnapshot ms = convert(msr);
             if (ms.status == SymbolSnapshotStatusEnum.NORMAL) {
                 cNormal ++;
