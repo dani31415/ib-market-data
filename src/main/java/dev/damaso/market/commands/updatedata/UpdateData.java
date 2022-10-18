@@ -179,7 +179,7 @@ public class UpdateData {
             itemRepository.save(item);
             counter++;
 
-            periodOperations.updateDate(date.toLocalDate());
+            periodOperations.updateDate(date.toLocalDate(), true);
         }
         return counter;
     }

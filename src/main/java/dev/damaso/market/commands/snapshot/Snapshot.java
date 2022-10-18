@@ -141,7 +141,7 @@ public class Snapshot {
             item.open = open;
             item.source = 2; // from snapshot
             itemRepository.save(item);
-            periodOperations.updateDate(date.toLocalDate());
+            periodOperations.updateDate(date.toLocalDate(), true);
         }
     }
 

@@ -15,7 +15,7 @@ public class PeriodOperations {
     @Autowired
     PeriodRepository periodRepository;
 
-    public void updateDate(LocalDate date)
+    public void updateDate(LocalDate date, boolean changed)
     {
         Optional<Period> optionalPeriod = periodRepository.findByDate(date);
         if (!optionalPeriod.isPresent()) {
@@ -24,7 +24,7 @@ public class PeriodOperations {
             periodRepository.save(period);
         } else {
             Period period = optionalPeriod.get();
-            if (period.updated != false) {
+            if (changed && period.updated) {
                 period.updated = false;
                 periodRepository.save(period);
             }

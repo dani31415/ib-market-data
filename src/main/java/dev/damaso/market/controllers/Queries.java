@@ -87,7 +87,7 @@ public class Queries {
             order++;
             resultDTO.add(orderDate);
             // TODO remove me (temporal solution to update period)
-            periodOperations.updateDate(date);
+            periodOperations.updateDate(date, false);
         }
 		return resultDTO;
     }
