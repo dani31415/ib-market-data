@@ -19,6 +19,7 @@ import dev.damaso.market.external.ibgw.Api;
 import dev.damaso.market.external.ibgw.HistoryResult;
 import dev.damaso.market.external.ibgw.HistoryResultData;
 import dev.damaso.market.external.ibgw.SearchResult;
+import dev.damaso.market.operations.PeriodOperations;
 import dev.damaso.market.repositories.ItemRepository;
 import dev.damaso.market.repositories.SymbolRepository;
 
@@ -32,6 +33,9 @@ public class UpdateData {
 
     @Autowired
     SymbolRepository symbolRepository;
+
+    @Autowired
+    PeriodOperations periodOperations;
 
     public void run() throws Exception {
         // Stops quickly if there is no access to ib
@@ -73,6 +77,7 @@ public class UpdateData {
                 throw ex;
             }
         }
+        periodOperations.updateDateMeans();
     }
 
     private HistoryResult iserverMarketdataHistory(String ib_conid, long days) {
@@ -173,6 +178,8 @@ public class UpdateData {
             item.source = 1; // from ib
             itemRepository.save(item);
             counter++;
+
+            periodOperations.updateDate(date.toLocalDate());
         }
         return counter;
     }

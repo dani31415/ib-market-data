@@ -141,6 +141,19 @@ CREATE PROCEDURE configureDatabase()
             ALTER TABLE `order` ADD COLUMN buy_order_at_date date as (date(buy_order_at));
             ALTER TABLE `order` ADD COLUMN sell_order_at_date date as (date(sell_order_at));
         END IF;
+
+        -- Version 9 --> 10
+        IF @schemaVersion = '9' THEN 
+            UPDATE configuration SET value='10' WHERE `key`='schemaVersion';
+
+            CREATE TABLE `period` (
+                `id` INT AUTO_INCREMENT PRIMARY KEY,
+                `date` date NOT NULL,
+                `updated` INT(1) DEFAULT 0,
+                `mean` FLOAT,
+                INDEX (`date`)
+            ) CHARACTER SET utf8mb4;
+        END IF;
     END //
 
 DELIMITER ;

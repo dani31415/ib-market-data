@@ -22,6 +22,7 @@ import dev.damaso.market.entities.SymbolSnapshot;
 import dev.damaso.market.entities.SymbolSnapshotStatusEnum;
 import dev.damaso.market.external.ibgw.Api;
 import dev.damaso.market.external.ibgw.MarketdataSnapshotResult;
+import dev.damaso.market.operations.PeriodOperations;
 import dev.damaso.market.repositories.ItemRepository;
 import dev.damaso.market.repositories.SymbolRepository;
 import dev.damaso.market.repositories.SymbolSnapshotRepository;
@@ -36,6 +37,9 @@ public class Snapshot {
 
     @Autowired
     SymbolSnapshotRepository symbolSnapshotRepository;
+
+    @Autowired
+    PeriodOperations periodOperations;
 
     @Autowired
     Api api;
@@ -96,6 +100,10 @@ public class Snapshot {
         int cClosed = 0;
         int cHalted = 0;
         for (MarketdataSnapshotResult msr : marketData) {
+            if (!msr.hasTradingPermissions.equals("1")) {
+                System.out.println("Trading permissions");
+                System.out.println(msr.hasTradingPermissions);
+            }
             SymbolSnapshot ms = convert(msr);
             if (ms.status == SymbolSnapshotStatusEnum.NORMAL) {
                 cNormal ++;
@@ -116,6 +124,7 @@ public class Snapshot {
             }
             result.add(ms);
         }
+        periodOperations.updateDateMeans();
         System.out.println("Number of open: " + cNormal);
         System.out.println("Number of closed: " + cClosed);
         System.out.println("Number of halted: " + cHalted);
@@ -135,7 +144,8 @@ public class Snapshot {
             item.date = date.toLocalDate();
             item.open = open;
             item.source = 2; // from snapshot
-            itemRepository.save(item);    
+            itemRepository.save(item);
+            periodOperations.updateDate(date.toLocalDate());
         }
     }
 

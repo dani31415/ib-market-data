@@ -24,7 +24,9 @@ import dev.damaso.market.entities.Item;
 import dev.damaso.market.entities.Symbol;
 import dev.damaso.market.entities.SymbolSnapshot;
 import dev.damaso.market.external.ibgw.Api;
+import dev.damaso.market.operations.PeriodOperations;
 import dev.damaso.market.repositories.ItemRepository;
+import dev.damaso.market.repositories.PeriodRepository;
 import dev.damaso.market.repositories.SymbolRepository;
 import dev.damaso.market.repositories.SymbolSnapshotRepository;
 
@@ -38,6 +40,12 @@ public class Queries {
 
     @Autowired
     SymbolRepository symbolRepository;
+
+    @Autowired
+    PeriodOperations periodOperations;
+
+    @Autowired
+    PeriodRepository periodRepository;
 
     @Autowired
     Api api;
@@ -58,6 +66,8 @@ public class Queries {
 
     @GetMapping("/dates")
     public Collection<OrderDateDTO> dates(@RequestParam(required=false) String from) {
+        // TODO remove me (temporal solution to update period)
+        periodOperations.updateDateMeans();
         Iterable<LocalDate> result;
         if (from!=null) {
             DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
@@ -76,6 +86,8 @@ public class Queries {
             orderDate.dayOfWeek = date.getDayOfWeek().toString();
             order++;
             resultDTO.add(orderDate);
+            // TODO remove me (temporal solution to update period)
+            periodOperations.updateDate(date);
         }
 		return resultDTO;
     }
@@ -96,7 +108,7 @@ public class Queries {
             symbolOrders.put(symbols.get(i).id, i);
         }
 
-        Iterable<LocalDate> iterableDates = itemRepository.findAllDates();
+        Iterable<LocalDate> iterableDates;
         if (from!=null) {
             DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
             LocalDate fromDate = LocalDate.parse(from, dtf);
@@ -171,5 +183,12 @@ public class Queries {
     @GetMapping("/nasdaq/open")
     public boolean nasdaqOpen() throws Exception {
         return api.nasdaqIsOpen();
+    }
+
+    @GetMapping("/period/mean")
+    public Double periodMean(String date) throws Exception {
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        LocalDate fromDate = LocalDate.parse(date, dtf);
+        return periodRepository.computeMeanByDate(fromDate).get();
     }
 }
