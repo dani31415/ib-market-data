@@ -115,7 +115,10 @@ public class Snapshot {
                 System.out.println(ms.ibConid);
             }
             symbolSnapshotRepository.save(ms);
-            if (api.nasdaqIsOpen()) {
+            // About filtering by status when saving the snapshot:
+            //   If status is closed, the value is not the opening price.
+            //   Also if using no accurate data, we might end up not chosing the best symbols.
+            if (api.nasdaqIsOpen() && ms.status == SymbolSnapshotStatusEnum.NORMAL) {
                 saveTodayOpeningPrice(ms.symbolId, msr.todayOpeningPrice);
             }
             result.add(ms);
