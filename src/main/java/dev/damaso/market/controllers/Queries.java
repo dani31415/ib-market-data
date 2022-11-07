@@ -185,6 +185,12 @@ public class Queries {
         return api.nasdaqIsOpen();
     }
 
+    @GetMapping("/nasdaq/openday")
+    public boolean nasdaqOpenDay(String date) throws Exception {
+        LocalDate localDate = LocalDate.parse(date);
+        return api.nasdaqIsOpenDay(localDate);
+    }
+
     @GetMapping("/period/mean")
     public Double periodMean(String date) throws Exception {
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");

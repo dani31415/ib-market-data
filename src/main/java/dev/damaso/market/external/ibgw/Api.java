@@ -1,5 +1,6 @@
 package dev.damaso.market.external.ibgw;
 
+import java.time.LocalDate;
 import java.util.List;
 
 // https://www.interactivebrokers.com/api/doc.html
@@ -15,4 +16,5 @@ public interface Api {
     void reauthenticateHelper();
     void iserverMarketdataUnsubscribeall();
     boolean nasdaqIsOpen();
+    boolean nasdaqIsOpenDay(LocalDate localDate);
 }

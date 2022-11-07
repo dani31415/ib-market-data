@@ -184,17 +184,49 @@ public class ApiImplementation implements Api {
         }    
     }
 
-    public boolean nasdaqIsOpen() {
-        LocalDate localDate = LocalDate.now(ZoneId.of("America/New_York"));
+    public boolean nasdaqIsOpenDay(LocalDate localDate) {
+        // https://www.tradinghours.com/markets/nasdaq
+        String closedDates [] = {
+            "2022-11-24", // Thanksgiving Day
+            "2022-12-26",
+            "2023-01-02", // new year's day
+            "2023-01-16", // birthday of Martin Luther King, Jr
+            "2023-02-20", // Washington's birthday
+            "2023-04-07", // Good Friday
+            "2023-05-29", // Memorial Day
+            "2023-06-19", // Juneteenth
+            "2023-07-04", // Independence Day
+            "2023-09-04", // Labor Day
+            "2023-11-23", // Thanksgiving Day
+            "2023-12-25", // Christmas
+        };
         DayOfWeek dow = localDate.getDayOfWeek();
         if (dow == DayOfWeek.SATURDAY || dow == DayOfWeek.SUNDAY) {
             return false;
         }
+        for (String closedDateStr : closedDates) {
+            LocalDate closedDate = LocalDate.parse(closedDateStr);
+            if (localDate.equals(closedDate)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public boolean nasdaqIsOpen() {
+        // Check day
+        LocalDate localDate = LocalDate.now(ZoneId.of("America/New_York"));
+        if (!nasdaqIsOpenDay(localDate)) {
+            return false;
+        }
+
+        // Check time
         LocalDateTime localDateTime = LocalDateTime.now(ZoneId.of("America/New_York"));
         double hour = 0.0 + localDateTime.getHour() +localDateTime.getMinute()/60.0;
         if (hour>9.5 && hour<16) { // 9:30 -- 16:00
             return true;
         }
+
         return false;
     }
 }
