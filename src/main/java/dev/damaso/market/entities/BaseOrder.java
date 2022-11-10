@@ -60,4 +60,6 @@ public class BaseOrder {
 
     public Integer nextRenewalOrderId;
     public Integer previousRenewalOrderId;
+
+    public String symbolSrcName;
 }

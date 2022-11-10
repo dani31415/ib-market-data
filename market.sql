@@ -154,6 +154,14 @@ CREATE PROCEDURE configureDatabase()
                 INDEX (`date`)
             ) CHARACTER SET utf8mb4;
         END IF;
+
+        -- Version 10 --> 11
+        IF @schemaVersion = '10' THEN 
+            UPDATE configuration SET value='11' WHERE `key`='schemaVersion';
+
+            ALTER TABLE `order` ADD COLUMN symbol_src_name VARCHAR(100);
+        END IF;
+
     END //
 
 DELIMITER ;

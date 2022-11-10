@@ -50,6 +50,7 @@ public class Orders {
         order.order = orderRequest.order;
         order.modelName = orderRequest.modelName;
         order.symbolId = symbol.id;
+        order.symbolSrcName = orderRequest.symbol;
         order.ib_conid = symbol.ib_conid;
         order.date = LocalDate.now(ZoneId.of("America/New_York"));
         order.createdAt = LocalDateTime.now(ZoneId.of("UTC"));
