@@ -75,18 +75,28 @@ public class Snapshot {
                     System.out.println("Total: " + marketData.size());
                 }
             } while (conids.size()>0);
-            // Do continue?
-            doContinue = marketData.size()==0 || marketData0.size()<marketData.size() || marketData.size()<minimumResults;
+            
             if (marketData0.size()<marketData.size()) {
                 noChanged = 0;
             } else {
                 noChanged ++;
-                System.out.println("No changed times: " + noChanged);
-                if (noChanged>10) {
-                    // Stop after 10 consecutive no changes, no matter what
-                    doContinue = false;
-                }
             }
+            System.out.println("No changed consecutive occurrences: " + noChanged);
+
+            // Do continue?
+            if (marketData.size()==0) {
+                System.out.println("Continue because was empty.");
+                doContinue = true;
+            } else if (marketData0.size()<marketData.size()) {
+                System.out.println("Continue because was progress.");
+                doContinue = true;
+            } else if (marketData.size()<minimumResults && noChanged<10) {
+                System.out.println("Continue because the minimum is not reached.");
+                doContinue = true;
+            } else if (noChanged<4) {
+                System.out.println("Continue because we want to ensure no one is left.");
+                doContinue = true;
+            };
 
             if (doContinue) {
                 sleep(5000);
