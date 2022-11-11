@@ -98,7 +98,7 @@ public class Snapshot {
                 doContinue = true;
             } else {
                 System.out.println("Let's stop.");
-                doContinue = true;
+                doContinue = false;
             };
 
             if (doContinue) {
