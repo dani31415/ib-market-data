@@ -96,6 +96,9 @@ public class Snapshot {
             } else if (noChanged<4) {
                 System.out.println("Continue because we want to ensure no one is left.");
                 doContinue = true;
+            } else {
+                System.out.println("Let's stop.");
+                doContinue = true;
             };
 
             if (doContinue) {
