@@ -54,6 +54,7 @@ public class Orders {
         order.ib_conid = symbol.ib_conid;
         order.date = LocalDate.now(ZoneId.of("America/New_York"));
         order.createdAt = LocalDateTime.now(ZoneId.of("UTC"));
+        order.openPrice = orderRequest.openPrice;
         order.status = "created";
         orderRepository.save(order);
         return true;
