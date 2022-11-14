@@ -99,7 +99,11 @@ public class Queries {
 	}
 
     @GetMapping("/ib/items")
-    public byte [] allItemsIB(@RequestParam(required=false) String from, @RequestParam(required=false) Boolean interpolate) throws Exception {
+    public byte [] allItemsIB(@RequestParam(required=false) String from, @RequestParam(required=false) String to, @RequestParam(required=false) Boolean interpolate) throws Exception {
+        if (to!=null && from!=null) {
+            throw new Exception("Only one 'to' or 'from' parameter can be set.");
+        }
+
         Iterable<Symbol> iterableSymbols = symbolRepository.findAllIB();
         List<Symbol> symbols = new ArrayList<Symbol>();
         iterableSymbols.forEach(symbols::add);
@@ -113,6 +117,10 @@ public class Queries {
             DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
             LocalDate fromDate = LocalDate.parse(from, dtf);
             iterableDates = itemRepository.findAllDatesFromDate(fromDate);
+        } else if (to!=null) {
+            DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+            LocalDate toDate = LocalDate.parse(to, dtf);
+            iterableDates = itemRepository.findAllDatesToDate(toDate);
         } else {
             iterableDates = itemRepository.findAllDates();
         }
@@ -131,6 +139,10 @@ public class Queries {
             DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
             LocalDate fromDate = LocalDate.parse(from, dtf);
             iterableItem = itemRepository.findAllIBFromDate(fromDate);
+        } else if (to!=null) {
+            DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+            LocalDate toDate = LocalDate.parse(to, dtf);
+            iterableItem = itemRepository.findAllIBToDate(toDate);
         } else {
             iterableItem = itemRepository.findAllIB();
         }

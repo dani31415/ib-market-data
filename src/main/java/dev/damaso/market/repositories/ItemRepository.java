@@ -25,10 +25,15 @@ public interface ItemRepository extends CrudRepository<Item, ItemId> {
     @Query("SELECT i FROM Item i INNER JOIN Symbol s ON i.symbolId=s.id WHERE s.ib_conid IS NOT NULL and i.date >= ?1 ORDER BY i.date ASC, i.symbolId ASC")
     Iterable<Item> findAllIBFromDate(LocalDate from);
 
+    @Query("SELECT i FROM Item i INNER JOIN Symbol s ON i.symbolId=s.id WHERE s.ib_conid IS NOT NULL and i.date < ?1 ORDER BY i.date ASC, i.symbolId ASC")
+    Iterable<Item> findAllIBToDate(LocalDate from);
+
     @Query("SELECT DISTINCT i.date FROM Item i ORDER BY date ASC")
     Iterable<LocalDate> findAllDates();
 
     @Query("SELECT DISTINCT i.date FROM Item i WHERE i.date >= ?1 ORDER BY date ASC")
     Iterable<LocalDate> findAllDatesFromDate(LocalDate from);
 
+    @Query("SELECT DISTINCT i.date FROM Item i WHERE i.date < ?1 ORDER BY date ASC")
+    Iterable<LocalDate> findAllDatesToDate(LocalDate to);
 }
