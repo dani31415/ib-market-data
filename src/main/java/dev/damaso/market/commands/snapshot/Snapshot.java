@@ -100,6 +100,7 @@ public class Snapshot {
             // Remove from pendingSymbolList
             for (MarketdataSnapshotResult msr : marketData) {
                 int symbolIdx = findByConid(pendingSymbolList, msr.conid);
+                System.out.println(conidToSymbol.get(msr.conid) + ":" + pendingSymbolList.get(symbolIdx).shortName + ": " + msr.lastPrice);
                 pendingSymbolList.remove(symbolIdx);
                 // if (marketData.size()<200) {
                 //     api.iserverMarketdataUnsubscribe(msr.conid);
@@ -219,16 +220,14 @@ public class Snapshot {
         SymbolSnapshot ms = new SymbolSnapshot();
         ms.ibConid = msr.conid;
         ms.status = SymbolSnapshotStatusEnum.NORMAL;
-        if (msr.lastPrice!=null) {
-            if (msr.lastPrice.startsWith("C")) {
-                ms.status = SymbolSnapshotStatusEnum.CLOSED;
-                ms.lastPrice = convertFloat(msr.lastPrice.substring(1));
-            } else if (msr.lastPrice.startsWith("H")) {
-                ms.status = SymbolSnapshotStatusEnum.HALTED;
-                ms.lastPrice = convertFloat(msr.lastPrice.substring(1));
-            } else {
-                ms.lastPrice = convertFloat(msr.lastPrice);
-            }
+        if (msr.lastPrice.startsWith("C")) {
+            ms.status = SymbolSnapshotStatusEnum.CLOSED;
+            ms.lastPrice = convertFloat(msr.lastPrice.substring(1));
+        } else if (msr.lastPrice.startsWith("H")) {
+            ms.status = SymbolSnapshotStatusEnum.HALTED;
+            ms.lastPrice = convertFloat(msr.lastPrice.substring(1));
+        } else {
+            ms.lastPrice = convertFloat(msr.lastPrice);
         }
         ms.askPrice = convertFloat(msr.askPrice);
         ms.askSize = convertFloat(msr.askSize);
