@@ -54,7 +54,7 @@ public class Snapshot {
         Iterable<Symbol> symbols = symbolRepository.findAllIB();
         List<Symbol> pendingSymbolList = new Vector<>();
         Map<String,Integer> conidToSymbol = new HashMap<>();
-        int minimumResults = 3000;
+        int minimumResults = 3600;
         int existing = 0;
 
         Iterator<Symbol> iterator = symbols.iterator();
