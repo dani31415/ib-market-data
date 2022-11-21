@@ -15,6 +15,7 @@ public interface Api {
     void tickle();
     void reauthenticateHelper();
     void iserverMarketdataUnsubscribeall();
+    void iserverMarketdataUnsubscribe(String conid);
     boolean nasdaqIsOpen();
     boolean nasdaqIsOpenDay(LocalDate localDate);
 }

@@ -177,6 +177,11 @@ public class ApiImplementation implements Api {
         restTemplate.getForEntity(url, Void.class);
     }
 
+    public void iserverMarketdataUnsubscribe(String conid) {
+        String url = "%s/v1/api/iserver/marketdata/%s/unsubscribe".formatted(baseUrl, conid);
+        restTemplate.getForEntity(url, Void.class);
+    }
+
     private void sleep() {
         try {
             Thread.sleep(1000);

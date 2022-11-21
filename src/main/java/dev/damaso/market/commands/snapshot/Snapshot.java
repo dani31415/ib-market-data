@@ -1,6 +1,7 @@
 package dev.damaso.market.commands.snapshot;
 
 import java.text.NumberFormat;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
@@ -48,35 +49,60 @@ public class Snapshot {
 
     public void run() throws Exception {
         api.reauthenticateHelper();
-        List<MarketdataSnapshotResult> marketData = new Vector<>();
-        List<MarketdataSnapshotResult> marketData0;
+
+        List<MarketdataSnapshotResult> totalMarketData = new Vector<>();
         Iterable<Symbol> symbols = symbolRepository.findAllIB();
+        List<Symbol> pendingSymbolList = new Vector<>();
         Map<String,Integer> conidToSymbol = new HashMap<>();
         int minimumResults = 3000;
 
         Iterator<Symbol> iterator = symbols.iterator();
         while (iterator.hasNext()) {
             Symbol symbol = iterator.next();
+            pendingSymbolList.add(symbol);
             conidToSymbol.put(symbol.ib_conid, symbol.id);
+        }
+
+        // Remove symbols that already have data
+        LocalDate today = LocalDateTime.now().atZone(ZoneId.of("UTC")).toLocalDate();
+        Iterable<Item> items = itemRepository.findAllIBFromDate(today);
+        for (Item item : items) {
+            if (item.open>0) {
+                int symbolIdx = findBySymbolId(pendingSymbolList, item.symbolId);
+                if (symbolIdx >= 0) {
+                    pendingSymbolList.remove(symbolIdx);
+                }
+            }
         }
 
         int noChanged = 0;
         boolean doContinue = false;
         do {
-            iterator = symbols.iterator();
+            iterator = pendingSymbolList.iterator();
             int batchSize = 200;
             List<String> conids;
-            marketData0 = marketData;
-            marketData = new Vector<>();
+            List<MarketdataSnapshotResult> marketData = new Vector<>();
+            System.out.println("Attempt snapshot for number of symbols: " + pendingSymbolList.size());
             do {
                 conids = getBatch(iterator, batchSize);
                 if (conids.size()>0) {
                     iserverMarketdataSnapshotHelper(conids, marketData);
-                    System.out.println("Total: " + marketData.size());
+                    System.out.println("Read: " + marketData.size());
                 }
             } while (conids.size()>0);
-            
-            if (marketData0.size()<marketData.size()) {
+
+            // Append current values
+            totalMarketData.addAll(marketData);
+            System.out.println("Current total: " + totalMarketData.size());
+            // Remove from pendingSymbolList
+            for (MarketdataSnapshotResult msr : marketData) {
+                int symbolIdx = findByConid(pendingSymbolList, msr.conid);
+                pendingSymbolList.remove(symbolIdx);
+                api.iserverMarketdataUnsubscribe(msr.conid);
+            }
+            System.out.println("Now pending: " + pendingSymbolList.size());
+
+            if (marketData.size() > 0) {
                 noChanged = 0;
             } else {
                 noChanged ++;
@@ -84,13 +110,13 @@ public class Snapshot {
             System.out.println("No changed consecutive occurrences: " + noChanged);
 
             // Do continue?
-            if (marketData.size()==0) {
+            if (totalMarketData.size()==0) {
                 System.out.println("Continue because was empty.");
                 doContinue = true;
-            } else if (marketData0.size()<marketData.size()) {
+            } else if (marketData.size() > 0) {
                 System.out.println("Continue because was progress.");
                 doContinue = true;
-            } else if (marketData.size()<minimumResults && noChanged<10) {
+            } else if (totalMarketData.size()<minimumResults && noChanged<10) {
                 System.out.println("Continue because the minimum is not reached.");
                 doContinue = true;
             } else if (noChanged<4) {
@@ -105,14 +131,14 @@ public class Snapshot {
                 sleep(5000);
             }
         } while (doContinue);
-        System.out.println("TOTAL: " + marketData.size());
+        System.out.println("TOTAL: " + totalMarketData.size());
 
         Date now = new Date();
         List<SymbolSnapshot> result = new Vector<>();
         int cNormal = 0;
         int cClosed = 0;
         int cHalted = 0;
-        for (MarketdataSnapshotResult msr : marketData) {
+        for (MarketdataSnapshotResult msr : totalMarketData) {
             SymbolSnapshot ms = convert(msr);
             if (ms.status == SymbolSnapshotStatusEnum.NORMAL) {
                 cNormal ++;
@@ -140,6 +166,26 @@ public class Snapshot {
         System.out.println("Number of open: " + cNormal);
         System.out.println("Number of closed: " + cClosed);
         System.out.println("Number of halted: " + cHalted);
+    }
+
+    private int findBySymbolId(List<Symbol> symbolList, int symbolId) {
+        for (int i = 0; i < symbolList.size(); i++) {
+            Symbol symbol = symbolList.get(i);
+            if (symbol.id == symbolId) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    private int findByConid(List<Symbol> symbolList, String conid) {
+        for (int i = 0; i < symbolList.size(); i++) {
+            Symbol symbol = symbolList.get(i);
+            if (symbol.ib_conid.equals(conid)) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     void saveTodayOpeningPrice(int symbolId, String todayOpeningPrice) {
@@ -198,7 +244,8 @@ public class Snapshot {
     void iserverMarketdataSnapshotHelper(List<String> conids, List<MarketdataSnapshotResult> result) {
         MarketdataSnapshotResult[] msrs = api.iserverMarketdataSnapshot(conids); 
         for (MarketdataSnapshotResult msr : msrs) {
-            if (msr.bidPrice == null || msr.askPrice == null || msr.bidSize == null || msr.askSize == null || msr.todayOpeningPrice == null) {
+            // if (msr.bidPrice == null || msr.askPrice == null || msr.bidSize == null || msr.askSize == null || msr.todayOpeningPrice == null) {
+            if (msr.todayOpeningPrice == null) {
             } else {
                 result.add(msr);
             }
