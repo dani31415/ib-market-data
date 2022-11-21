@@ -98,7 +98,12 @@ public class Snapshot {
             for (MarketdataSnapshotResult msr : marketData) {
                 int symbolIdx = findByConid(pendingSymbolList, msr.conid);
                 pendingSymbolList.remove(symbolIdx);
-                api.iserverMarketdataUnsubscribe(msr.conid);
+                if (marketData.size()<200) {
+                    api.iserverMarketdataUnsubscribe(msr.conid);
+                }
+            }
+            if (marketData.size()>=200) {
+                api.iserverMarketdataUnsubscribeall();
             }
             System.out.println("Now pending: " + pendingSymbolList.size());
 
