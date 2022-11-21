@@ -55,6 +55,7 @@ public class Snapshot {
         List<Symbol> pendingSymbolList = new Vector<>();
         Map<String,Integer> conidToSymbol = new HashMap<>();
         int minimumResults = 3000;
+        int existing = 0;
 
         Iterator<Symbol> iterator = symbols.iterator();
         while (iterator.hasNext()) {
@@ -68,12 +69,14 @@ public class Snapshot {
         Iterable<Item> items = itemRepository.findAllIBFromDate(today);
         for (Item item : items) {
             if (item.open>0) {
+                existing ++;
                 int symbolIdx = findBySymbolId(pendingSymbolList, item.symbolId);
                 if (symbolIdx >= 0) {
                     pendingSymbolList.remove(symbolIdx);
                 }
             }
         }
+        System.out.println("Already existing symbols: " + existing);
 
         int noChanged = 0;
         boolean doContinue = false;
@@ -121,7 +124,7 @@ public class Snapshot {
             } else if (marketData.size() > 0) {
                 System.out.println("Continue because was progress.");
                 doContinue = true;
-            } else if (totalMarketData.size()<minimumResults && noChanged<10) {
+            } else if (existing + totalMarketData.size()<minimumResults && noChanged<10) {
                 System.out.println("Continue because the minimum is not reached.");
                 doContinue = true;
             } else if (noChanged<4) {
@@ -250,7 +253,7 @@ public class Snapshot {
         MarketdataSnapshotResult[] msrs = api.iserverMarketdataSnapshot(conids); 
         for (MarketdataSnapshotResult msr : msrs) {
             // if (msr.bidPrice == null || msr.askPrice == null || msr.bidSize == null || msr.askSize == null || msr.todayOpeningPrice == null) {
-            if (msr.todayOpeningPrice == null) {
+            if (msr.lastPrice == null || msr.todayOpeningPrice == null) {
             } else {
                 result.add(msr);
             }
