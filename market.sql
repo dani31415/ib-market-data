@@ -162,6 +162,26 @@ CREATE PROCEDURE configureDatabase()
             ALTER TABLE `order` ADD COLUMN symbol_src_name VARCHAR(100);
         END IF;
 
+        -- Version 11 --> 12
+        IF @schemaVersion = '11' THEN 
+            UPDATE configuration SET value='12' WHERE `key`='schemaVersion';
+
+            CREATE TABLE `simulation_item` (
+                `id` INT AUTO_INCREMENT PRIMARY KEY,
+                `group_guid` VARCHAR(36) NOT NULL,
+                `symbol_id` INT NOT NULL,
+                `ib_conid` VARCHAR(20) NOT NULL,
+                `order` INT NOT NULL,
+                `period` INT NOT NULL,
+                `open_price` FLOAT NOT NULL,
+                `gain` FLOAT NOT NULL,
+                `symbol_src_name` VARCHAR(100) NOT NULL,
+                `model_name` VARCHAR(100) NOT NULL,
+                `created_at` DATETIME NOT NULL,
+                INDEX (`period`)
+            ) CHARACTER SET utf8mb4;
+        END IF;
+
     END //
 
 DELIMITER ;
