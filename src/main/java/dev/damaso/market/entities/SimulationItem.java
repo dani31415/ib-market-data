@@ -2,6 +2,7 @@ package dev.damaso.market.entities;
 
 import java.time.LocalDateTime;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -14,6 +15,7 @@ public class SimulationItem {
     public Integer id;
 
     public String groupGuid;
+    @Column(name = "\"order\"")
     public int order;
     public int period;
     public int symbolId;
