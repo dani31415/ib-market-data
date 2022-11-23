@@ -12,5 +12,4 @@ docker-compose -- run api mvn spring-boot:run -Dspring-boot.run.arguments=snapsh
 docker-compose -- run api mvn spring-boot:run -Dspring-boot.run.arguments=explore
 docker-compose -- run api mvn package
 docker-compose -- run api mvn clean:clean
-
 ```
