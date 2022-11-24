@@ -18,12 +18,23 @@ public class PeriodOperations {
     public void updateDate(LocalDate date, boolean changed)
     {
         Optional<Period> optionalPeriod = periodRepository.findByDate(date);
+        Period period;
         if (!optionalPeriod.isPresent()) {
-            Period period = new Period();
+            period = new Period();
             period.date = date;
-            periodRepository.save(period);
+            period = periodRepository.save(period);
         } else {
-            Period period = optionalPeriod.get();
+            period = optionalPeriod.get();
+            if (changed && period.updated) {
+                period.updated = false;
+                periodRepository.save(period);
+            }
+        }
+
+        // Update previous period since it is also affected
+        optionalPeriod = periodRepository.findById(period.id - 1);
+        if (optionalPeriod.isPresent()) {
+            period = optionalPeriod.get();
             if (changed && period.updated) {
                 period.updated = false;
                 periodRepository.save(period);
