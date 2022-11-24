@@ -35,11 +35,15 @@ public class PeriodOperations {
     {
         List<Period> periods = periodRepository.findByUpdated(false);
         for (Period period : periods) {
-            Optional<Double> optionalMean = periodRepository.computeMeanByDate(period.date);
-            double mean = optionalMean.isPresent() ? optionalMean.get().doubleValue():1;
-            period.mean = (float)mean;
-            period.updated = true;
-            periodRepository.save(period);
+            // Get next period date since computeMeanByDate is what it wants
+            Optional<Period> nextPeriod = periodRepository.findById(period.id + 1);
+            if (nextPeriod.isPresent()) {
+                Optional<Double> optionalMean = periodRepository.computeMeanByDate(nextPeriod.get().date);
+                double mean = optionalMean.isPresent() ? optionalMean.get().doubleValue():1;
+                period.mean = (float)mean;
+                period.updated = true;
+                periodRepository.save(period);
+            }
         }
     }
 }
