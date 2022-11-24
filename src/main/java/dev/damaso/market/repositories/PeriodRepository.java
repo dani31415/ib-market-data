@@ -18,7 +18,7 @@ public interface PeriodRepository extends CrudRepository<Period, Integer> {
 	       "INNER JOIN Period AS p1 ON i1.date=p1.date " + 
            "INNER JOIN Period AS p2 ON p1.id=p2.id-1 " + 
            "INNER JOIN Item AS i2 ON i2.date=p2.date AND i1.symbolId = i2.symbolId " + 
-           "WHERE i2.date=?1 AND i2.open != 0 " + 
+           "WHERE i2.date=?1 AND i2.open/i1.open between 0.8 and 1.9 " + 
            "GROUP BY p2.id, p2.date")
     Optional<Double> computeMeanByDate(LocalDate date);
 }
