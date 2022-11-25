@@ -44,11 +44,11 @@ public class Snapshot {
     static NumberFormat format = NumberFormat.getInstance(Locale.US);
 
     public void run() throws Exception {
-        // if (!api.nasdaqIsOpen()) {
-        //     // This prevents to trade during non bank days since Jenkins is not able to skip execution
-        //     System.out.println("Ignored since market is closed.");
-        //     return;
-        // }
+        if (!api.nasdaqIsOpen()) {
+            // This prevents to trade during non bank days since Jenkins is not able to skip execution
+            System.out.println("Ignored since market is closed.");
+            return;
+        }
         api.reauthenticateHelper();
 
         List<MarketdataSnapshotResult> totalMarketData = new Vector<>();
