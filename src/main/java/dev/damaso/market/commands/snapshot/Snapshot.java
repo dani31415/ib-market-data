@@ -23,7 +23,6 @@ import dev.damaso.market.entities.SymbolSnapshot;
 import dev.damaso.market.entities.SymbolSnapshotStatusEnum;
 import dev.damaso.market.external.ibgw.Api;
 import dev.damaso.market.external.ibgw.MarketdataSnapshotResult;
-import dev.damaso.market.operations.PeriodOperations;
 import dev.damaso.market.repositories.ItemRepository;
 import dev.damaso.market.repositories.SymbolRepository;
 import dev.damaso.market.repositories.SymbolSnapshotRepository;
@@ -40,24 +39,22 @@ public class Snapshot {
     SymbolSnapshotRepository symbolSnapshotRepository;
 
     @Autowired
-    PeriodOperations periodOperations;
-
-    @Autowired
     Api api;
 
     static NumberFormat format = NumberFormat.getInstance(Locale.US);
 
     public void run() throws Exception {
-        if (!api.nasdaqIsOpen()) {
-            // This prevents to trade during non bank days since Jenkins is not able to skip execution
-            return;
-        }
+        // if (!api.nasdaqIsOpen()) {
+        //     // This prevents to trade during non bank days since Jenkins is not able to skip execution
+        //     System.out.println("Ignored since market is closed.");
+        //     return;
+        // }
         api.reauthenticateHelper();
 
         List<MarketdataSnapshotResult> totalMarketData = new Vector<>();
         Iterable<Symbol> symbols = symbolRepository.findAllIB();
         List<Symbol> pendingSymbolList = new Vector<>();
-        Map<String,Integer> conidToSymbol = new HashMap<>();
+        SnapshotState state = new SnapshotState();
         int minimumResults = 3600;
         int existing = 0;
 
@@ -65,7 +62,7 @@ public class Snapshot {
         while (iterator.hasNext()) {
             Symbol symbol = iterator.next();
             pendingSymbolList.add(symbol);
-            conidToSymbol.put(symbol.ib_conid, symbol.id);
+            state.conidToSymbol.put(symbol.ib_conid, symbol.id);
         }
 
         // Remove symbols that already have data
@@ -101,14 +98,12 @@ public class Snapshot {
             // Append current values
             totalMarketData.addAll(marketData);
             System.out.println("Current total: " + totalMarketData.size());
+            // Persist data
+            persistMarketData(marketData, state);
             // Remove from pendingSymbolList
             for (MarketdataSnapshotResult msr : marketData) {
                 int symbolIdx = findByConid(pendingSymbolList, msr.conid);
-                System.out.println(conidToSymbol.get(msr.conid) + ":" + pendingSymbolList.get(symbolIdx).shortName + ": " + msr.lastPrice);
                 pendingSymbolList.remove(symbolIdx);
-                // if (marketData.size()<200) {
-                //     api.iserverMarketdataUnsubscribe(msr.conid);
-                // }
             }
             if (marketData.size()>=200) {
                 api.iserverMarketdataUnsubscribeall();
@@ -145,13 +140,18 @@ public class Snapshot {
             }
         } while (doContinue);
         System.out.println("TOTAL: " + totalMarketData.size());
+        System.out.println("Number of open: " + state.cNormal);
+        System.out.println("Number of closed: " + state.cClosed);
+        System.out.println("Number of halted: " + state.cHalted);
+    }
 
+    public void persistMarketData(List<MarketdataSnapshotResult> marketData, SnapshotState state) {
         Date now = new Date();
         List<SymbolSnapshot> result = new Vector<>();
         int cNormal = 0;
         int cClosed = 0;
         int cHalted = 0;
-        for (MarketdataSnapshotResult msr : totalMarketData) {
+        for (MarketdataSnapshotResult msr : marketData) {
             SymbolSnapshot ms = convert(msr);
             if (ms.status == SymbolSnapshotStatusEnum.NORMAL) {
                 cNormal ++;
@@ -162,10 +162,7 @@ public class Snapshot {
             }
 
             ms.updateId = now;
-            ms.symbolId = conidToSymbol.get(ms.ibConid);
-            if (ms.lastPrice==0) {
-                System.out.println(ms.ibConid);
-            }
+            ms.symbolId = state.conidToSymbol.get(ms.ibConid);
             symbolSnapshotRepository.save(ms);
             // About filtering by status when saving the snapshot:
             //   If status is closed, the value is not the opening price.
@@ -175,10 +172,12 @@ public class Snapshot {
             }
             result.add(ms);
         }
-        periodOperations.updateDateMeans();
         System.out.println("Number of open: " + cNormal);
         System.out.println("Number of closed: " + cClosed);
         System.out.println("Number of halted: " + cHalted);
+        state.cNormal += cNormal;
+        state.cClosed += cClosed;
+        state.cHalted += cHalted;
     }
 
     private int findBySymbolId(List<Symbol> symbolList, int symbolId) {
@@ -216,7 +215,6 @@ public class Snapshot {
             item.open = open;
             item.source = 2; // from snapshot
             itemRepository.save(item);
-            periodOperations.updateDate(date.toLocalDate(), true);
         }
     }
 
