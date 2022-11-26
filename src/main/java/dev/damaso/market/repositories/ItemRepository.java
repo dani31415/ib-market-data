@@ -36,4 +36,9 @@ public interface ItemRepository extends CrudRepository<Item, ItemId> {
 
     @Query("SELECT DISTINCT i.date FROM Item i WHERE i.date < ?1 ORDER BY date ASC")
     Iterable<LocalDate> findAllDatesToDate(LocalDate to);
+
+    // https://www.baeldung.com/spring-jdbctemplate-in-list
+    // Volume average from date and ids
+    @Query("SELECT avg(i.volume) FROM Item i WHERE i.date >= ?1 AND i.symbolId = ?2 AND i.volume>0")
+    float findAverageVolume(LocalDate from, int symbol_id);
 }

@@ -98,6 +98,13 @@ public class Queries {
 		return iterable;
 	}
 
+    @GetMapping("/ib/averagevolume")
+    public float averageVolume(String from, int symbolId) throws Exception {
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        LocalDate fromDate = LocalDate.parse(from, dtf);
+        return itemRepository.findAverageVolume(fromDate, symbolId);
+    }
+
     @GetMapping("/ib/items")
     public byte [] allItemsIB(@RequestParam(required=false) String from, @RequestParam(required=false) String to, @RequestParam(required=false) Boolean interpolate) throws Exception {
         if (to!=null && from!=null) {
