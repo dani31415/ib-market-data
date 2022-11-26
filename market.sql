@@ -182,6 +182,13 @@ CREATE PROCEDURE configureDatabase()
             ) CHARACTER SET utf8mb4;
         END IF;
 
+        -- Version 12 --> 13
+        IF @schemaVersion = '12' THEN 
+            UPDATE configuration SET value='13' WHERE `key`='schemaVersion';
+
+            ALTER TABLE symbol ADD COLUMN old_names VARCHAR(200);
+        END IF;
+
     END //
 
 DELIMITER ;

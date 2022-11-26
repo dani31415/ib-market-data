@@ -13,6 +13,7 @@ public class Symbol {
 
     public String shortName;
     public String ib_conid;
+    public String oldNames;
     // public Date firstItemDate;
     // public Date lastItemDate;
 }

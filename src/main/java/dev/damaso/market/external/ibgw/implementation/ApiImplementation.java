@@ -17,6 +17,7 @@ import dev.damaso.market.external.ibgw.HistoryResult;
 import dev.damaso.market.external.ibgw.MarketdataSnapshotResult;
 import dev.damaso.market.external.ibgw.SearchResult;
 import dev.damaso.market.external.ibgw.AuthStatusResult;
+import dev.damaso.market.external.ibgw.ContractInfoResult;
 import dev.damaso.market.utils.RestTemplateConfiguration;
 
 public class ApiImplementation implements Api {
@@ -234,4 +235,11 @@ public class ApiImplementation implements Api {
 
         return false;
     }
+
+    public ContractInfoResult contractInfo(String conid) {
+        String url = "%s/v1/api/iserver/contract/%s/info".formatted(baseUrl, conid);
+        ResponseEntity<ContractInfoResult> response = restTemplate.getForEntity(url, ContractInfoResult.class);
+        return response.getBody();
+    }
+
 }
