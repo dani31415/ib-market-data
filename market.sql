@@ -189,6 +189,13 @@ CREATE PROCEDURE configureDatabase()
             ALTER TABLE symbol ADD COLUMN old_names VARCHAR(200);
         END IF;
 
+        -- Version 13 --> 14
+        IF @schemaVersion = '13' THEN 
+            UPDATE configuration SET value='14' WHERE `key`='schemaVersion';
+
+            ALTER TABLE symbol ADD COLUMN disabled INT(1) NOT NULL DEFAULT 0;
+        END IF;
+
     END //
 
 DELIMITER ;
