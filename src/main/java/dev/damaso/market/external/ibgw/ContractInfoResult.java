@@ -7,4 +7,7 @@ public class ContractInfoResult {
 
     @JsonProperty("con_id")
     public String conId;
+
+    @JsonProperty("underlying_con_id")
+    public int underlyingConId;
 }

@@ -14,6 +14,7 @@ public class Symbol {
     public String shortName;
     public String ib_conid;
     public String oldNames;
+    public boolean disabled;
     // public Date firstItemDate;
     // public Date lastItemDate;
 }
