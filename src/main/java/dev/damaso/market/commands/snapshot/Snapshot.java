@@ -5,11 +5,9 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Vector;
 
@@ -127,9 +125,9 @@ public class Snapshot {
             } else if (existing + totalMarketData.size()<minimumResults && noChanged<10) {
                 System.out.println("Continue because the minimum is not reached.");
                 doContinue = true;
-            } else if (noChanged<4) {
-                System.out.println("Continue because we want to ensure no one is left.");
-                doContinue = true;
+            // } else if (noChanged<4) {
+            //     System.out.println("Continue because we want to ensure no one is left.");
+            //     doContinue = true;
             } else {
                 System.out.println("Let's stop.");
                 doContinue = false;
