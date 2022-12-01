@@ -103,7 +103,7 @@ public class Snapshot {
                 int symbolIdx = findByConid(pendingSymbolList, msr.conid);
                 pendingSymbolList.remove(symbolIdx);
             }
-            if (marketData.size()>=200) {
+            if (marketData.size()>=1000) {
                 api.iserverMarketdataUnsubscribeall();
             }
             System.out.println("Now pending: " + pendingSymbolList.size());
