@@ -10,6 +10,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.Vector;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -77,6 +80,8 @@ public class Snapshot {
         }
         System.out.println("Already existing symbols: " + existing);
 
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+
         int noChanged = 0;
         boolean doContinue = false;
         do {
@@ -96,8 +101,10 @@ public class Snapshot {
             // Append current values
             totalMarketData.addAll(marketData);
             System.out.println("Current total: " + totalMarketData.size());
-            // Persist data
-            persistMarketData(marketData, state);
+            // Persist data async
+            executor.submit( () -> {
+                persistMarketData(marketData, state);
+            });
             // Remove from pendingSymbolList
             for (MarketdataSnapshotResult msr : marketData) {
                 int symbolIdx = findByConid(pendingSymbolList, msr.conid);
@@ -141,6 +148,10 @@ public class Snapshot {
         System.out.println("Number of open: " + state.cNormal);
         System.out.println("Number of closed: " + state.cClosed);
         System.out.println("Number of halted: " + state.cHalted);
+        System.out.println("Waiting for persistence termination...");
+        executor.shutdown();
+        executor.awaitTermination(600, TimeUnit.SECONDS);
+        System.out.println("Done!");
     }
 
     public void persistMarketData(List<MarketdataSnapshotResult> marketData, SnapshotState state) {
