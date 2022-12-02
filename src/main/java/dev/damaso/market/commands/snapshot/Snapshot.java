@@ -26,7 +26,6 @@ import dev.damaso.market.external.ibgw.Api;
 import dev.damaso.market.external.ibgw.MarketdataSnapshotResult;
 import dev.damaso.market.repositories.ItemRepository;
 import dev.damaso.market.repositories.SymbolRepository;
-import dev.damaso.market.repositories.SymbolSnapshotRepository;
 
 @Component
 public class Snapshot {
@@ -35,9 +34,6 @@ public class Snapshot {
 
     @Autowired
     SymbolRepository symbolRepository;
-
-    @Autowired
-    SymbolSnapshotRepository symbolSnapshotRepository;
 
     @Autowired
     Api api;
@@ -172,7 +168,6 @@ public class Snapshot {
 
             ms.updateId = now;
             ms.symbolId = state.conidToSymbol.get(ms.ibConid);
-            symbolSnapshotRepository.save(ms);
             // About filtering by status when saving the snapshot:
             //   If status is closed, the value is not the opening price.
             //   Also if using no accurate data, we might end up not chosing the best symbols.
