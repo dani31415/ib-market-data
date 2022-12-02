@@ -133,7 +133,7 @@ public class Snapshot {
                 doContinue = false;
             };
 
-            if (doContinue) {
+            if (marketData.size() == 0 && doContinue) {
                 sleep(5000);
             }
         } while (doContinue);
