@@ -28,9 +28,9 @@ public class RestTemplateConfiguration {
             CloseableHttpClient httpClient = HttpClients.custom().setSSLSocketFactory(csf).build();
             HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory();
             requestFactory.setHttpClient(httpClient);
-            requestFactory.setConnectTimeout(2000);
-            requestFactory.setReadTimeout(2000);
-            requestFactory.setConnectionRequestTimeout(2000);
+            requestFactory.setConnectTimeout(10000);
+            requestFactory.setReadTimeout(10000);
+            requestFactory.setConnectionRequestTimeout(10000);
             RestTemplate restTemplate = new RestTemplate(requestFactory);
             return restTemplate;
         } catch (Exception ex) {
