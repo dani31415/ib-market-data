@@ -41,10 +41,11 @@ public class Snapshot {
     static NumberFormat format = NumberFormat.getInstance(Locale.US);
 
     public void run() throws Exception {
+        boolean save = true;
         if (!api.nasdaqIsOpen()) {
             // This prevents to trade during non bank days since Jenkins is not able to skip execution
-            System.out.println("Ignored since market is closed.");
-            return;
+            save = false;
+            System.out.println("Save will be ignored since market is closed.");
         }
         api.reauthenticateHelper();
 
@@ -98,9 +99,13 @@ public class Snapshot {
             totalMarketData.addAll(marketData);
             System.out.println("Current total: " + totalMarketData.size());
             // Persist data async
-            executor.submit( () -> {
-                persistMarketData(marketData, state);
-            });
+            if (save) {
+                executor.submit( () -> {
+                    persistMarketData(marketData, state);
+                });
+            } else {
+                System.out.println("Save ignored.");
+            }
             // Remove from pendingSymbolList
             for (MarketdataSnapshotResult msr : marketData) {
                 int symbolIdx = findByConid(pendingSymbolList, msr.conid);
@@ -171,7 +176,7 @@ public class Snapshot {
             // About filtering by status when saving the snapshot:
             //   If status is closed, the value is not the opening price.
             //   Also if using no accurate data, we might end up not chosing the best symbols.
-            if (api.nasdaqIsOpen() && ms.status == SymbolSnapshotStatusEnum.NORMAL) {
+            if (ms.status == SymbolSnapshotStatusEnum.NORMAL) {
                 saveTodayOpeningPrice(ms.symbolId, msr.todayOpeningPrice);
             }
             result.add(ms);
