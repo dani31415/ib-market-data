@@ -146,12 +146,15 @@ public class Snapshot {
             }
         } while (doContinue);
         System.out.println("TOTAL: " + totalMarketData.size());
-        System.out.println("Number of open: " + state.cNormal);
-        System.out.println("Number of closed: " + state.cClosed);
-        System.out.println("Number of halted: " + state.cHalted);
         System.out.println("Waiting for persistence termination...");
         executor.shutdown();
         executor.awaitTermination(600, TimeUnit.SECONDS);
+        System.out.println("Number of open: " + state.cNormal);
+        System.out.println("Number of closed: " + state.cClosed);
+        System.out.println("Number of halted: " + state.cHalted);
+        if (state.cNormal < 3000) {
+            throw new Error("Not enough open symbols.");
+        }
         System.out.println("Done!");
     }
 
