@@ -240,7 +240,7 @@ public class ApiImplementation implements Api {
         // Check time
         LocalDateTime localDateTime = LocalDateTime.now(ZoneId.of("America/New_York"));
         double hour = 0.0 + localDateTime.getHour() +localDateTime.getMinute()/60.0;
-        if (hour>9.5 && hour<16) { // 9:30 -- 16:00
+        if (hour>=9.5 && hour<16) { // 9:30 -- 16:00
             return true;
         }
 
