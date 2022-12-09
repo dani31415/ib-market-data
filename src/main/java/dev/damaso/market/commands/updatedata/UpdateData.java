@@ -47,7 +47,7 @@ public class UpdateData {
             try {
                 Symbol symbol = getSymbolById(lastItem.getSymbolId());
                 if (symbol != null) {
-                    long days = 40; // getDays(lastItem.getDate(), now) + 2;
+                    long days = 10; // getDays(lastItem.getDate(), now) + 2;
                     System.out.println(symbol.ib_conid);
                     System.out.println("Get from " + lastItem.getDate() + " and " + days + "days");
                     HistoryResult historyResult = iserverMarketdataHistory(symbol.ib_conid, days);
