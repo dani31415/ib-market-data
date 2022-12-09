@@ -49,11 +49,10 @@ public class Snapshot {
         }
         api.reauthenticateHelper();
 
-        List<MarketdataSnapshotResult> totalMarketData = new Vector<>();
         Iterable<Symbol> symbols = symbolRepository.findAllIB();
         List<Symbol> pendingSymbolList = new Vector<>();
         SnapshotState state = new SnapshotState();
-        int minimumResults = 3600;
+        int minimumResults = 3100;
         int existing = 0;
 
         Iterator<Symbol> iterator = symbols.iterator();
@@ -77,9 +76,11 @@ public class Snapshot {
         }
         System.out.println("Already existing symbols: " + existing);
 
-        ExecutorService executor = Executors.newSingleThreadExecutor();
+        ExecutorService executor = Executors.newFixedThreadPool(4);
 
         int noChanged = 0;
+        int previousRead = 0;
+        int nowRead = 0;
         boolean doContinue = false;
         do {
             iterator = pendingSymbolList.iterator();
@@ -93,11 +94,8 @@ public class Snapshot {
                     iserverMarketdataSnapshotHelper(conids, marketData);
                     System.out.println("Read: " + marketData.size());
                 }
-            } while (conids.size()>0);
+            } while (conids.size()>0);    
 
-            // Append current values
-            totalMarketData.addAll(marketData);
-            System.out.println("Current total: " + totalMarketData.size());
             // Persist data async
             if (save) {
                 executor.submit( () -> {
@@ -107,14 +105,36 @@ public class Snapshot {
                 System.out.println("Save ignored.");
             }
             // Remove from pendingSymbolList
+            state.cNormal = 0;
+            state.cClosed = 0;
+            state.cHalted = 0;
             for (MarketdataSnapshotResult msr : marketData) {
                 int symbolIdx = findByConid(pendingSymbolList, msr.conid);
-                pendingSymbolList.remove(symbolIdx);
+                // Add only open symbols
+                SymbolSnapshot ms = convert(msr);
+                if (ms.status == SymbolSnapshotStatusEnum.NORMAL) {    
+                    pendingSymbolList.remove(symbolIdx);
+                    state.openMarketData.add(ms);
+                    state.cNormal ++;
+                } else if (ms.status == SymbolSnapshotStatusEnum.CLOSED) {
+                    state.cClosed ++;
+                } else {
+                    state.cHalted ++;
+                }
             }
-            if (marketData.size()>=1000) {
-                api.iserverMarketdataUnsubscribeall();
-            }
+            nowRead = marketData.size();
+
+            System.out.println("Number of open: " + state.openMarketData.size());
+            System.out.println("Number of closed: " + state.cClosed);
+            System.out.println("Number of halted: " + state.cHalted);
             System.out.println("Now pending: " + pendingSymbolList.size());
+            if (
+                existing + state.openMarketData.size() + pendingSymbolList.size()
+                    !=
+                state.conidToSymbol.size()
+            ) {
+                throw new Error("Incorred number of symbols.");
+            }
 
             if (marketData.size() > 0) {
                 noChanged = 0;
@@ -124,13 +144,13 @@ public class Snapshot {
             System.out.println("No changed consecutive occurrences: " + noChanged);
 
             // Do continue?
-            if (totalMarketData.size()==0) {
+            if (existing + state.openMarketData.size()==0) {
                 System.out.println("Continue because was empty.");
                 doContinue = true;
-            } else if (marketData.size() > 0) {
+            } else if (nowRead != previousRead) {
                 System.out.println("Continue because was progress.");
                 doContinue = true;
-            } else if (existing + totalMarketData.size()<minimumResults && noChanged<10) {
+            } else if (existing + state.openMarketData.size()<minimumResults && noChanged<10) {
                 System.out.println("Continue because the minimum is not reached.");
                 doContinue = true;
             // } else if (noChanged<4) {
@@ -144,36 +164,23 @@ public class Snapshot {
             if (marketData.size() == 0 && doContinue) {
                 sleep(5000);
             }
+
+            previousRead = nowRead;
         } while (doContinue);
-        System.out.println("TOTAL: " + totalMarketData.size());
+        System.out.println("TOTAL: " + state.openMarketData.size());
         System.out.println("Waiting for persistence termination...");
         executor.shutdown();
         executor.awaitTermination(600, TimeUnit.SECONDS);
-        System.out.println("Number of open: " + state.cNormal);
+        System.out.println("Number of open: " + state.openMarketData.size());
         System.out.println("Number of closed: " + state.cClosed);
         System.out.println("Number of halted: " + state.cHalted);
-        if (existing + state.cNormal < 3000) {
-            throw new Error("Not enough open symbols.");
-        }
         System.out.println("Done!");
     }
 
     public void persistMarketData(List<MarketdataSnapshotResult> marketData, SnapshotState state) {
         Date now = new Date();
-        List<SymbolSnapshot> result = new Vector<>();
-        int cNormal = 0;
-        int cClosed = 0;
-        int cHalted = 0;
         for (MarketdataSnapshotResult msr : marketData) {
             SymbolSnapshot ms = convert(msr);
-            if (ms.status == SymbolSnapshotStatusEnum.NORMAL) {
-                cNormal ++;
-            } else if (ms.status == SymbolSnapshotStatusEnum.CLOSED) {
-                cClosed ++;
-            } else {
-                cHalted ++;
-            }
-
             ms.updateId = now;
             ms.symbolId = state.conidToSymbol.get(ms.ibConid);
             // About filtering by status when saving the snapshot:
@@ -182,14 +189,7 @@ public class Snapshot {
             if (ms.status == SymbolSnapshotStatusEnum.NORMAL) {
                 saveTodayOpeningPrice(ms.symbolId, msr.todayOpeningPrice);
             }
-            result.add(ms);
         }
-        System.out.println("Number of open: " + cNormal);
-        System.out.println("Number of closed: " + cClosed);
-        System.out.println("Number of halted: " + cHalted);
-        state.cNormal += cNormal;
-        state.cClosed += cClosed;
-        state.cHalted += cHalted;
     }
 
     private int findBySymbolId(List<Symbol> symbolList, int symbolId) {
