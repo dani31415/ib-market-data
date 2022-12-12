@@ -144,7 +144,7 @@ public class Snapshot {
             System.out.println("No changed consecutive occurrences: " + noChanged);
 
             // Do continue?
-            if (existing + state.openMarketData.size()==0 && !save) {
+            if (existing + state.openMarketData.size()==0 && save) {
                 System.out.println("Continue because was empty.");
                 doContinue = true;
             } else if (nowRead != previousRead) {
