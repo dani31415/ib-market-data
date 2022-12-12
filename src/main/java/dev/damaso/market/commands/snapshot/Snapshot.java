@@ -136,7 +136,7 @@ public class Snapshot {
                 throw new Error("Incorred number of symbols.");
             }
 
-            if (marketData.size() > 0) {
+            if (nowRead != previousRead) {
                 noChanged = 0;
             } else {
                 noChanged ++;
