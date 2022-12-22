@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Collection;
 import java.util.Date;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -161,13 +162,14 @@ public class UpdateData {
             ItemId id = new ItemId();
             id.symbolId = symbolId;
             id.date = date.toLocalDate();
-            // Optional<Item> optionalItem0 = itemRepository.findById(id);
-            // if (optionalItem0.isPresent()) {
-            //     Item item0 = optionalItem0.get();
-            // }
 
-            //System.out.println(item0);
             Item item = new Item();
+
+            // Keep some data
+            Optional<Item> existingOptionalItem = itemRepository.findById(id);
+            if (existingOptionalItem.isPresent()) {
+                item.sincePreOpen = existingOptionalItem.get().sincePreOpen;
+            }
             item.symbolId = symbolId;
             item.open = data.o;
             item.close = data.c;

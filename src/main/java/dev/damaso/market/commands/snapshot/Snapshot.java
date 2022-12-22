@@ -4,6 +4,8 @@ import java.text.NumberFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -212,6 +214,21 @@ public class Snapshot {
         return -1;
     }
 
+    int getSincePreOpen() {
+        ZonedDateTime zdtNow = ZonedDateTime.now(ZoneId.of("America/New_York"));
+        ZonedDateTime zdtOpen = ZonedDateTime.of(
+            zdtNow.getYear(), 
+            zdtNow.getMonthValue(), 
+            zdtNow.getDayOfMonth(), 
+            9, 
+            0, 
+            0,
+            0,
+            ZoneId.of("America/New_York"));
+        long minutes = ChronoUnit.MINUTES.between(zdtOpen, zdtNow);
+        return (int)minutes;
+    }
+
     void saveTodayOpeningPrice(int symbolId, String todayOpeningPrice) {
         float open = convertFloat(todayOpeningPrice);
         LocalDateTime date = LocalDateTime.now().atZone(ZoneId.of("UTC")).toLocalDateTime();
@@ -226,6 +243,7 @@ public class Snapshot {
             item.date = date.toLocalDate();
             item.open = open;
             item.source = 2; // from snapshot
+            item.sincePreOpen = getSincePreOpen();
             itemRepository.save(item);
         }
     }

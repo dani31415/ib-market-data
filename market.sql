@@ -196,6 +196,12 @@ CREATE PROCEDURE configureDatabase()
             ALTER TABLE symbol ADD COLUMN disabled INT(1) NOT NULL DEFAULT 0;
         END IF;
 
+        -- Version 14 --> 15
+        IF @schemaVersion = '14' THEN 
+            UPDATE configuration SET value='15' WHERE `key`='schemaVersion';
+
+            ALTER TABLE item ADD COLUMN since_pre_open INT DEFAULT NULL;
+        END IF;
     END //
 
 DELIMITER ;

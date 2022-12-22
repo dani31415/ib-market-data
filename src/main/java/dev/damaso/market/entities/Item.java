@@ -23,4 +23,5 @@ public class Item {
     public float close;
     public long volume;
     public int source;
+    public Integer sincePreOpen;
 }
