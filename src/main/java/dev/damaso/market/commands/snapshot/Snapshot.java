@@ -181,6 +181,8 @@ public class Snapshot {
 
     public void persistMarketData(List<MarketdataSnapshotResult> marketData, SnapshotState state) {
         Date now = new Date();
+        // Compute sincePreOpen as soon as possible
+        int sincePreOpen = getSincePreOpen();
         for (MarketdataSnapshotResult msr : marketData) {
             SymbolSnapshot ms = convert(msr);
             ms.updateId = now;
@@ -189,7 +191,7 @@ public class Snapshot {
             //   If status is closed, the value is not the opening price.
             //   Also if using no accurate data, we might end up not chosing the best symbols.
             if (ms.status == SymbolSnapshotStatusEnum.NORMAL) {
-                saveTodayOpeningPrice(ms.symbolId, msr.todayOpeningPrice);
+                saveTodayOpeningPrice(ms.symbolId, msr.todayOpeningPrice, sincePreOpen);
             }
         }
     }
@@ -229,7 +231,7 @@ public class Snapshot {
         return (int)minutes;
     }
 
-    void saveTodayOpeningPrice(int symbolId, String todayOpeningPrice) {
+    void saveTodayOpeningPrice(int symbolId, String todayOpeningPrice, int sincePreOpen) {
         float open = convertFloat(todayOpeningPrice);
         LocalDateTime date = LocalDateTime.now().atZone(ZoneId.of("UTC")).toLocalDateTime();
 
@@ -243,7 +245,7 @@ public class Snapshot {
             item.date = date.toLocalDate();
             item.open = open;
             item.source = 2; // from snapshot
-            item.sincePreOpen = getSincePreOpen();
+            item.sincePreOpen = sincePreOpen;
             itemRepository.save(item);
         }
     }
