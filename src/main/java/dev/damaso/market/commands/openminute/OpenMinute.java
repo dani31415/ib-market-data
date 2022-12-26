@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Vector;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -25,8 +26,11 @@ import org.springframework.stereotype.Component;
 
 import com.opencsv.CSVReader;
 
+import dev.damaso.market.entities.Item;
+import dev.damaso.market.entities.ItemId;
 import dev.damaso.market.entities.Period;
 import dev.damaso.market.entities.Symbol;
+import dev.damaso.market.repositories.ItemRepository;
 import dev.damaso.market.repositories.PeriodRepository;
 import dev.damaso.market.repositories.SymbolRepository;
 
@@ -38,16 +42,19 @@ public class OpenMinute {
     @Autowired
     SymbolRepository symbolRepository;
 
+    @Autowired
+    ItemRepository itemRepository;
+
     static private final int MINUTES_DAY = 60*8;
 
-    private float [][][] item1;
-    private float [][][] volume1;
+    private boolean [][] item1;
 
     private List<Period> periods;
     private Map<LocalDate, Integer> periodToIndex;
 
     private List<Symbol> symbols;
     private Map<String, Integer> symbolsToIndex;
+    private Map<String, Symbol> tickerToSymbol;
 
     private double maxHour;
     private double minHour;
@@ -62,8 +69,8 @@ public class OpenMinute {
         readSymbols();
         readPeriods();
         System.out.println("Number of symbols read: " + symbols.size());
-        System.out.println("Searching zip files in " + (new File(".data/interday/.").getAbsolutePath()));
-        String files[] = new File(".data/interday/.").list(); 
+        System.out.println("Searching zip files in " + (new File("/home/dani/trading/.data/interday/.").getAbsolutePath()));
+        String files[] = new File("/home/dani/trading/.data/interday/.").list(); 
         maxHour = 0;
         minHour = Double.MAX_VALUE;
         maxDay = LocalDate.MIN;
@@ -78,7 +85,7 @@ public class OpenMinute {
         Collections.sort(fileNames);
 
         for (String fileName: fileNames) {
-            readZip(".data/interday/"+fileName);
+            readZip("/home/dani/trading/.data/interday/"+fileName);
             System.out.println("MIN " + minHour);
             System.out.println("MAX " + maxHour);
             System.out.println("MIN " + minDay);
@@ -89,7 +96,7 @@ public class OpenMinute {
             String fileName = files[i];
             if (fileName.endsWith(".csv")) {
                 System.out.println("Reading " + fileName + "...");
-                FileInputStream fis = new FileInputStream(".data/interday/"+fileName);
+                FileInputStream fis = new FileInputStream("/home/dani/trading/.data/interday/"+fileName);
                 readCSVFile(fis);
                 fis.close();
             }
@@ -100,10 +107,14 @@ public class OpenMinute {
 
     public void readSymbols() throws Exception {
         symbolsToIndex = new HashMap<>();
+        tickerToSymbol = new HashMap<>();
+        symbols = new Vector<>();
         Iterable<Symbol> iterableSymbol = symbolRepository.findAllIB();
         int i = 0;
         for (Symbol symbol : iterableSymbol) {
+            symbols.add(symbol);
             symbolsToIndex.put(symbol.shortName, i);
+            tickerToSymbol.put(symbol.shortName, symbol);
             i++;
         }
     }
@@ -145,6 +156,7 @@ public class OpenMinute {
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd-MMM-yyyy HH:mm", new Locale("America/New_York")); // 03-Oct-2022 09:30
         CSVReader csvReader = new CSVReader(new InputStreamReader(is));
         String [] values;
+        csvReader.readNext();
         int previous = -1;
 
         while ((values = csvReader.readNext()) != null) {
@@ -174,8 +186,7 @@ public class OpenMinute {
                     firstDateIndex = periodToIndex.get(date);
                     totalPeriods = periods.size() - firstDateIndex;
                     System.out.println(firstDateIndex + ", " + totalPeriods);
-                    item1 = new float[symbols.size()][totalPeriods][MINUTES_DAY];
-                    volume1 = new float[symbols.size()][totalPeriods][MINUTES_DAY];
+                    item1 = new boolean[symbols.size()][totalPeriods];
                 }
                 dates.add(date);
                 System.out.println(date + " " + dates.size());
@@ -195,9 +206,22 @@ public class OpenMinute {
             }
             if (symbolsToIndex.containsKey(symbol)) {
                 int index = symbolsToIndex.get(symbol);
-                item1[index][dateIndex][minute] = open;
-                volume1[index][dateIndex][minute] = volume;
-                // System.out.println(index + "," + dates.size() + "," + minute + "," + open + "," + volume);
+                // symbol, date, open, minute
+                if (!item1[index][dateIndex] && open>0) {
+                    Symbol symbolObj = tickerToSymbol.get(symbol);
+                    ItemId itemId = new ItemId();
+                    itemId.date = date;
+                    itemId.symbolId = symbolObj.id;
+                    Optional<Item> optionalItem = itemRepository.findById(itemId);
+                    if (optionalItem.isPresent()) {
+                        Item item = optionalItem.get();
+                        item.sincePreOpen = minute;
+                        itemRepository.save(item);
+                        // System.out.println(symbolObj.id + ", " + date + ", " + minute + ", " + open);
+                        // System.exit(0);
+                    }
+                    item1[index][dateIndex] = true;
+                }
             }
         }
     }
