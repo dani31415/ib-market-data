@@ -219,16 +219,16 @@ public class Snapshot {
     int getSincePreOpen() {
         ZonedDateTime zdtNow = ZonedDateTime.now(ZoneId.of("America/New_York"));
         ZonedDateTime zdtOpen = ZonedDateTime.of(
-            zdtNow.getYear(), 
-            zdtNow.getMonthValue(), 
-            zdtNow.getDayOfMonth(), 
-            9, 
-            0, 
+            zdtNow.getYear(),
+            zdtNow.getMonthValue(),
+            zdtNow.getDayOfMonth(),
+            9,
             0,
+            1, // second extra so between(9:00:01, 9:30:00) = 29 (29 + 1 = 30). See return
             0,
             ZoneId.of("America/New_York"));
         long minutes = ChronoUnit.MINUTES.between(zdtOpen, zdtNow);
-        return (int)minutes;
+        return (int)minutes + 1;
     }
 
     void saveTodayOpeningPrice(int symbolId, String todayOpeningPrice, int sincePreOpen) {
