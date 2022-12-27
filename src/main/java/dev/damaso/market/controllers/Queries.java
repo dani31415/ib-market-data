@@ -140,6 +140,9 @@ public class Queries {
         }
 
         float [] fs = new float[4*symbols.size()*dates.size()];
+        for (int i = 0; i < fs.length; i += 4) {
+            fs[i+3] = Float.NaN;
+        }
 
         Iterable<Item> iterableItem;
         if (from!=null) {
