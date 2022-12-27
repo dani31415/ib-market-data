@@ -139,7 +139,10 @@ public class Queries {
             dateOrders.put(dates.get(i), i);
         }
 
-        float [] fs = new float[3*symbols.size()*dates.size()];
+        float [] fs = new float[4*symbols.size()*dates.size()];
+        for (int i = 0; i < fs.length; i += 4) {
+            fs[i+3] = Float.NaN;
+        }
 
         Iterable<Item> iterableItem;
         if (from!=null) {
@@ -157,12 +160,13 @@ public class Queries {
         for (Item item : iterableItem) {
             int symbolOrder = symbolOrders.get(item.symbolId);
             int dateOrder = dateOrders.get(item.date);
-            int i = (symbolOrder * dates.size() +dateOrder) * 3;
+            int i = (symbolOrder * dates.size() +dateOrder) * 4;
             fs[i] = item.open;
             fs[i+1] = item.close;
             fs[i+2] = item.volume<1?0:(float)Math.log(item.volume);
+            fs[i+3] = item.sincePreOpen == null ? Float.NaN : item.sincePreOpen.floatValue();
         }
-
+ 
         if (interpolate!=null && interpolate.booleanValue()) {
             for (int i = 0; i < symbols.size(); i++) {
                 interpolate(fs, i, dates.size(), 0);
@@ -170,7 +174,7 @@ public class Queries {
             }
         }
 
-        int [] shape = {symbols.size(), dates.size(), 3};
+        int [] shape = {symbols.size(), dates.size(), 4};
         Path path = new File("data.npy").toPath();
         NpyFile.write(path, fs, shape);
         byte [] bs = Files.readAllBytes(path);
@@ -182,15 +186,15 @@ public class Queries {
         int lastZero = -1;
 
         for (int i = 0; i < dateSize; i++) {
-            int iIdx = 3 * (symbolOrder * dateSize + i) + field;
+            int iIdx = 4 * (symbolOrder * dateSize + i) + field;
             if (fs[iIdx]==0 && i>0) {
                 if (lastZero<0) lastZero = i-1;
             } else if (lastZero>=0) {
                 // Interpolate from lastZero to i
                 if (lastZero>0) {
                     for (int j=lastZero+1; j < i; j++) {
-                        int jIdx = 3 * (symbolOrder * dateSize + j) + field;
-                        int lastZeroIdx = 3 * (symbolOrder * dateSize + lastZero) + field;
+                        int jIdx = 4 * (symbolOrder * dateSize + j) + field;
+                        int lastZeroIdx = 4 * (symbolOrder * dateSize + lastZero) + field;
                         fs[jIdx] = fs[lastZeroIdx] + (fs[iIdx] - fs[lastZeroIdx]) * (j-lastZero) / (i-lastZero);
                     }
                 }
