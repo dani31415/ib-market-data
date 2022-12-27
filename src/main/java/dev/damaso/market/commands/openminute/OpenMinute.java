@@ -208,6 +208,14 @@ public class OpenMinute {
                 int index = symbolsToIndex.get(symbol);
                 // symbol, date, open, minute
                 if (!item1[index][dateIndex] && open>0) {
+                    int year = date.getYear();
+                    int month = date.getMonthValue();
+                    int day = date.getDayOfMonth();        
+                    if (year==2022 && month==11 && day==22) {
+                        // Workaround
+                        minute = Math.max(0, minute-70);
+                    }
+
                     Symbol symbolObj = tickerToSymbol.get(symbol);
                     ItemId itemId = new ItemId();
                     itemId.date = date;
