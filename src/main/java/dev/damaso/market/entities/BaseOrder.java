@@ -30,7 +30,7 @@ public class BaseOrder {
 
     public String description;
 
-    public LocalDate renewalDate;
+    public LocalDateTime renewalDate;
     public LocalDateTime createdAt;
     public LocalDateTime updatedAt;
     

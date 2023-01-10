@@ -202,6 +202,20 @@ CREATE PROCEDURE configureDatabase()
 
             ALTER TABLE item ADD COLUMN since_pre_open INT DEFAULT NULL;
         END IF;
+
+        -- Version 15 --> 16
+        IF @schemaVersion = '15' THEN 
+            UPDATE configuration SET value='16' WHERE `key`='schemaVersion';
+
+            CREATE TABLE `log` (
+                `id` INT AUTO_INCREMENT PRIMARY KEY,
+                `source` VARCHAR(36) NOT NULL,
+                `message` TEXT NOT NULL,
+                `object_type` VARCHAR(36),
+                `object` MEDIUMTEXT,
+                `created_at` DATETIME NOT NULL
+            ) CHARACTER SET utf8mb4;
+        END IF;
     END //
 
 DELIMITER ;
