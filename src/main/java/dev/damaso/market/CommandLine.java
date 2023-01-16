@@ -8,7 +8,7 @@ import dev.damaso.market.commands.explore.Explore;
 import dev.damaso.market.commands.fixdata.FixData;
 import dev.damaso.market.commands.localdata.LoadData;
 import dev.damaso.market.commands.means.UpdateMeans;
-import dev.damaso.market.commands.openminute.OpenMinute;
+import dev.damaso.market.commands.openminute.OpenMinute2;
 import dev.damaso.market.commands.snapshot.Snapshot;
 import dev.damaso.market.commands.updatedata.UpdateData;
 import dev.damaso.market.repositories.ConfigurationRepository;
@@ -37,7 +37,7 @@ public class CommandLine implements CommandLineRunner {
     FixData fixData;
 
     @Autowired
-    OpenMinute openMinute;
+    OpenMinute2 openMinute2;
 
     @Override
     public void run(String... args) throws Exception {
@@ -57,7 +57,7 @@ public class CommandLine implements CommandLineRunner {
         } else if (args[0].equals("fix-data")) {
             fixData.run();
         } else if (args[0].equals("open-minute")) {
-            openMinute.run();
+            openMinute2.run();
         } else {
             throw new Exception("Unknown command " + args[0]);
             // System.out.println("Command line");

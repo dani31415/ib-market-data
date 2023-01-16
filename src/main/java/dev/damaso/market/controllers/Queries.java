@@ -27,7 +27,7 @@ import dev.damaso.market.entities.SymbolSnapshot;
 import dev.damaso.market.external.ibgw.Api;
 import dev.damaso.market.operations.PeriodOperations;
 import dev.damaso.market.repositories.ItemRepository;
-import dev.damaso.market.repositories.MinuteDataRepository;
+import dev.damaso.market.repositories.MinuteItemRepository;
 import dev.damaso.market.repositories.PeriodRepository;
 import dev.damaso.market.repositories.SymbolRepository;
 import dev.damaso.market.repositories.SymbolSnapshotRepository;
@@ -50,7 +50,7 @@ public class Queries {
     PeriodRepository periodRepository;
 
     @Autowired
-    MinuteDataRepository minuteItemRepository;
+    MinuteItemRepository minuteItemRepository;
 
     @Autowired
     Api api;

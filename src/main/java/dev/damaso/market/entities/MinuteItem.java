@@ -8,7 +8,7 @@ import javax.persistence.Id;
 import javax.persistence.IdClass;
 
 @Entity
-@IdClass(ItemId.class)
+@IdClass(MinuteItemId.class)
 public class MinuteItem {
     @Id
     @Column(name="symbol_id")
@@ -17,6 +17,7 @@ public class MinuteItem {
     @Id
     public LocalDate date;
 
+    @Id
     public int minute;
     public float open;
     public float high;
