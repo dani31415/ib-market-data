@@ -1,11 +1,17 @@
 package dev.damaso.market.commands.openminute;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.sql.Statement;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -18,7 +24,10 @@ import java.util.Vector;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import javax.sql.DataSource;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import com.opencsv.CSVReader;
@@ -41,12 +50,18 @@ public class OpenMinute2 {
     @Autowired
     MinuteItemRepository minuteItemRepository;
 
+    @Autowired
+    @Qualifier("marketDataSource")
+    DataSource dataSource;
+
     private List<Period> periods;
     private Map<LocalDate, Integer> periodToIndex;
 
     private List<Symbol> symbols;
     private Map<String, Integer> symbolsToIndex;
     private Map<String, Symbol> tickerToSymbol;
+
+    private DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd-MMM-yyyy HH:mm", new Locale("America/New_York")); // 03-Oct-2022 09:30
 
     private List<LocalDate> dates;
 
@@ -130,7 +145,6 @@ public class OpenMinute2 {
     }
 
     private DateMinute computeDateMinute(String dateString) {
-        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd-MMM-yyyy HH:mm", new Locale("America/New_York")); // 03-Oct-2022 09:30
         LocalDateTime dateTime = LocalDateTime.parse(dateString, dtf);
         LocalDate date = dateTime.toLocalDate();
         int minute = (dateTime.getHour() - 9)*60 + dateTime.getMinute();
@@ -141,9 +155,14 @@ public class OpenMinute2 {
     }
 
     public void readCSVFile(InputStream is) throws Exception {
-        CSVReader csvReader = new CSVReader(new InputStreamReader(is));
+        BufferedInputStream bis = new BufferedInputStream(is);
+        CSVReader csvReader = new CSVReader(new InputStreamReader(bis));
         String [] values;
         csvReader.readNext();
+
+        FileOutputStream fos = new FileOutputStream("/var/lib/mysql-files/market.txt");
+        BufferedOutputStream bos = new BufferedOutputStream(fos);
+        Writer writer = new OutputStreamWriter(bos);
 
         while ((values = csvReader.readNext()) != null) {
             String symbol = values[0];
@@ -162,8 +181,32 @@ public class OpenMinute2 {
                 minuteItem.close = Float.parseFloat(values[5]);
                 minuteItem.volume = Long.parseLong(values[6]);
                 minuteItem.source = 0; // from file
-                minuteItemRepository.save(minuteItem);
+                // minuteItemRepository.save(minuteItem);
+                String line = String.format("%d,%s,%d,%f,%f,%f,%f,%d,%d\r\n",
+                    minuteItem.symbolId,
+                    minuteItem.date,
+                    minuteItem.minute,
+                    minuteItem.open,
+                    minuteItem.high,
+                    minuteItem.low,
+                    minuteItem.close,
+                    minuteItem.volume,
+                    minuteItem.source
+                );
+                writer.write(line);
             }
         }
+        bos.flush();
+        writer.flush();
+        writer.close();
+        String query = """
+            LOAD DATA INFILE '/var/lib/mysql-files/market.txt' IGNORE INTO TABLE market.minute_item
+            FIELDS TERMINATED BY ','
+            LINES TERMINATED BY '\r\n'
+        """;
+        Statement statement = this.dataSource.getConnection().createStatement();
+        System.out.println("Executing LOAD DATA query...");
+        statement.executeUpdate(query);
+        // System.exit(0);
     }
 }
