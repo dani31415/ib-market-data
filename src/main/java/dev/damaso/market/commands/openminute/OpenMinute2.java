@@ -11,6 +11,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.sql.Connection;
 import java.sql.Statement;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -54,6 +55,8 @@ public class OpenMinute2 {
     @Qualifier("marketDataSource")
     DataSource dataSource;
 
+    private Connection connection;
+
     private List<Period> periods;
     private Map<LocalDate, Integer> periodToIndex;
 
@@ -80,6 +83,8 @@ public class OpenMinute2 {
             }
         }
         Collections.sort(fileNames);
+
+        connection = this.dataSource.getConnection();
 
         for (String fileName: fileNames) {
             readZip("/home/dani/trading/.data/interday/"+fileName);
@@ -204,7 +209,7 @@ public class OpenMinute2 {
             FIELDS TERMINATED BY ','
             LINES TERMINATED BY '\r\n'
         """;
-        Statement statement = this.dataSource.getConnection().createStatement();
+        Statement statement = connection.createStatement();
         System.out.println("Executing LOAD DATA query...");
         statement.executeUpdate(query);
         statement.close();
