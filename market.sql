@@ -216,6 +216,28 @@ CREATE PROCEDURE configureDatabase()
                 `created_at` DATETIME NOT NULL
             ) CHARACTER SET utf8mb4;
         END IF;
+
+        -- Version 16 --> 17
+        IF @schemaVersion = '16' THEN 
+            UPDATE configuration SET value='17' WHERE `key`='schemaVersion';
+
+            ALTER TABLE period MODIFY COLUMN updated BIT;
+            ALTER TABLE symbol MODIFY COLUMN `disabled` BIT;
+
+            CREATE TABLE minute_item  (
+                `symbol_id` INT,
+                `date` date,
+                `minute` int,
+                `open` float,
+                `high` float,
+                `low` float,
+                `close` float,
+                `volume` bigint,
+                `source` tinyint(2),
+                PRIMARY KEY (`symbol_id`, `date`, `minute`)
+            ) CHARACTER SET utf8mb4;
+        END IF;
+
     END //
 
 DELIMITER ;

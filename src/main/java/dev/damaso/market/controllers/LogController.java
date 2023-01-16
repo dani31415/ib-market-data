@@ -13,8 +13,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import dev.damaso.market.entities.Log;
-import dev.damaso.market.repositories.LogRepository;
+import dev.damaso.market.brokerentities.Log;
+import dev.damaso.market.brokerrepositories.LogRepository;
 
 @RestController
 public class LogController {

@@ -20,6 +20,21 @@ services:
       - mysql
     restart: on-failure
   
+  database2:
+    image: mysql:8
+    entrypoint: ''
+    command: >
+      bash -c "
+        mysql -u root -p34ab349lkk5031 --host mysql < /tmp/create-broker.sql && 
+        mysql -u user -ppassword broker --host mysql < /tmp/broker.sql
+      "
+    volumes:
+      - ./broker.sql:/tmp/broker.sql
+      - ./create-broker.sql:/tmp/create-broker.sql
+    depends_on:
+      - mysql
+    restart: on-failure
+
   api:
     image: maven:3.8.3-openjdk-17
     working_dir: /root/market
@@ -29,7 +44,8 @@ services:
       - .:/root/market
     depends_on:
       - database
-      - mysql
+      - database2
+      - mysql 
     restart: on-failure
     ports:
       - 8000:8000

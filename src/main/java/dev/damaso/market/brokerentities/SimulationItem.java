@@ -1,4 +1,4 @@
-package dev.damaso.market.entities;
+package dev.damaso.market.brokerentities;
 
 import java.time.LocalDateTime;
 

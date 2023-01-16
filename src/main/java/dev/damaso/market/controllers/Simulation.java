@@ -11,9 +11,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import dev.damaso.market.entities.SimulationItem;
+import dev.damaso.market.brokerentities.SimulationItem;
+import dev.damaso.market.brokerrepositories.SimulationItemRepository;
 import dev.damaso.market.entities.Symbol;
-import dev.damaso.market.repositories.SimulationItemRepository;
 import dev.damaso.market.repositories.SymbolRepository;
 
 @RestController

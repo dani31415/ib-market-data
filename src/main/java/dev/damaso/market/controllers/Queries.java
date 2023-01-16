@@ -21,11 +21,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.jetbrains.bio.npy.NpyFile;
 
 import dev.damaso.market.entities.Item;
+import dev.damaso.market.entities.MinuteItem;
 import dev.damaso.market.entities.Symbol;
 import dev.damaso.market.entities.SymbolSnapshot;
 import dev.damaso.market.external.ibgw.Api;
 import dev.damaso.market.operations.PeriodOperations;
 import dev.damaso.market.repositories.ItemRepository;
+import dev.damaso.market.repositories.MinuteDataRepository;
 import dev.damaso.market.repositories.PeriodRepository;
 import dev.damaso.market.repositories.SymbolRepository;
 import dev.damaso.market.repositories.SymbolSnapshotRepository;
@@ -46,6 +48,9 @@ public class Queries {
 
     @Autowired
     PeriodRepository periodRepository;
+
+    @Autowired
+    MinuteDataRepository minuteItemRepository;
 
     @Autowired
     Api api;
@@ -181,6 +186,11 @@ public class Queries {
         System.out.println("Returning: " + bs.length + "bytes");
         return bs;
 	}
+
+    @GetMapping("/ib/minuteitems")
+    public Iterable<MinuteItem> allMinuteItemsIB() throws Exception {
+        return minuteItemRepository.findAll();
+    }
 
     private void interpolate(float [] fs, int symbolOrder, int dateSize, int field) {
         int lastZero = -1;

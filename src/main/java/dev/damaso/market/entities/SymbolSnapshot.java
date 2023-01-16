@@ -2,6 +2,7 @@ package dev.damaso.market.entities;
 
 import java.util.Date;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -17,6 +18,7 @@ public class SymbolSnapshot {
     public int symbolId;
     public String ibConid;
     @Enumerated(EnumType.ORDINAL)
+    @Column(columnDefinition="tinyint")
     public SymbolSnapshotStatusEnum status;
     public float lastPrice;
     public float bidPrice;

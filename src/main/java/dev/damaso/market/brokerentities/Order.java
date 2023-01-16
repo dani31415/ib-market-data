@@ -1,16 +1,18 @@
-package dev.damaso.market.entities;
+package dev.damaso.market.brokerentities;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import javax.persistence.Column;
-import javax.persistence.MappedSuperclass;
+import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Table;
 
-@MappedSuperclass
-public class BaseOrder {
+@Entity
+@Table(name="`order`")
+public class Order {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     public Integer id;
@@ -18,6 +20,7 @@ public class BaseOrder {
     public String groupGuid;
     public LocalDate date;
     public String ib_conid;
+    public int symbolId;
     @Column(name = "\"order\"")
     public int order;
     public String status;
@@ -28,6 +31,7 @@ public class BaseOrder {
     public Float openPrice;
     public Float quantity;
 
+    @Column(columnDefinition="text")
     public String description;
 
     public LocalDateTime renewalDate;

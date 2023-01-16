@@ -9,7 +9,7 @@ import javax.persistence.IdClass;
 
 @Entity
 @IdClass(ItemId.class)
-public class Item {
+public class MinuteItem {
     @Id
     @Column(name="symbol_id")
     public int symbolId;
@@ -17,11 +17,11 @@ public class Item {
     @Id
     public LocalDate date;
 
+    public int minute;
     public float open;
     public float high;
     public float low;
     public float close;
     public long volume;
     public byte source;
-    public Integer sincePreOpen;
 }
