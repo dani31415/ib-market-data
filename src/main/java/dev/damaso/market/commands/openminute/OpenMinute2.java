@@ -207,6 +207,7 @@ public class OpenMinute2 {
         Statement statement = this.dataSource.getConnection().createStatement();
         System.out.println("Executing LOAD DATA query...");
         statement.executeUpdate(query);
+        statement.close();
         // System.exit(0);
     }
 }
