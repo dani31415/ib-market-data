@@ -74,4 +74,9 @@ public class Orders {
         orderRepository.save(updatedOrder);
         return updatedOrder;
     }
+
+    @GetMapping("/orders/{orderId}")
+    public Optional<Order> findOrderById(@PathVariable Integer orderId) throws Exception {
+        return orderRepository.findById(orderId);
+    }
 }

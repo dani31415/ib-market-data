@@ -30,6 +30,8 @@ public class Order {
     public Float bidPrice;
     public Float openPrice;
     public Float quantity;
+    public Float boughtQuantity;
+    public Float soldQuantity;
 
     @Column(columnDefinition="text")
     public String description;
