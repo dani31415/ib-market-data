@@ -11,6 +11,7 @@ import dev.damaso.market.commands.means.UpdateMeans;
 import dev.damaso.market.commands.openminute.FixOpenMinuteForDay;
 import dev.damaso.market.commands.openminute.OpenMinute2;
 import dev.damaso.market.commands.snapshot.Snapshot;
+import dev.damaso.market.commands.symbols.SymbolListUpdater;
 import dev.damaso.market.commands.updatedata.UpdateData;
 import dev.damaso.market.repositories.ConfigurationRepository;
 
@@ -43,6 +44,9 @@ public class CommandLine implements CommandLineRunner {
     @Autowired
     FixOpenMinuteForDay fixOpenMinuteForDay;
 
+    @Autowired
+    SymbolListUpdater symbolListUpdater;
+
     @Override
     public void run(String... args) throws Exception {
         if (args.length==0) {
@@ -64,6 +68,8 @@ public class CommandLine implements CommandLineRunner {
             openMinute2.run();
         } else if (args[0].equals("fix-day")) {
             fixOpenMinuteForDay.run();
+        } else if (args[0].equals("update-symbol-list")) {
+            symbolListUpdater.run();
         } else {
             throw new Exception("Unknown command " + args[0]);
             // System.out.println("Command line");

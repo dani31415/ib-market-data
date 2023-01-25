@@ -1,5 +1,7 @@
 package dev.damaso.market.entities;
 
+import java.time.LocalDateTime;
+
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -15,6 +17,6 @@ public class Symbol {
     public String ib_conid;
     public String oldNames;
     public boolean disabled;
-    // public Date firstItemDate;
-    // public Date lastItemDate;
+    public LocalDateTime createdAt;
+    public LocalDateTime updatedAt;
 }

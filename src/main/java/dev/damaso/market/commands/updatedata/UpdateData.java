@@ -3,8 +3,9 @@ package dev.damaso.market.commands.updatedata;
 import java.net.SocketTimeoutException;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,13 +43,19 @@ public class UpdateData {
         // Stops quickly if there is no access to ib
         api.reauthenticateHelper();
 
-        Collection<LastItem> lastItems = itemRepository.findMaxDateGroupBySymbol();
+        List<LastItem> lastItems = itemRepository.findMaxDateGroupBySymbol();
         Date now = new Date();
         for(LastItem lastItem : lastItems) {
             try {
                 Symbol symbol = getSymbolById(lastItem.getSymbolId());
                 if (symbol != null) {
-                    long days = 10; // getDays(lastItem.getDate(), now) + 2;
+                    Date date = lastItem.getDate();
+                    long days;
+                    if (date == null) {
+                        days = 4000;
+                    } else {
+                        days = getDays(lastItem.getDate(), now) + 5;
+                    }
                     System.out.println(symbol.ib_conid);
                     System.out.println("Get from " + lastItem.getDate() + " and " + days + "days");
                     HistoryResult historyResult = iserverMarketdataHistory(symbol.ib_conid, days);

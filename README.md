@@ -13,6 +13,7 @@ docker-compose -- run api mvn spring-boot:run -Dspring-boot.run.arguments=explor
 docker-compose -- run api mvn spring-boot:run -Dspring-boot.run.arguments=update-means
 docker-compose -- run api mvn spring-boot:run -Dspring-boot.run.arguments=fix-data
 docker-compose -- run api mvn spring-boot:run -Dspring-boot.run.arguments=open-minute
+docker-compose -- run api mvn spring-boot:run -Dspring-boot.run.arguments=update-symbol-list
 docker-compose -- run api mvn package
 docker-compose -- run api mvn clean:clean
 ```

@@ -238,6 +238,14 @@ CREATE PROCEDURE configureDatabase()
             ) CHARACTER SET utf8mb4;
         END IF;
 
+        -- Version 17 --> 18
+        IF @schemaVersion = '17' THEN 
+            UPDATE configuration SET value='18' WHERE `key`='schemaVersion';
+
+            ALTER TABLE `symbol` ADD COLUMN `created_at` DATETIME;
+            ALTER TABLE `symbol` ADD COLUMN `updated_at` DATETIME;
+        END IF;
+
     END //
 
 DELIMITER ;
