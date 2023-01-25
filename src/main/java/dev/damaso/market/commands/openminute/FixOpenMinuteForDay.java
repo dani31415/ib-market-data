@@ -24,7 +24,7 @@ public class FixOpenMinuteForDay {
     ItemRepository itemRepository;
 
     public void run() throws Exception {
-        InputStream is = new FileInputStream(".data/interday/NASDAQ_20230120.csv");
+        InputStream is = new FileInputStream("/home/dani/trading/.data/interday/NASDAQ_20230120.csv");
         Map<Integer, List<MinuteItem>> itemMap = interdayFileReader.readCSVFile(is);
         for (int symbolId : itemMap.keySet()) {
             List<MinuteItem> items = itemMap.get(symbolId);
