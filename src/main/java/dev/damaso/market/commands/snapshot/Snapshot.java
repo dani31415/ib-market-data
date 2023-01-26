@@ -54,7 +54,7 @@ public class Snapshot {
         Iterable<Symbol> symbols = symbolRepository.findAllIB();
         List<Symbol> pendingSymbolList = new Vector<>();
         SnapshotState state = new SnapshotState();
-        int minimumResults = 3000;
+        int minimumResults = 2950;
         int existing = 0;
 
         Iterator<Symbol> iterator = symbols.iterator();
