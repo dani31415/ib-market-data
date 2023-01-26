@@ -34,3 +34,8 @@ build/
 
 .data
 dump.sql
+market-symbol-dump.sql
+market-item-dump.sql
+broker-dump.sql
+.tmp
+.env

@@ -1,5 +1,7 @@
 package dev.damaso.market.external.eoddata.implementation;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import dev.damaso.market.external.eoddata.EoddataApi;
+import dev.damaso.market.external.eoddata.EodQuote;
 import dev.damaso.market.external.eoddata.EodSymbol;
 
 @Service
@@ -21,6 +24,7 @@ public class EoddataApiImplementation implements EoddataApi {
 
     private RestTemplate xmlRestTemplate;
 
+    // http://ws.eoddata.com/data.asmx
     String baseUrl = "http://ws.eoddata.com";
 
     public EoddataApiImplementation() {
@@ -47,10 +51,33 @@ public class EoddataApiImplementation implements EoddataApi {
     @Override
     public Iterable<EodSymbol> symbolList() {
         String token = this.getToken();
+        System.out.println(token);
         String url = "%s/data.asmx/SymbolList?Token=%s&Exchange=NASDAQ".formatted(baseUrl, token);
         ResponseEntity<SymbolListResponse> loginResponse = xmlRestTemplate.getForEntity(url, SymbolListResponse.class);
         List<EodSymbol> symbols = loginResponse.getBody().symbols;
         System.out.println(symbols.size());
         return symbols;
     }
+
+    @Override
+    public List<EodQuote> quotes(LocalDate date, String symbol) {
+        String token = this.getToken();
+        String dateStr = date.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+        String url = "%s/data.asmx/SymbolHistoryPeriod?Token=%s&Exchange=NASDAQ&Symbol=%s&Date=%s&Period=1".formatted(baseUrl, token, symbol, dateStr);
+        ResponseEntity<Response> response = xmlRestTemplate.getForEntity(url, Response.class);
+        List<EodQuote> quotes = response.getBody().quotes;
+        return quotes;
+    }
+
+    @Override
+    public List<EodQuote> quotes(LocalDate from, LocalDate to, String symbol) {
+        String token = this.getToken();
+        String fromStr = from.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+        String toStr = to.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+        String url = "%s/data.asmx/SymbolHistoryPeriodByDateRange?Token=%s&Exchange=NASDAQ&Symbol=%s&StartDate=%s&EndDate=%s&Period=1".formatted(baseUrl, token, symbol, fromStr, toStr);
+        ResponseEntity<Response> response = xmlRestTemplate.getForEntity(url, Response.class);
+        List<EodQuote> quotes = response.getBody().quotes;
+        return quotes;
+    }
+
 }
