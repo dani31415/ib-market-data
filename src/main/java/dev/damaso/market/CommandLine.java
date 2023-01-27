@@ -12,6 +12,7 @@ import dev.damaso.market.commands.openminute.FixOpenMinuteForDay;
 import dev.damaso.market.commands.openminute.OpenMinute2;
 import dev.damaso.market.commands.snapshot.Snapshot;
 import dev.damaso.market.commands.symbols.SymbolListUpdater;
+import dev.damaso.market.commands.updatedata.UpdateDailyData;
 import dev.damaso.market.commands.updatedata.UpdateData;
 import dev.damaso.market.commands.updatedata.UpdateMinuteData;
 import dev.damaso.market.repositories.ConfigurationRepository;
@@ -26,6 +27,9 @@ public class CommandLine implements CommandLineRunner {
 
 	@Autowired
 	UpdateData updateData;
+
+    @Autowired
+	UpdateDailyData updateDailyData;
 
     @Autowired
     UpdateMinuteData updateMinuteData;
@@ -60,6 +64,8 @@ public class CommandLine implements CommandLineRunner {
             loadData.run();
         } else if (args[0].equals("update-data")) {
             updateData.run();
+        } else if (args[0].equals("update-daily-data")) {
+            updateDailyData.run();
         } else if (args[0].equals("update-minute-data")) {
             updateMinuteData.run();
         } else if (args[0].equals("snapshot")) {

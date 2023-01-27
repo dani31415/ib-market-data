@@ -26,7 +26,7 @@ import dev.damaso.market.repositories.MinuteItemRepository;
 import dev.damaso.market.repositories.SymbolRepository;
 
 @Component
-public class UpdateMinuteData {
+public class UpdateMinuteData implements Runnable {
     @Autowired
     SymbolRepository symbolRepository;
 
@@ -42,7 +42,15 @@ public class UpdateMinuteData {
 
     private Connection connection;
 
-    public void run() throws Exception {
+    public void run() {
+        try {
+            runWithException();
+        } catch (Exception exception) {
+            throw new Error(exception);
+        }
+    }
+
+    private void runWithException() throws Exception {
         connection = this.dataSource.getConnection();
 
         List<LastItem> lastItems = minuteItemRepository.findMaxDateGroupBySymbol();
@@ -66,7 +74,7 @@ public class UpdateMinuteData {
                         BufferedOutputStream bos = new BufferedOutputStream(fos);
                         Writer writer = new OutputStreamWriter(bos);
 
-                        System.out.println(symbol.shortName + ": " + quotes.size());
+                        log(symbol.shortName + ": " + quotes.size());
                         for (EodQuote quote : quotes) {
                             MinuteItem minuteItem = new MinuteItem();
                             minuteItem.open = quote.open;
@@ -78,7 +86,7 @@ public class UpdateMinuteData {
                             minuteItem.symbolId = symbol.id;
                             minuteItem.date = quote.dateTime.toLocalDate();
                             minuteItem.minute = computeMinute(quote.dateTime);
-                            // System.out.println(minuteItem.symbolId + ", " + minuteItem.open + ", " + minuteItem.minute + ", " + minuteItem.date);
+                            // log(minuteItem.symbolId + ", " + minuteItem.open + ", " + minuteItem.minute + ", " + minuteItem.date);
                             String line = String.format("%d,%s,%d,%f,%f,%f,%f,%d,%d\r\n",
                                 minuteItem.symbolId,
                                 minuteItem.date,
@@ -102,7 +110,7 @@ public class UpdateMinuteData {
                             LINES TERMINATED BY '\r\n'
                         """;
                         Statement statement = connection.createStatement();
-                        System.out.println("Executing LOAD DATA query...");
+                        log("Executing LOAD DATA query...");
                         statement.executeUpdate(query);
                         statement.close();
                     }
@@ -114,5 +122,9 @@ public class UpdateMinuteData {
     private int computeMinute(LocalDateTime dateTime) {
         int minute = (dateTime.getHour() - 9)*60 + dateTime.getMinute();
         return minute;
+    }
+
+    private void log(String str) {
+        System.out.println("UpdateMinuteData: " + str);
     }
 }
