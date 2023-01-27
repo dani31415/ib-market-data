@@ -9,18 +9,20 @@ import java.sql.Statement;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import javax.sql.DataSource;
 
-import org.apache.commons.collections.IteratorUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
+import dev.damaso.market.entities.LastItem;
 import dev.damaso.market.entities.MinuteItem;
 import dev.damaso.market.entities.Symbol;
 import dev.damaso.market.external.eoddata.EodQuote;
 import dev.damaso.market.external.eoddata.EoddataApi;
+import dev.damaso.market.repositories.MinuteItemRepository;
 import dev.damaso.market.repositories.SymbolRepository;
 
 @Component
@@ -32,6 +34,9 @@ public class UpdateMinuteData {
     EoddataApi eoddataApi;
 
     @Autowired
+    MinuteItemRepository minuteItemRepository;
+
+    @Autowired
     @Qualifier("marketDataSource")
     DataSource dataSource;
 
@@ -40,58 +45,68 @@ public class UpdateMinuteData {
     public void run() throws Exception {
         connection = this.dataSource.getConnection();
 
-        Iterable <Symbol> iterableSymbols = symbolRepository.findAllEnabled();
-        List<Symbol> symbols = IteratorUtils.toList(iterableSymbols.iterator());
+        List<LastItem> lastItems = minuteItemRepository.findMaxDateGroupBySymbol();
+        
+        LocalDate to = LocalDate.now();
 
-        System.out.println(symbols.size());
-        LocalDate from = LocalDate.parse("2022-12-22");
-        LocalDate to = LocalDate.parse("2023-01-25");
-        for (Symbol symbol: symbols) {
-            List<EodQuote> quotes = eoddataApi.quotes(from, to, symbol.shortName);
-            if (quotes != null) {
-                FileOutputStream fos = new FileOutputStream("/var/lib/mysql-files/market.txt");
-                BufferedOutputStream bos = new BufferedOutputStream(fos);
-                Writer writer = new OutputStreamWriter(bos);
+        for (LastItem lastItem: lastItems) {
+            Optional<Symbol> optionalSymbol = symbolRepository.findById(lastItem.getSymbolId());
+            if (optionalSymbol.isPresent()) {
+                Symbol symbol = optionalSymbol.get();
+                if (!symbol.disabled && symbol.ib_conid != null) {
+                    LocalDate from;
+                    if (lastItem.getDate() != null) {
+                        from = lastItem.getDate();
+                    } else {
+                        from = LocalDate.now().plusDays(-5); // some days
+                    }
+                    List<EodQuote> quotes = eoddataApi.quotes(from, to, symbol.shortName);
+                    if (quotes != null) {
+                        FileOutputStream fos = new FileOutputStream("/var/lib/mysql-files/market.txt");
+                        BufferedOutputStream bos = new BufferedOutputStream(fos);
+                        Writer writer = new OutputStreamWriter(bos);
 
-                System.out.println(symbol.shortName + ": " + quotes.size());
-                for (EodQuote quote : quotes) {
-                    MinuteItem minuteItem = new MinuteItem();
-                    minuteItem.open = quote.open;
-                    minuteItem.high = quote.high;
-                    minuteItem.low = quote.low;
-                    minuteItem.close = quote.close;
-                    minuteItem.volume = quote.volume;
-                    minuteItem.source = 1;
-                    minuteItem.symbolId = symbol.id;
-                    minuteItem.date = quote.dateTime.toLocalDate();
-                    minuteItem.minute = computeMinute(quote.dateTime);
-                    // System.out.println(minuteItem.symbolId + ", " + minuteItem.open + ", " + minuteItem.minute + ", " + minuteItem.date);
-                    String line = String.format("%d,%s,%d,%f,%f,%f,%f,%d,%d\r\n",
-                        minuteItem.symbolId,
-                        minuteItem.date,
-                        minuteItem.minute,
-                        minuteItem.open,
-                        minuteItem.high,
-                        minuteItem.low,
-                        minuteItem.close,
-                        minuteItem.volume,
-                        minuteItem.source
-                    );
-                    writer.write(line);
+                        System.out.println(symbol.shortName + ": " + quotes.size());
+                        for (EodQuote quote : quotes) {
+                            MinuteItem minuteItem = new MinuteItem();
+                            minuteItem.open = quote.open;
+                            minuteItem.high = quote.high;
+                            minuteItem.low = quote.low;
+                            minuteItem.close = quote.close;
+                            minuteItem.volume = quote.volume;
+                            minuteItem.source = 1;
+                            minuteItem.symbolId = symbol.id;
+                            minuteItem.date = quote.dateTime.toLocalDate();
+                            minuteItem.minute = computeMinute(quote.dateTime);
+                            // System.out.println(minuteItem.symbolId + ", " + minuteItem.open + ", " + minuteItem.minute + ", " + minuteItem.date);
+                            String line = String.format("%d,%s,%d,%f,%f,%f,%f,%d,%d\r\n",
+                                minuteItem.symbolId,
+                                minuteItem.date,
+                                minuteItem.minute,
+                                minuteItem.open,
+                                minuteItem.high,
+                                minuteItem.low,
+                                minuteItem.close,
+                                minuteItem.volume,
+                                minuteItem.source
+                            );
+                            writer.write(line);
+                        }
+
+                        bos.flush();
+                        writer.flush();
+                        writer.close();
+                        String query = """
+                            LOAD DATA INFILE '/var/lib/mysql-files/market.txt' IGNORE INTO TABLE market.minute_item
+                            FIELDS TERMINATED BY ','
+                            LINES TERMINATED BY '\r\n'
+                        """;
+                        Statement statement = connection.createStatement();
+                        System.out.println("Executing LOAD DATA query...");
+                        statement.executeUpdate(query);
+                        statement.close();
+                    }
                 }
-
-                bos.flush();
-                writer.flush();
-                writer.close();
-                String query = """
-                    LOAD DATA INFILE '/var/lib/mysql-files/market.txt' IGNORE INTO TABLE market.minute_item
-                    FIELDS TERMINATED BY ','
-                    LINES TERMINATED BY '\r\n'
-                """;
-                Statement statement = connection.createStatement();
-                System.out.println("Executing LOAD DATA query...");
-                statement.executeUpdate(query);
-                statement.close();
             }
         }
     }

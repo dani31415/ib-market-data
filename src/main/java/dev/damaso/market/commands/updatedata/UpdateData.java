@@ -1,10 +1,9 @@
 package dev.damaso.market.commands.updatedata;
 
 import java.net.SocketTimeoutException;
+import java.time.Duration;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
-import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -44,17 +43,17 @@ public class UpdateData {
         api.reauthenticateHelper();
 
         List<LastItem> lastItems = itemRepository.findMaxDateGroupBySymbol();
-        Date now = new Date();
+        LocalDate now = LocalDate.now();
         for(LastItem lastItem : lastItems) {
             try {
                 Symbol symbol = getSymbolById(lastItem.getSymbolId());
                 if (symbol != null) {
-                    Date date = lastItem.getDate();
+                    LocalDate date = lastItem.getDate();
                     long days;
                     if (date == null) {
                         days = 4000;
                     } else {
-                        days = getDays(lastItem.getDate(), now) + 5;
+                        days = getDays(date, now) + 5;
                     }
                     System.out.println(symbol.ib_conid);
                     System.out.println("Get from " + lastItem.getDate() + " and " + days + "days");
@@ -127,9 +126,8 @@ public class UpdateData {
         return historyResult;
     }
 
-    private long getDays(Date date1, Date date2) {
-        Date itemDate = new Date(date1.getTime());
-        return ChronoUnit.DAYS.between(itemDate.toInstant(), date2.toInstant());
+    private long getDays(LocalDate from, LocalDate to) {
+        return Duration.between(from, to).toDays();
     }
 
     private Symbol getSymbolById(int id) throws Exception {
