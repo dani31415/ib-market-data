@@ -51,7 +51,7 @@ public class FixData {
             Item item = optionalItem.get();
             item.sincePreOpen = openMinute;
             itemRepository.save(item);
-            System.out.println("Fix " + symbol.shortName + ", " + symbol.id + " at " + date + " minute " + openMinute);
+            // System.out.println("Fix " + symbol.shortName + ", " + symbol.id + " at " + date + " minute " + openMinute);
         }
     }
 
