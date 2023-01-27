@@ -2,13 +2,17 @@ package dev.damaso.market.commands.fixdata;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import dev.damaso.market.entities.Item;
+import dev.damaso.market.entities.ItemId;
 import dev.damaso.market.entities.MinuteItem;
 import dev.damaso.market.entities.Symbol;
 import dev.damaso.market.external.ibgw.Api;
+import dev.damaso.market.repositories.ItemRepository;
 import dev.damaso.market.repositories.MinuteItemRepository;
 import dev.damaso.market.repositories.SymbolRepository;
 
@@ -19,6 +23,9 @@ public class FixData {
 
     @Autowired
     MinuteItemRepository minuteItemRepository;
+
+    @Autowired
+    ItemRepository itemRepository;
 
     @Autowired
     Api api;
@@ -36,7 +43,16 @@ public class FixData {
         if (openMinute == null) {
             return;
         }
-        System.out.println("Fix " + symbol.shortName + ", " + symbol.id + " at " + date + " minute " + openMinute);
+        ItemId itemId = new ItemId();
+        itemId.date = date;
+        itemId.symbolId = symbol.id;
+        Optional<Item> optionalItem = itemRepository.findById(itemId);
+        if (optionalItem.isPresent()) {
+            Item item = optionalItem.get();
+            item.sincePreOpen = openMinute;
+            itemRepository.save(item);
+            System.out.println("Fix " + symbol.shortName + ", " + symbol.id + " at " + date + " minute " + openMinute);
+        }
     }
 
     public void fixSymbol(Symbol symbol) {
