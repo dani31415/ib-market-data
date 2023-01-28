@@ -49,6 +49,7 @@ public class PeriodOperations {
             // Get next period date since computeMeanByDate is what it wants
             Optional<Period> nextPeriod = periodRepository.findById(period.id + 1);
             if (nextPeriod.isPresent()) {
+                log("Update mean for period " + period.id);
                 Optional<Double> optionalMean = periodRepository.computeMeanByDate(nextPeriod.get().date);
                 double mean = optionalMean.isPresent() ? optionalMean.get().doubleValue():1;
                 period.mean = (float)mean;
@@ -56,5 +57,9 @@ public class PeriodOperations {
                 periodRepository.save(period);
             }
         }
+    }
+
+    private void log(String message) {
+        System.out.println("PeriodOperations: " + message);
     }
 }
