@@ -53,6 +53,13 @@ CREATE PROCEDURE configureDatabase()
             ALTER TABLE `order` ADD COLUMN sold_quantity FLOAT after bought_quantity;
         END IF;
 
+        -- Version 2 --> 3
+        IF @schemaVersion = '2' THEN 
+            UPDATE configuration SET value='3' WHERE `key`='schemaVersion';
+
+            ALTER TABLE `order` ADD COLUMN liquidating BIT DEFAULT 0 NOT NULL AFTER renewal_date;
+        END IF;
+
     END //
 
 DELIMITER ;
