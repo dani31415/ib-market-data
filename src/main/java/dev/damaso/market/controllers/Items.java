@@ -140,18 +140,18 @@ public class Items {
         int nSymbols = symbols.size();
         float fs[] = new float[nSymbols *  420];
 
-        // for (int i = 0; i < symbols.size(); i++) {
-        //     Symbol symbol = symbols.get(i);
-        //     Item previousItem = dailyItemMap.get(symbol.id);
-        //     List<MinuteItem> minuteItems = symbolItems.get(symbol.id);
-        //     if (minuteItems != null && previousItem != null) {
-        //         List<Item> items = groupByTime(symbol.id, date, minuteItems, previousItem.close, 0, 1);
-        //         int nItems = items.size();
-        //         for (int j = 0; j < nItems; j++) {
-        //             fs[420 * i + j] = items.get(j).open;
-        //         }
-        //     }
-        // }
+        for (int i = 0; i < symbols.size(); i++) {
+            Symbol symbol = symbols.get(i);
+            Item previousItem = dailyItemMap.get(symbol.id);
+            List<MinuteItem> minuteItems = symbolItems.get(symbol.id);
+            if (minuteItems != null && previousItem != null) {
+                List<Item> items = groupByTime(symbol.id, date, minuteItems, previousItem.close, 0, 1);
+                int nItems = items.size();
+                for (int j = 0; j < nItems; j++) {
+                    fs[420 * i + j] = items.get(j).open;
+                }
+            }
+        }
 
         int [] shape = {nSymbols, 420};
         Path path = new File("minute.npy").toPath();
