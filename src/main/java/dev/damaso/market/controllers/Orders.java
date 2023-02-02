@@ -60,8 +60,15 @@ public class Orders {
     }
 
     @GetMapping("/orders")
-    public Iterable<Order> getOrders(@RequestParam(required=false) String status) throws Exception {
-        return orderRepository.findAllByStatus(status);
+    public Iterable<Order> getOrders(@RequestParam(required=false) String status, @RequestParam(required=false) String date) throws Exception {
+        if (status != null) {
+            return orderRepository.findAllByStatus(status);
+        } else if (date != null) {
+            LocalDate localDate = LocalDate.parse(date);
+            return orderRepository.findAllByDate(localDate);
+        } else {
+            return orderRepository.findAll();
+        }
     }
 
     @PatchMapping("/orders/{id}")
