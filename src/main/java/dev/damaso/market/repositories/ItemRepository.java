@@ -41,4 +41,7 @@ public interface ItemRepository extends CrudRepository<Item, ItemId> {
     // Volume average from date and ids
     @Query("SELECT avg(i.volume) FROM Item i WHERE i.date >= ?1 AND i.symbolId = ?2 AND i.volume>0")
     float findAverageVolume(LocalDate from, int symbol_id);
+
+    @Query("SELECT i FROM Item i WHERE date=?1 ORDER BY symbolId ASC")
+    Iterable<Item> findByDate(LocalDate date);
 }
