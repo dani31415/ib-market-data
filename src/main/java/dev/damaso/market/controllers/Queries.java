@@ -22,6 +22,7 @@ import org.jetbrains.bio.npy.NpyFile;
 
 import dev.damaso.market.entities.Item;
 import dev.damaso.market.entities.MinuteItem;
+import dev.damaso.market.entities.Period;
 import dev.damaso.market.entities.Symbol;
 import dev.damaso.market.entities.SymbolSnapshot;
 import dev.damaso.market.external.ibgw.Api;
@@ -224,7 +225,17 @@ public class Queries {
         return api.nasdaqIsOpenDay(localDate);
     }
 
-    @GetMapping("/period/mean")
+    @GetMapping("/periods/{id}")
+    public Period periodById(@PathVariable Integer id) throws Exception {
+        return periodRepository.findById(id).get();
+    }
+
+    @GetMapping("/periods")
+    public Iterable<Period> periodAllPeriods() throws Exception {
+        return periodRepository.findAll();
+    }
+
+    @GetMapping("/periods/mean")
     public Double periodMean(String date) throws Exception {
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         LocalDate fromDate = LocalDate.parse(date, dtf);
