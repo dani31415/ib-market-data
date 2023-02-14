@@ -3,6 +3,7 @@ package dev.damaso.market.controllers;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +21,8 @@ import com.fasterxml.jackson.databind.ObjectReader;
 import dev.damaso.market.brokerentities.Order;
 import dev.damaso.market.brokerrepositories.OrderRepository;
 import dev.damaso.market.entities.Symbol;
+import dev.damaso.market.operations.Purchase;
+import dev.damaso.market.operations.PurchaseOperations;
 import dev.damaso.market.repositories.SymbolRepository;
 
 @RestController
@@ -32,6 +35,9 @@ public class Orders {
 
     @Autowired
     ObjectMapper objectMapper;
+
+    @Autowired
+    PurchaseOperations purchaseOperations;
 
     @PostMapping("/orders")
     public boolean createOrder(@RequestBody OrderRequestDTO orderRequest) throws Exception {
@@ -85,5 +91,10 @@ public class Orders {
     @GetMapping("/orders/{orderId}")
     public Optional<Order> findOrderById(@PathVariable Integer orderId) throws Exception {
         return orderRepository.findById(orderId);
+    }
+
+    @GetMapping("/purchases")
+    public List<Purchase> getPurchases() throws Exception {
+        return purchaseOperations.getPurchases();
     }
 }
