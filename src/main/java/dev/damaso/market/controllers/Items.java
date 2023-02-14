@@ -160,4 +160,44 @@ public class Items {
         System.out.println("Returning: " + bs.length + "bytes");
         return bs;
     }
+
+    @GetMapping("/ib/rawitems/minute")
+    public byte [] rawMinuteItems(@RequestParam int period) throws Exception {
+        Optional<Period> optionalPeriod = periodRepository.findById(period);
+        if (!optionalPeriod.isPresent()) {
+            throw new ResponseStatusException(
+                HttpStatus.NOT_FOUND, "Not found."
+            );
+        }
+
+        LocalDate date = optionalPeriod.get().date;
+        Iterable<MinuteItem> allMinuteItems = minuteItemRepository.findByDate(date);
+        Map<Integer, List<MinuteItem>> symbolItems = groupBySymbol(allMinuteItems);
+
+        List<Symbol> symbols = this.getSymbols();
+        int nSymbols = symbols.size();
+        float fs[] = new float[nSymbols * 420 * 2];
+
+        for (int i = 0; i < symbols.size(); i++) {
+            Symbol symbol = symbols.get(i);
+            List<MinuteItem> minuteItems = symbolItems.get(symbol.id);
+            if (minuteItems != null) {
+                for (MinuteItem minuteItem : minuteItems) {
+                    int j = minuteItem.minute;
+                    if (0 <= j && j < 420) {
+                        fs[2 * 420 * i + 2 * j] = minuteItem.open;
+                        fs[2 * 420 * i + 2 * j + 1] = minuteItem.volume;
+                    }
+                }
+            }
+        }
+
+        int [] shape = {nSymbols, 420, 2};
+        Path path = new File("rawminute.npy").toPath();
+        NpyFile.write(path, fs, shape);
+        byte [] bs = Files.readAllBytes(path);
+        System.out.println("Returning: " + bs.length + "bytes");
+        return bs;
+    }
+
 }
