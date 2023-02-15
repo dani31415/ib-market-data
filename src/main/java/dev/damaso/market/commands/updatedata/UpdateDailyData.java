@@ -4,6 +4,7 @@ import java.net.SocketTimeoutException;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 
@@ -52,6 +53,7 @@ public class UpdateDailyData implements Runnable {
 
         List<LastItem> lastItems = itemRepository.findMaxDateGroupBySymbol();
         LocalDate now = LocalDate.now();
+        int totalUpdated = 0;
         for(LastItem lastItem : lastItems) {
             try {
                 Symbol symbol = getSymbolById(lastItem.getSymbolId());
@@ -67,6 +69,7 @@ public class UpdateDailyData implements Runnable {
                     log("Get from " + lastItem.getDate() + " and " + days + "days");
                     HistoryResult historyResult = iserverMarketdataHistory(symbol.ib_conid, days);
                     int result = saveResult(historyResult, symbol.id);
+                    totalUpdated += result;
                     log("Saved for id=" + symbol.id + " " + result + " items");
                 }
             } catch (HttpServerErrorException.InternalServerError ex) {
@@ -92,6 +95,7 @@ public class UpdateDailyData implements Runnable {
                 throw ex;
             }
         }
+        System.out.println("Total updates: " + totalUpdated);
         periodOperations.updateDateMeans();
     }
 
@@ -178,10 +182,6 @@ public class UpdateDailyData implements Runnable {
             Item item = new Item();
 
             // Keep some data
-            Optional<Item> existingOptionalItem = itemRepository.findById(id);
-            if (existingOptionalItem.isPresent()) {
-                item.sincePreOpen = existingOptionalItem.get().sincePreOpen;
-            }
             item.symbolId = symbolId;
             item.open = data.o;
             item.close = data.c;
@@ -189,11 +189,29 @@ public class UpdateDailyData implements Runnable {
             item.low = data.l;
             item.volume = 100*data.v;
             item.date = date.toLocalDate();
-            item.source = 1; // from ib
-            itemRepository.save(item);
-            counter++;
-
-            periodOperations.updateDate(date.toLocalDate(), true);
+            Optional<Item> existingOptionalItem = itemRepository.findById(id);
+            boolean save = true;
+            if (existingOptionalItem.isPresent()) {
+                Item existingItem = existingOptionalItem.get();
+                item.sincePreOpen = existingItem.sincePreOpen;
+                if (
+                  item.open == existingItem.open &&
+                  item.close == existingItem.close &&
+                  item.high == existingItem.high &&
+                  item.low == existingItem.low &&
+                  item.volume == existingItem.volume
+                ) {
+                    // Existing record has same data, do not save
+                    save = false;
+                }
+            }
+            if (save) {
+                item.updatedAt = LocalDateTime.now(ZoneId.of("UTC"));
+                item.source = 1; // from ib
+                itemRepository.save(item);
+                counter++;
+                periodOperations.updateDate(date.toLocalDate(), true);
+            }
         }
         return counter;
     }

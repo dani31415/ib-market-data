@@ -1,6 +1,7 @@
 package dev.damaso.market.entities;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -24,4 +25,6 @@ public class Item {
     public long volume;
     public byte source;
     public Integer sincePreOpen;
+
+    public LocalDateTime updatedAt;
 }

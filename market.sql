@@ -246,7 +246,20 @@ CREATE PROCEDURE configureDatabase()
             ALTER TABLE `symbol` ADD COLUMN `updated_at` DATETIME;
         END IF;
 
+        -- Version 18 --> 19
+        IF @schemaVersion = '18' THEN 
+            UPDATE configuration SET value='19' WHERE `key`='schemaVersion';
+
+            ALTER TABLE `item` ADD COLUMN `updated_at` DATETIME;
+        END IF;
+
     END //
+
+    -- ALTER TABLE minute_item ADD INDEX (`date`, symbol_id);
+    -- ALTER TABLE item ADD INDEX (`date`, symbol_id);
+
+    -- ALTER TABLE item DROP PRIMARY KEY;
+    -- ALTER TABLE item ADD PRIMARY KEY (`date`, symbol_id);
 
 DELIMITER ;
 
