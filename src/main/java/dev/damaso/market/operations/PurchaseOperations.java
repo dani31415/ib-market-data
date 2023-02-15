@@ -50,7 +50,8 @@ public class PurchaseOperations {
                 Optional<Order> optionalOrder = orderRepository.findById(purchase.orderId);
                 if (optionalOrder.isPresent()) {
                     Order order = optionalOrder.get();
-                    if (order.status.equals("closed")) {
+                    if (order.status.equals("closed") 
+                    || order.description !=null && order.description.equals("Order has Cancelled status")) {
                         purchase.buyOrderPrice = order.buyOrderPrice;
                         purchase.buyAt = order.buyAt;
                         purchase.symbolSrcName = order.symbolSrcName;
