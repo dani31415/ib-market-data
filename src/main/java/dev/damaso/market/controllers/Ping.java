@@ -39,26 +39,6 @@ public class Ping {
 		return configuration.value;
 	}
 
-    @GetMapping("/allItems")
-	public String allItems() {
-		Iterable<Item> iterable = itemRepository.findAll();
-		int counter = 0;
-		for (Item item : iterable) {
-			counter ++;
-		}
-		return "" + counter;
-	}
-
-    @GetMapping("/allItemsIB")
-	public String allItemsIB() {
-		Iterable<Item> iterable = itemRepository.findAllIB();
-		int counter = 0;
-		for (Item item : iterable) {
-			counter ++;
-		}
-		return "" + counter;
-	}
-
     @GetMapping("/allSymbolsIB")
 	public Iterable<Symbol> allSymbolsIB() {
 		Iterable<Symbol> iterable = symbolRepository.findAllIB();

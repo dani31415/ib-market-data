@@ -66,7 +66,7 @@ public class Snapshot {
 
         // Remove symbols that already have data
         LocalDate today = LocalDateTime.now().atZone(ZoneId.of("UTC")).toLocalDate();
-        Iterable<Item> items = itemRepository.findAllIBFromDate(today);
+        Iterable<Item> items = itemRepository.findAllIBFromDate(today, 0);
         for (Item item : items) {
             if (item.open>0) {
                 existing ++;
@@ -246,6 +246,8 @@ public class Snapshot {
             item.open = open;
             item.source = 2; // from snapshot
             item.sincePreOpen = sincePreOpen;
+            item.version = 0;
+            item.stagging = true;
             itemRepository.save(item);
         }
     }

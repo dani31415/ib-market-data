@@ -109,7 +109,7 @@ public class Queries {
     public float averageVolume(String from, int symbolId) throws Exception {
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         LocalDate fromDate = LocalDate.parse(from, dtf);
-        return itemRepository.findAverageVolume(fromDate, symbolId);
+        return itemRepository.findAverageVolume(fromDate, symbolId, 0);
     }
 
     @GetMapping("/ib/items")
@@ -155,13 +155,13 @@ public class Queries {
         if (from!=null) {
             DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
             LocalDate fromDate = LocalDate.parse(from, dtf);
-            iterableItem = itemRepository.findAllIBFromDate(fromDate);
+            iterableItem = itemRepository.findAllIBFromDate(fromDate, 0);
         } else if (to!=null) {
             DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
             LocalDate toDate = LocalDate.parse(to, dtf);
-            iterableItem = itemRepository.findAllIBToDate(toDate);
+            iterableItem = itemRepository.findAllIBToDate(toDate, 0);
         } else {
-            iterableItem = itemRepository.findAllIB();
+            iterableItem = itemRepository.findAllIB(0);
         }
 
         for (Item item : iterableItem) {

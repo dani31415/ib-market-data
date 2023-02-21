@@ -189,25 +189,41 @@ public class UpdateDailyData implements Runnable {
             item.low = data.l;
             item.volume = 100*data.v;
             item.date = date.toLocalDate();
-            Optional<Item> existingOptionalItem = itemRepository.findById(id);
+            Iterable<Item> existingItems = itemRepository.findAllBySymbolIdAndDate(symbolId, date.toLocalDate());
             boolean save = true;
-            if (existingOptionalItem.isPresent()) {
-                Item existingItem = existingOptionalItem.get();
-                item.sincePreOpen = existingItem.sincePreOpen;
+
+            Item staggingItem = null;
+            int maxVersion = -1;
+
+            for (Item existingItem : existingItems) {
+                if (existingItem.stagging) {
+                    staggingItem = existingItem;
+                }
+                maxVersion = Math.max(maxVersion, existingItem.version);
+            }
+
+            if (staggingItem != null) {
+                item.sincePreOpen = staggingItem.sincePreOpen;
+                item.version = staggingItem.version;
                 if (
-                  item.open == existingItem.open &&
-                  item.close == existingItem.close &&
-                  item.high == existingItem.high &&
-                  item.low == existingItem.low &&
-                  item.volume == existingItem.volume
+                    item.open == staggingItem.open &&
+                    item.close == staggingItem.close &&
+                    item.high == staggingItem.high &&
+                    item.low == staggingItem.low &&
+                    item.volume == staggingItem.volume
                 ) {
                     // Existing record has same data, do not save
                     save = false;
                 }
+            } else {
+                // Create a new version
+                item.version = maxVersion + 1;
             }
+
             if (save) {
                 item.updatedAt = LocalDateTime.now(ZoneId.of("UTC"));
                 item.source = 1; // from ib
+                item.stagging = true;
                 itemRepository.save(item);
                 counter++;
                 periodOperations.updateDate(date.toLocalDate(), true);
