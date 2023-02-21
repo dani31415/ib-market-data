@@ -69,4 +69,7 @@ public class Order {
     public Integer previousRenewalOrderId;
 
     public String symbolSrcName;
+
+    @Column(columnDefinition="text")
+    public String optimization;
 }

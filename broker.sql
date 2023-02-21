@@ -60,6 +60,12 @@ CREATE PROCEDURE configureDatabase()
             ALTER TABLE `order` ADD COLUMN liquidating BIT DEFAULT 0 NOT NULL AFTER renewal_date;
         END IF;
 
+        -- Version 3 --> 4
+        IF @schemaVersion = '3' THEN
+            UPDATE configuration SET value='4' WHERE `key`='schemaVersion';
+
+            ALTER TABLE `order` ADD COLUMN `optimization` TEXT;
+        END IF;
     END //
 
 DELIMITER ;
