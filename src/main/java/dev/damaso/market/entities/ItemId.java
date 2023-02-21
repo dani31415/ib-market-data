@@ -7,4 +7,6 @@ public class ItemId implements Serializable {
     public int symbolId;
 
     public LocalDate date;
+
+    public int version;
 }

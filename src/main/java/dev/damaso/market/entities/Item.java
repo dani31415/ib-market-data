@@ -18,8 +18,10 @@ public class Item {
     @Id
     public LocalDate date;
 
+    @Id
     @Column(columnDefinition="tinyint")
     public int version;
+
     public boolean stagging;
 
     public float open;
