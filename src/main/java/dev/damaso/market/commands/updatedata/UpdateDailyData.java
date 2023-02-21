@@ -193,18 +193,16 @@ public class UpdateDailyData implements Runnable {
             boolean save = true;
 
             Item staggingItem = null;
-            int maxVersion = -1;
 
             for (Item existingItem : existingItems) {
                 if (existingItem.stagging) {
                     staggingItem = existingItem;
                 }
-                maxVersion = Math.max(maxVersion, existingItem.version);
             }
 
             if (staggingItem != null) {
                 item.sincePreOpen = staggingItem.sincePreOpen;
-                item.version = staggingItem.version;
+                item.version = staggingItem.version; // 0 or 1
                 item.open = staggingItem.open;
                 if (
                     item.open == staggingItem.open &&
@@ -217,8 +215,7 @@ public class UpdateDailyData implements Runnable {
                     save = false;
                 }
             } else {
-                // Create a new version
-                item.version = maxVersion + 1;
+                item.version = 1;
             }
 
             if (save) {
