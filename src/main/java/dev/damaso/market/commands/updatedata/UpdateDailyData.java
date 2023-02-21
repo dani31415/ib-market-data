@@ -205,6 +205,7 @@ public class UpdateDailyData implements Runnable {
             if (staggingItem != null) {
                 item.sincePreOpen = staggingItem.sincePreOpen;
                 item.version = staggingItem.version;
+                item.open = staggingItem.open;
                 if (
                     item.open == staggingItem.open &&
                     item.close == staggingItem.close &&
