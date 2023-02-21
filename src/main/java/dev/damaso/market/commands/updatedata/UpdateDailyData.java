@@ -193,10 +193,13 @@ public class UpdateDailyData implements Runnable {
             boolean save = true;
 
             Item staggingItem = null;
+            Item lastItem = null;
 
             for (Item existingItem : existingItems) {
                 if (existingItem.stagging) {
                     staggingItem = existingItem;
+                } else {
+                    lastItem = existingItem; // assuming only 0 or 1
                 }
             }
 
@@ -215,6 +218,18 @@ public class UpdateDailyData implements Runnable {
                     save = false;
                 }
             } else {
+                if (lastItem != null) {
+                    if (
+                        item.open == lastItem.open &&
+                        item.close == lastItem.close &&
+                        item.high == lastItem.high &&
+                        item.low == lastItem.low &&
+                        item.volume == lastItem.volume
+                    ) {
+                        // Existing record has same data, do not save
+                        save = false;
+                    }
+                }
                 item.version = 1;
             }
 
