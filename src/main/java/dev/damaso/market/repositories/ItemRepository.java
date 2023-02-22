@@ -15,7 +15,7 @@ public interface ItemRepository extends CrudRepository<Item, ItemId> {
     @Query(nativeQuery = true, value = "SELECT s.id AS symbolId, max(i.date) AS date FROM symbol s LEFT JOIN item i ON i.symbol_id=s.id and i.source!=2 WHERE s.ib_conid is not null group BY s.id")
     List<LastItem> findMaxDateGroupBySymbol();
 
-    @Query(nativeQuery = true, value = "SELECT symbol_id, MAX(date) AS date FROM item WHERE since_pre_open > 0 GROUP BY symbol_id")
+    @Query(nativeQuery = true, value = "SELECT symbol_id as symbolId, MAX(date) AS date FROM item WHERE since_pre_open > 0 GROUP BY symbol_id")
     List<LastItem> findLastOpenDates();
 
     @Query(nativeQuery = true, value = "SELECT i.* FROM item i INNER JOIN symbol s ON i.symbol_id=s.id WHERE s.ib_conid IS NOT NULL AND i.version=?1 ORDER BY date ASC, symbol_id ASC")
