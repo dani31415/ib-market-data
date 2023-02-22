@@ -5,6 +5,7 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
@@ -39,6 +40,8 @@ public class UpdateDailyData implements Runnable {
     @Autowired
     PeriodOperations periodOperations;
 
+    HashMap<Integer, LocalDate> lastOpenItemsBySymbolId;
+
     public void run() {
         try {
             runWithException();
@@ -47,9 +50,20 @@ public class UpdateDailyData implements Runnable {
         }
     }
 
+    private void loadOpenItemsBySymbolId() {
+        List<LastItem> lastOpenItems = itemRepository.findLastOpenDates();
+        lastOpenItemsBySymbolId = new HashMap<>();
+
+        for(LastItem lastItem : lastOpenItems) {
+            lastOpenItemsBySymbolId.put(lastItem.getSymbolId(), lastItem.getDate());
+        }
+    }
+
     private void runWithException() throws Exception {
         // Stops quickly if there is no access to ib
         api.reauthenticateHelper();
+
+        loadOpenItemsBySymbolId();
 
         List<LastItem> lastItems = itemRepository.findMaxDateGroupBySymbol();
         LocalDate now = LocalDate.now();
@@ -169,19 +183,37 @@ public class UpdateDailyData implements Runnable {
         return symbol;
     }
 
+    private boolean isItemDataUsed(Item item) {
+        // An item is used whenever has open value
+        LocalDate lastOpenDate = lastOpenItemsBySymbolId.get(item.symbolId);
+        if (lastOpenDate == null) {
+            // Symbol had never open value, so was never used for sure
+            return false;
+        }
+        if (item.date.isBefore(lastOpenDate)) { // item.date < lastOpenDate
+            return true;
+        }
+        return false;
+    }
+
+    private Item getLastItem(Item item) {
+        ItemId itemId = new ItemId();
+        itemId.date = item.date;
+        itemId.symbolId = item.symbolId;
+        itemId.version = item.version;
+        Optional<Item> optionalLastItem = itemRepository.findById(itemId);
+        if (optionalLastItem.isPresent()) {
+            return optionalLastItem.get();
+        }
+        return null;
+    }
+
     private int saveResult(HistoryResult historyResult, int symbolId) throws Exception {
         int counter = 0;
         for (HistoryResultData data : historyResult.data) {
             LocalDateTime date = data.getT();
-            // java.sql.Date sqlDate = new java.sql.Date(date.getYear(), date.getMonth(), date.getDate());
-            // log("Saving id=" + symbolId + " and date " + sqlDate);
-            ItemId id = new ItemId();
-            id.symbolId = symbolId;
-            id.date = date.toLocalDate();
 
             Item item = new Item();
-
-            // Keep some data
             item.symbolId = symbolId;
             item.open = data.o;
             item.close = data.c;
@@ -189,48 +221,34 @@ public class UpdateDailyData implements Runnable {
             item.low = data.l;
             item.volume = 100*data.v;
             item.date = date.toLocalDate();
-            Iterable<Item> existingItems = itemRepository.findAllBySymbolIdAndDate(symbolId, date.toLocalDate());
-            boolean save = true;
 
-            Item staggingItem = null;
-            Item lastItem = null;
-
-            for (Item existingItem : existingItems) {
-                if (existingItem.stagging) {
-                    staggingItem = existingItem;
-                } else {
-                    lastItem = existingItem; // assuming only 0 or 1
-                }
+            if (isItemDataUsed(item)) {
+                // Let's save data as new version.
+                // Data was used for actual inference so we save as new version
+                // in order to be able to make future simulations under
+                // the same conditions.
+                item.version = 1;
+            } else {
+                item.version = 0;
             }
-
-            if (staggingItem != null) {
-                item.sincePreOpen = staggingItem.sincePreOpen;
-                item.version = staggingItem.version; // 0 or 1
-                item.open = staggingItem.open;
+    
+            Item lastItem = getLastItem(item);
+    
+            boolean save = true;
+            if (lastItem != null) {
                 if (
-                    item.open == staggingItem.open &&
-                    item.close == staggingItem.close &&
-                    item.high == staggingItem.high &&
-                    item.low == staggingItem.low &&
-                    item.volume == staggingItem.volume
+                    item.close == lastItem.close &&
+                    item.high == lastItem.high &&
+                    item.low == lastItem.low &&
+                    item.volume == lastItem.volume
                 ) {
                     // Existing record has same data, do not save
                     save = false;
+                } else {
+                    // Keep some data
+                    item.sincePreOpen = lastItem.sincePreOpen;
+                    item.open = lastItem.open;
                 }
-            } else {
-                if (lastItem != null) {
-                    if (
-                        item.open == lastItem.open &&
-                        item.close == lastItem.close &&
-                        item.high == lastItem.high &&
-                        item.low == lastItem.low &&
-                        item.volume == lastItem.volume
-                    ) {
-                        // Existing record has same data, do not save
-                        save = false;
-                    }
-                }
-                item.version = 1;
             }
 
             if (save) {
