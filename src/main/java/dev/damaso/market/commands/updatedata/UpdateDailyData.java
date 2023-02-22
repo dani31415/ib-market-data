@@ -208,6 +208,18 @@ public class UpdateDailyData implements Runnable {
         return null;
     }
 
+    private Item getVersionedItem(Item item, int version) {
+        ItemId itemId = new ItemId();
+        itemId.date = item.date;
+        itemId.symbolId = item.symbolId;
+        itemId.version = version;
+        Optional<Item> optionalLastItem = itemRepository.findById(itemId);
+        if (optionalLastItem.isPresent()) {
+            return optionalLastItem.get();
+        }
+        return null;
+    }
+
     private int saveResult(HistoryResult historyResult, int symbolId) throws Exception {
         int counter = 0;
         for (HistoryResultData data : historyResult.data) {
@@ -231,10 +243,25 @@ public class UpdateDailyData implements Runnable {
             } else {
                 item.version = 0;
             }
-    
-            Item lastItem = getLastItem(item);
-    
+
             boolean save = true;
+
+            Item lastItem = getLastItem(item);
+            if (lastItem == null && item.version == 1) {
+                // Avoid create a new item
+                Item version0Item = getVersionedItem(item, 0);
+                if (version0Item != null) {
+                    if (
+                        item.close == version0Item.close &&
+                        item.high == version0Item.high &&
+                        item.low == version0Item.low &&
+                        item.volume == version0Item.volume
+                    ) {
+                        save = false;
+                    }
+                }
+            }
+    
             if (lastItem != null) {
                 if (
                     item.close == lastItem.close &&
