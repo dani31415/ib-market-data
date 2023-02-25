@@ -146,8 +146,9 @@ public class Queries {
             dateOrders.put(dates.get(i), i);
         }
 
-        float [] fs = new float[4*symbols.size()*dates.size()];
-        for (int i = 0; i < fs.length; i += 4) {
+        int dim = 5;
+        float [] fs = new float[dim*symbols.size()*dates.size()];
+        for (int i = 0; i < fs.length; i += dim) {
             fs[i+3] = Float.NaN;
         }
 
@@ -167,21 +168,22 @@ public class Queries {
         for (Item item : iterableItem) {
             int symbolOrder = symbolOrders.get(item.symbolId);
             int dateOrder = dateOrders.get(item.date);
-            int i = (symbolOrder * dates.size() +dateOrder) * 4;
+            int i = (symbolOrder * dates.size() +dateOrder) * dim;
             fs[i] = item.open;
             fs[i+1] = item.close;
             fs[i+2] = item.volume<1?0:(float)Math.log(item.volume);
             fs[i+3] = item.sincePreOpen == null ? Float.NaN : item.sincePreOpen.floatValue();
+            fs[i+4] = item.low;
         }
  
         if (interpolate!=null && interpolate.booleanValue()) {
             for (int i = 0; i < symbols.size(); i++) {
-                interpolate(fs, i, dates.size(), 0);
-                interpolate(fs, i, dates.size(), 1);
+                interpolate(fs, dim, i, dates.size(), 0);
+                interpolate(fs, dim, i, dates.size(), 1);
             }
         }
 
-        int [] shape = {symbols.size(), dates.size(), 4};
+        int [] shape = {symbols.size(), dates.size(), dim};
         Path path = new File("data.npy").toPath();
         NpyFile.write(path, fs, shape);
         byte [] bs = Files.readAllBytes(path);
@@ -194,19 +196,19 @@ public class Queries {
         return minuteItemRepository.findAll();
     }
 
-    private void interpolate(float [] fs, int symbolOrder, int dateSize, int field) {
+    private void interpolate(float [] fs, int dim, int symbolOrder, int dateSize, int field) {
         int lastZero = -1;
 
         for (int i = 0; i < dateSize; i++) {
-            int iIdx = 4 * (symbolOrder * dateSize + i) + field;
+            int iIdx = dim * (symbolOrder * dateSize + i) + field;
             if (fs[iIdx]==0 && i>0) {
                 if (lastZero<0) lastZero = i-1;
             } else if (lastZero>=0) {
                 // Interpolate from lastZero to i
                 if (lastZero>0) {
                     for (int j=lastZero+1; j < i; j++) {
-                        int jIdx = 4 * (symbolOrder * dateSize + j) + field;
-                        int lastZeroIdx = 4 * (symbolOrder * dateSize + lastZero) + field;
+                        int jIdx = dim * (symbolOrder * dateSize + j) + field;
+                        int lastZeroIdx = dim * (symbolOrder * dateSize + lastZero) + field;
                         fs[jIdx] = fs[lastZeroIdx] + (fs[iIdx] - fs[lastZeroIdx]) * (j-lastZero) / (i-lastZero);
                     }
                 }
