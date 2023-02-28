@@ -22,6 +22,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import dev.damaso.market.entities.Item;
 import dev.damaso.market.entities.MinuteItem;
+import dev.damaso.market.entities.MinuteItemBase;
 import dev.damaso.market.entities.Period;
 import dev.damaso.market.entities.Symbol;
 import dev.damaso.market.repositories.ItemRepository;
@@ -63,6 +64,21 @@ public class Items {
             }
             symbolItems.add(minuteItem);
             previousSymbolId = minuteItem.symbolId;
+        }
+        return result;
+    }
+
+    private Map<Integer, List<MinuteItemBase>> groupBaseBySymbol(Iterable<MinuteItemBase> minuteItems) {
+        Map<Integer, List<MinuteItemBase>> result = new TreeMap<>();
+        Integer previousSymbolId = null;
+        List<MinuteItemBase> symbolItems = null;
+        for (MinuteItemBase minuteItem : minuteItems) {
+            if (previousSymbolId == null || previousSymbolId != minuteItem.getSymbolId()) {
+                symbolItems = new Vector<>();
+                result.put(minuteItem.getSymbolId(), symbolItems);
+            }
+            symbolItems.add(minuteItem);
+            previousSymbolId = minuteItem.getSymbolId();
         }
         return result;
     }
@@ -193,6 +209,52 @@ public class Items {
         }
 
         int [] shape = {nSymbols, 420, 2};
+        Path path = new File("rawminute.npy").toPath();
+        NpyFile.write(path, fs, shape);
+        byte [] bs = Files.readAllBytes(path);
+        System.out.println("Returning: " + bs.length + "bytes");
+        return bs;
+    }
+
+    @GetMapping("/ib/rawitems/minute2")
+    public byte [] raw10MinuteItems(@RequestParam int period, @RequestParam(required=false) Integer minute_group) throws Exception {
+        Optional<Period> optionalPeriod = periodRepository.findById(period);
+        if (!optionalPeriod.isPresent()) {
+            throw new ResponseStatusException(
+                HttpStatus.NOT_FOUND, "Not found."
+            );
+        }
+
+        LocalDate date = optionalPeriod.get().date;
+        if (minute_group == null) {
+            minute_group = 1;
+        }
+        int n_groups_per_day = 420 / minute_group;
+        Iterable<MinuteItemBase> allMinuteItems = minuteItemRepository.findByDateGroupByMinute(date, minute_group);
+        Map<Integer, List<MinuteItemBase>> symbolItems = groupBaseBySymbol(allMinuteItems);
+
+        List<Symbol> symbols = new Vector<Symbol>();
+        this.symbolRepository.findAll().forEach(symbols::add);
+
+        // List<Symbol> symbols = this.getSymbols();
+        int nSymbols = symbols.size();
+        int n = 1;
+        float fs[] = new float[nSymbols * n_groups_per_day * n];
+
+        for (int i = 0; i < symbols.size(); i++) {
+            Symbol symbol = symbols.get(i);
+            List<MinuteItemBase> minuteItems = symbolItems.get(symbol.id);
+            if (minuteItems != null) {
+                for (MinuteItemBase minuteItem : minuteItems) {
+                    int j = minuteItem.getMinute() / minute_group;
+                    if (0 <= j && j < n_groups_per_day) {
+                        fs[n * n_groups_per_day * i + n * j] = minuteItem.getOpen();
+                    }
+                }
+            }
+        }
+
+        int [] shape = {nSymbols, n_groups_per_day, n};
         Path path = new File("rawminute.npy").toPath();
         NpyFile.write(path, fs, shape);
         byte [] bs = Files.readAllBytes(path);
