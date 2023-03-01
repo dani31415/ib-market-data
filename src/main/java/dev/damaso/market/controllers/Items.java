@@ -128,7 +128,7 @@ public class Items {
     }
 
     private List<Symbol> getSymbols() {
-        Iterable<Symbol> iterableSymbols = symbolRepository.findAllIB();
+        Iterable<Symbol> iterableSymbols = symbolRepository.findAll();
         List<Symbol> symbols = new Vector<>();
         for (Symbol symbol : iterableSymbols) {
             symbols.add(symbol);
@@ -234,8 +234,7 @@ public class Items {
         Map<Integer, List<MinuteItemBase>> symbolItems = groupBaseBySymbol(allMinuteItems);
 
         List<Symbol> symbols = new Vector<Symbol>();
-        // this.symbolRepository.findAll().forEach(symbols::add);
-        this.symbolRepository.findAllIB().forEach(symbols::add);
+        this.symbolRepository.findAll().forEach(symbols::add);
 
         // List<Symbol> symbols = this.getSymbols();
         int nSymbols = symbols.size();

@@ -101,7 +101,7 @@ public class Queries {
 
     @GetMapping("/ib/symbols")
 	public Iterable<Symbol> allSymbolsIB() {
-		Iterable<Symbol> iterable = symbolRepository.findAllIB();
+		Iterable<Symbol> iterable = symbolRepository.findAll();
 		return iterable;
 	}
 
@@ -118,7 +118,7 @@ public class Queries {
             throw new Exception("Only one 'to' or 'from' parameter can be set.");
         }
 
-        Iterable<Symbol> iterableSymbols = symbolRepository.findAllIB();
+        Iterable<Symbol> iterableSymbols = symbolRepository.findAll();
         List<Symbol> symbols = new ArrayList<Symbol>();
         iterableSymbols.forEach(symbols::add);
         Map<Integer, Integer> symbolOrders = new HashMap<>();
