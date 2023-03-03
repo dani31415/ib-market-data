@@ -46,11 +46,12 @@ public class FixData {
         ItemId itemId = new ItemId();
         itemId.date = date;
         itemId.symbolId = symbol.id;
+        itemId.version = 0;
         Optional<Item> optionalItem = itemRepository.findById(itemId);
         if (optionalItem.isPresent()) {
             Item item = optionalItem.get();
             item.sincePreOpen = openMinute;
-            // itemRepository.save(item);
+            itemRepository.save(item);
             System.out.println("Fix " + symbol.shortName + ", " + symbol.id + " at " + date + " minute " + openMinute);
         }
     }
