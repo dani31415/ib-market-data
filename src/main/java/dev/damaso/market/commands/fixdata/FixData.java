@@ -1,7 +1,6 @@
 package dev.damaso.market.commands.fixdata;
 
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,10 +30,11 @@ public class FixData {
     Api api;
 
     public void run() throws Exception {
+        LocalDate localDate = LocalDate.parse("2023-03-02");
         Iterable<Symbol> iterableSymbol = symbolRepository.findAll();
         for (Symbol symbol : iterableSymbol) {
             if (!symbol.disabled && symbol.ib_conid != null) {
-                fixSymbol(symbol);
+                fixSymbol(symbol, localDate);
             }
         }
     }
@@ -50,21 +50,18 @@ public class FixData {
         if (optionalItem.isPresent()) {
             Item item = optionalItem.get();
             item.sincePreOpen = openMinute;
-            itemRepository.save(item);
-            // System.out.println("Fix " + symbol.shortName + ", " + symbol.id + " at " + date + " minute " + openMinute);
+            // itemRepository.save(item);
+            System.out.println("Fix " + symbol.shortName + ", " + symbol.id + " at " + date + " minute " + openMinute);
         }
     }
 
-    public void fixSymbol(Symbol symbol) {
+    public void fixSymbol(Symbol symbol, LocalDate localDate) {
         if (symbol.createdAt == null & symbol.updatedAt == null) {
             // Old symbols are okay
             return;
         }
-        // if (symbol.id != 5982) {
-        //     return;
-        // }
         System.out.println("Fix " + symbol.shortName + ", " + symbol.id);
-        List<MinuteItem> items = minuteItemRepository.findBySymbolId(symbol.id);
+        Iterable<MinuteItem> items = minuteItemRepository.findBySymbolIdAndDate(symbol.id, localDate);
         LocalDate previousDate = null;
         Integer openMinute = null;
         for (MinuteItem item : items) {
@@ -76,7 +73,16 @@ public class FixData {
                 openMinute = null;
             }
             if (openMinute == null || item.minute <= 30) {
-                openMinute = item.minute;
+                // 31 to be consistent with snapshot
+                openMinute = 31;
+            }
+            if (openMinute == null || item.minute <= 60) {
+                // 61 to be consistent with snapshot
+                openMinute = 61;
+            }
+            if (openMinute == null || item.minute <= 90) {
+                // 91 to be consistent with snapshot
+                openMinute = 91;
             }
             previousDate = item.date;
             // System.out.println(item.date + " " + item.minute);

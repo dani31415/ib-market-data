@@ -227,6 +227,7 @@ public class Snapshot {
             1, // second extra so between(9:00:01, 9:30:00) = 29 (29 + 1 = 30). See return
             0,
             ZoneId.of("America/New_York"));
+        // Between returns completed minutes (floor)
         long minutes = ChronoUnit.MINUTES.between(zdtOpen, zdtNow);
         return (int)minutes + 1;
     }
