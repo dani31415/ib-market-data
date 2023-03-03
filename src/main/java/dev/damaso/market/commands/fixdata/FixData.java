@@ -57,10 +57,10 @@ public class FixData {
     }
 
     public void fixSymbol(Symbol symbol, LocalDate localDate) {
-        if (symbol.createdAt == null & symbol.updatedAt == null) {
-            // Old symbols are okay
-            return;
-        }
+        // if (symbol.createdAt == null & symbol.updatedAt == null) {
+        //     // Old symbols are okay
+        //     return;
+        // }
         // System.out.println("Fix " + symbol.shortName + ", " + symbol.id);
         Iterable<MinuteItem> items = minuteItemRepository.findBySymbolIdAndDate(symbol.id, localDate);
         LocalDate previousDate = null;
