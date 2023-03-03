@@ -60,7 +60,7 @@ public class FixData {
             // Old symbols are okay
             return;
         }
-        System.out.println("Fix " + symbol.shortName + ", " + symbol.id);
+        // System.out.println("Fix " + symbol.shortName + ", " + symbol.id);
         Iterable<MinuteItem> items = minuteItemRepository.findBySymbolIdAndDate(symbol.id, localDate);
         LocalDate previousDate = null;
         Integer openMinute = null;
@@ -72,15 +72,15 @@ public class FixData {
                 // System.out.println(item.date + ", " + item.minute);
                 openMinute = null;
             }
-            if (openMinute == null || item.minute <= 30) {
+            if (openMinute == null && item.minute <= 30) {
                 // 31 to be consistent with snapshot
                 openMinute = 31;
             }
-            if (openMinute == null || item.minute <= 60) {
+            if (openMinute == null && item.minute <= 60) {
                 // 61 to be consistent with snapshot
                 openMinute = 61;
             }
-            if (openMinute == null || item.minute <= 90) {
+            if (openMinute == null && item.minute <= 90) {
                 // 91 to be consistent with snapshot
                 openMinute = 91;
             }
