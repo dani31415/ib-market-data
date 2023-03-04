@@ -35,7 +35,7 @@ public class FixData {
     public void run() throws Exception {
         LocalDate from = LocalDate.parse("2021-01-01");
         LocalDate to = LocalDate.parse("2022-01-01");
-        ExecutorService executor = Executors.newFixedThreadPool(5);
+        ExecutorService executor = Executors.newFixedThreadPool(10);
         Iterable<Symbol> iterableSymbol = symbolRepository.findAll();
         for (Symbol symbol : iterableSymbol) {
             if (!symbol.disabled && symbol.ib_conid != null) {
