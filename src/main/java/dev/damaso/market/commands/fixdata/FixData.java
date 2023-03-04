@@ -2,6 +2,9 @@ package dev.damaso.market.commands.fixdata;
 
 import java.time.LocalDate;
 import java.util.Optional;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -32,12 +35,18 @@ public class FixData {
     public void run() throws Exception {
         LocalDate from = LocalDate.parse("2021-01-01");
         LocalDate to = LocalDate.parse("2022-01-01");
+        ExecutorService executor = Executors.newFixedThreadPool(5);
         Iterable<Symbol> iterableSymbol = symbolRepository.findAll();
         for (Symbol symbol : iterableSymbol) {
             if (!symbol.disabled && symbol.ib_conid != null) {
-                fixSymbol(symbol, from, to);
+                executor.submit( () -> {
+                    fixSymbol(symbol, from, to);
+                });
             }
         }
+        System.out.println("Waiting for persistence termination...");
+        executor.shutdown();
+        executor.awaitTermination(600, TimeUnit.SECONDS);
     }
 
     int saveOpenDate(Symbol symbol, LocalDate date, Integer openMinute) {
