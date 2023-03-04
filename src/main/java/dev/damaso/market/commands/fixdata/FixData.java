@@ -40,9 +40,9 @@ public class FixData {
         }
     }
 
-    void saveOpenDate(Symbol symbol, LocalDate date, Integer openMinute) {
+    int saveOpenDate(Symbol symbol, LocalDate date, Integer openMinute) {
         if (openMinute == null) {
-            return;
+            return 0;
         }
         ItemId itemId = new ItemId();
         itemId.date = date;
@@ -54,17 +54,16 @@ public class FixData {
             if (item.sincePreOpen != openMinute) {
                 item.sincePreOpen = openMinute;
                 itemRepository.save(item);
-                System.out.println("Fix " + symbol.shortName + ", " + symbol.id + " at " + date + " minute " + openMinute);
+                // System.out.println("Fix " + symbol.shortName + ", " + symbol.id + " at " + date + " minute " + openMinute);
+                return 1;
             }
         }
+        return 0;
     }
 
     public void fixSymbol(Symbol symbol, LocalDate from, LocalDate to) {
-        if (symbol.createdAt == null & symbol.updatedAt == null) {
-            // Old symbols are okay
-            return;
-        }
-        // System.out.println("Fix " + symbol.shortName + ", " + symbol.id);
+        System.out.println("Fix " + symbol.shortName + ", " + symbol.id);
+        int counter = 0;
         Iterable<MinuteItem> items = 
           minuteItemRepository.findBySymbolIdAndDateRange(symbol.id, from, to);
         LocalDate previousDate = null;
@@ -93,7 +92,8 @@ public class FixData {
             // System.out.println(item.date + " " + item.minute);
         }
         if (previousDate != null) {
-            saveOpenDate(symbol, previousDate, openMinute);
+            counter += saveOpenDate(symbol, previousDate, openMinute);
         }
+        System.out.println("Updated " + counter);
     }
 }
