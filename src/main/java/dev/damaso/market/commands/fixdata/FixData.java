@@ -71,7 +71,7 @@ public class FixData {
         for (MinuteItem item : items) {
             if (!item.date.equals(previousDate)) {
                 if (previousDate != null) {
-                    saveOpenDate(symbol, previousDate, openMinute);
+                    counter += saveOpenDate(symbol, previousDate, openMinute);
                 }
                 // System.out.println(item.date + ", " + item.minute);
                 openMinute = null;
