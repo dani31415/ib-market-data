@@ -25,6 +25,9 @@ public interface MinuteItemRepository extends CrudRepository<MinuteItem, MinuteI
     @Query("SELECT mi FROM MinuteItem mi WHERE symbolId=?1 AND date=?2 ORDER BY minute ASC")
     Iterable<MinuteItem> findBySymbolIdAndDate(int symbolId, LocalDate date);
 
+    @Query("SELECT mi FROM MinuteItem mi WHERE symbolId=?1 AND date>=?2 AND date<?3 ORDER BY date ASC, minute ASC")
+    Iterable<MinuteItem> findBySymbolIdAndDateRange(int symbolId, LocalDate from, LocalDate to);
+
     @Query(nativeQuery = true, value = """
     SELECT ot.open AS open, ct.close AS close, h AS high, l AS low, T.minute_group as minute, T.symbol_id as symbolId FROM (
         SELECT MIN(minute) AS o, MAX(minute) AS c, MAX(high) as h, MIN(low) as l, ?2*FLOOR(minute/?2) AS minute_group, symbol_id, date 
