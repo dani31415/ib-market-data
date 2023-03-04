@@ -30,11 +30,12 @@ public class FixData {
     Api api;
 
     public void run() throws Exception {
-        LocalDate localDate = LocalDate.parse("2023-03-02");
+        LocalDate from = LocalDate.parse("2021-01-01");
+        LocalDate to = LocalDate.parse("2022-01-01");
         Iterable<Symbol> iterableSymbol = symbolRepository.findAll();
         for (Symbol symbol : iterableSymbol) {
             if (!symbol.disabled && symbol.ib_conid != null) {
-                fixSymbol(symbol, localDate);
+                fixSymbol(symbol, from, to);
             }
         }
     }
@@ -50,19 +51,22 @@ public class FixData {
         Optional<Item> optionalItem = itemRepository.findById(itemId);
         if (optionalItem.isPresent()) {
             Item item = optionalItem.get();
-            item.sincePreOpen = openMinute;
-            itemRepository.save(item);
-            System.out.println("Fix " + symbol.shortName + ", " + symbol.id + " at " + date + " minute " + openMinute);
+            if (item.sincePreOpen != openMinute) {
+                item.sincePreOpen = openMinute;
+                itemRepository.save(item);
+                System.out.println("Fix " + symbol.shortName + ", " + symbol.id + " at " + date + " minute " + openMinute);
+            }
         }
     }
 
-    public void fixSymbol(Symbol symbol, LocalDate localDate) {
+    public void fixSymbol(Symbol symbol, LocalDate from, LocalDate to) {
         if (symbol.createdAt == null & symbol.updatedAt == null) {
             // Old symbols are okay
             return;
         }
         // System.out.println("Fix " + symbol.shortName + ", " + symbol.id);
-        Iterable<MinuteItem> items = minuteItemRepository.findBySymbolIdAndDate(symbol.id, localDate);
+        Iterable<MinuteItem> items = 
+          minuteItemRepository.findBySymbolIdAndDateRange(symbol.id, from, to);
         LocalDate previousDate = null;
         Integer openMinute = null;
         for (MinuteItem item : items) {
