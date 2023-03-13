@@ -99,7 +99,7 @@ public class UpdateDailyData implements Runnable {
                 log(ex.getClass().getPackageName());
                 log(ex.getMessage());
                 String message = ex.getMessage();
-                if (message.contains("Read timed out")) {
+                if (message.contains("timed out")) {
                     // cotinue
                 } else {
                     throw ex;
