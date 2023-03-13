@@ -75,7 +75,7 @@ public class UpdateDailyData implements Runnable {
                     LocalDate date = lastItem.getDate();
                     long days;
                     if (date == null) {
-                        days = 4000;
+                        days = 1800; // No longer than current database stored days
                     } else {
                         days = getDays(date, now) + 5;
                     }
