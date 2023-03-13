@@ -35,7 +35,7 @@ public class ApiImplementation implements Api {
     @Autowired
     RestTemplateConfiguration restTemplateConfiguration;
 
-    @Retryable(value = Throwable.class, exceptionExpression = "#{message.contains('Read timed out')}")
+    @Retryable(value = Throwable.class, exceptionExpression = "#{message.contains('timed out')}")
     @Override
     public SearchResult[] iserverSecdefSearch(String symbol) {
         RestTemplate restTemplate0 = restTemplateConfiguration.getRestTemplate();
@@ -78,7 +78,7 @@ public class ApiImplementation implements Api {
         return authStatusResult;
     }
 
-    @Retryable(value = Throwable.class, exceptionExpression = "#{message.contains('Read timed out')}")
+    @Retryable(value = Throwable.class, exceptionExpression = "#{message.contains('timed out')}")
     @Override
     public HistoryResult iserverMarketdataHistory(String conid, String period, String bar) {
         RestTemplate restTemplate0 = restTemplateConfiguration.getRestTemplate();
@@ -129,7 +129,7 @@ public class ApiImplementation implements Api {
         System.out.println(response.getBody());
     }
 
-    @Retryable(value = Throwable.class, exceptionExpression = "#{message.contains('Read timed out')}")
+    @Retryable(value = Throwable.class, exceptionExpression = "#{message.contains('timed out')}")
     @Override
     public void reauthenticateHelper() {
         boolean authenticated;
@@ -174,7 +174,7 @@ public class ApiImplementation implements Api {
         return authStatusResult.authenticated;
     }
 
-    @Retryable(value = Throwable.class, exceptionExpression = "#{message.contains('Read timed out')}")
+    @Retryable(value = Throwable.class, exceptionExpression = "#{message.contains('timed out')}")
     public MarketdataSnapshotResult[] iserverMarketdataSnapshot(List<String> conids) {
         String strConids = String.join(",", conids);
         String url = "%s/v1/api/iserver/marketdata/snapshot?fields=31,84,85,86,88,7295&conids=%s".formatted(baseUrl, strConids);
@@ -182,7 +182,7 @@ public class ApiImplementation implements Api {
         return response.getBody();
     }
 
-    @Retryable(value = Throwable.class, exceptionExpression = "#{message.contains('Read timed out')}")
+    @Retryable(value = Throwable.class, exceptionExpression = "#{message.contains('timed out')}")
     public void iserverMarketdataUnsubscribeall() {
         String url = "%s/v1/api/iserver/marketdata/unsubscribeall".formatted(baseUrl);
         restTemplate.getForEntity(url, Void.class);
@@ -229,7 +229,7 @@ public class ApiImplementation implements Api {
         return true;
     }
 
-    @Retryable(value = Throwable.class, exceptionExpression = "#{message.contains('Read timed out')}")
+    @Retryable(value = Throwable.class, exceptionExpression = "#{message.contains('timed out')}")
     public boolean nasdaqIsOpen() {
         // Check day
         LocalDate localDate = LocalDate.now(ZoneId.of("America/New_York"));
