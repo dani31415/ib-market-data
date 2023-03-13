@@ -8,8 +8,11 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.xml.Jaxb2RootElementHttpMessageConverter;
+import org.springframework.retry.annotation.EnableRetry;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -17,6 +20,7 @@ import dev.damaso.market.external.eoddata.EoddataApi;
 import dev.damaso.market.external.eoddata.EodQuote;
 import dev.damaso.market.external.eoddata.EodSymbol;
 
+@EnableRetry
 @Service
 public class EoddataApiImplementation implements EoddataApi {
     @Autowired
@@ -34,7 +38,12 @@ public class EoddataApiImplementation implements EoddataApi {
     private RestTemplate createXMLRestTemplate() {
         ArrayList<HttpMessageConverter<?>> messageConverters = new ArrayList<HttpMessageConverter<?>>();
         messageConverters.add(new Jaxb2RootElementHttpMessageConverter());
-        RestTemplate restTemplate = new RestTemplate();
+
+        HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory();
+        requestFactory.setConnectTimeout(10000);
+        requestFactory.setReadTimeout(10000);
+        requestFactory.setConnectionRequestTimeout(10000);
+        RestTemplate restTemplate = new RestTemplate(requestFactory);
         restTemplate.setMessageConverters(messageConverters);
         return restTemplate;
     }
@@ -69,6 +78,7 @@ public class EoddataApiImplementation implements EoddataApi {
         return quotes;
     }
 
+    @Retryable(value = Throwable.class, exceptionExpression = "#{message.contains('timed out')}")
     @Override
     public List<EodQuote> quotes(LocalDate from, LocalDate to, String symbol) {
         String token = this.getToken();
