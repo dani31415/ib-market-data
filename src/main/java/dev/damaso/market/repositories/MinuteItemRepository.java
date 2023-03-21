@@ -13,7 +13,12 @@ import dev.damaso.market.entities.MinuteItemId;
 
 public interface MinuteItemRepository extends CrudRepository<MinuteItem, MinuteItemId> {
     // Exclude snapshot data since it is incomplete
-    @Query(nativeQuery = true, value = "SELECT s.id AS symbolId, max(i.date) AS date FROM symbol s LEFT JOIN minute_item i ON i.symbol_id=s.id and i.source!=2 WHERE s.ib_conid is not null group BY s.id")
+    @Query(nativeQuery = true, value = """
+        SELECT s.id AS symbolId, T.date AS date FROM 
+            (SELECT symbol_id, max(date) AS date FROM market.minute_item GROUP BY symbol_id) AS T
+        RIGHT JOIN symbol s ON T.symbol_id=s.id 
+        WHERE s.ib_conid IS NOT NULL
+    """)
     List<LastItem> findMaxDateGroupBySymbol();
 
     @Query("SELECT mi FROM MinuteItem mi WHERE symbolId=?1 ORDER BY date ASC, minute ASC")
