@@ -68,7 +68,12 @@ public class UpdateMinuteData implements Runnable {
                     } else {
                         from = LocalDate.now().plusDays(-5); // some days
                     }
-                    List<EodQuote> quotes = eoddataApi.quotes(from, to, symbol.shortName);
+                    List<EodQuote> quotes;
+                    try {
+                        quotes = eoddataApi.quotes(from, to, symbol.shortName);
+                    } catch (Throwable th) {
+                        throw new Error("Failed order for " + from + ", " + to + ", " + symbol.shortName, th);
+                    }
                     if (quotes != null) {
                         FileOutputStream fos = new FileOutputStream("/var/lib/mysql-files/market.txt");
                         BufferedOutputStream bos = new BufferedOutputStream(fos);
