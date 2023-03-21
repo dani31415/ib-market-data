@@ -1,5 +1,7 @@
 package dev.damaso.market.commands.pingservices;
 
+import java.time.LocalDate;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -27,5 +29,8 @@ public class PingServices {
 
         // EOD
         eoddataApi.symbolList();
+        LocalDate from = LocalDate.parse("2023-03-20");
+        LocalDate to = LocalDate.parse("2023-03-21");
+        eoddataApi.quotes(from, to, "APPL");
     }
 }
