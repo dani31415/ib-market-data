@@ -146,7 +146,7 @@ public class Queries {
             dateOrders.put(dates.get(i), i);
         }
 
-        int dim = 5;
+        int dim = 6;
         float [] fs = new float[dim*symbols.size()*dates.size()];
         for (int i = 0; i < fs.length; i += dim) {
             fs[i+3] = Float.NaN;
@@ -174,6 +174,7 @@ public class Queries {
             fs[i+2] = item.volume<1?0:(float)Math.log(item.volume);
             fs[i+3] = item.sincePreOpen == null ? Float.NaN : item.sincePreOpen.floatValue();
             fs[i+4] = item.low;
+            fs[i+5] = item.high;
         }
  
         if (interpolate!=null && interpolate.booleanValue()) {
