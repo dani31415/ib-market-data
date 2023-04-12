@@ -8,7 +8,10 @@ import java.sql.Connection;
 import java.sql.Statement;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import javax.sql.DataSource;
@@ -53,28 +56,58 @@ public class UpdateMinuteData implements Runnable {
     private void runWithException() throws Exception {
         connection = this.dataSource.getConnection();
 
+        log("Getting last update date...");
         List<LastItem> lastItems = minuteItemRepository.findMaxDateGroupBySymbol();
-        
+        log("Done");
+
+        log("Getting EOD token...");
+        if (eoddataApi.getToken() == null) {
+            throw new Exception("Failed token");
+        }
+        log("Done");
+
         LocalDate to = LocalDate.now();
 
+        // Modify the "to" date to discard non yet available data
+        LocalDateTime time = LocalDateTime.now(ZoneId.of("America/New_York"));
+        int minute = time.getHour() * 60 + time.getMinute();
+        if (minute < 16 * 60 + 5) {
+            to = to.plusDays(-1);
+        }
+        log("Getting data up to (inclusive) " + to.toString());
+
+        // Get all symbols at once
+        Map<Integer, Symbol> symbolCache = new HashMap<>();
         for (LastItem lastItem: lastItems) {
             Optional<Symbol> optionalSymbol = symbolRepository.findById(lastItem.getSymbolId());
             if (optionalSymbol.isPresent()) {
-                Symbol symbol = optionalSymbol.get();
+                symbolCache.put(lastItem.getSymbolId(), optionalSymbol.get());
+            }
+        }
+
+        for (LastItem lastItem: lastItems) {
+            Symbol symbol = symbolCache.get(lastItem.getSymbolId());
+            if (symbol != null) {
                 if (!symbol.disabled && symbol.ib_conid != null) {
                     LocalDate from;
                     if (lastItem.getDate() != null) {
                         from = lastItem.getDate();
+                        from = from.plusDays(1); // next day
                     } else {
                         from = LocalDate.now().plusDays(-5); // some days
                     }
+                    // Optimization to avoid a call to eod when there is no need
+                    if (from.compareTo(to) >= 0) {
+                        continue;
+                    }
                     List<EodQuote> quotes;
                     try {
+                        log("Getting quotes for symbol %s (%d) from %s to %s...".formatted(symbol.shortName, symbol.id, from.toString(), to.toString()));
                         quotes = eoddataApi.quotes(from, to, symbol.shortName);
                     } catch (Throwable th) {
                         throw new Error("Failed order for " + from + ", " + to + ", " + symbol.shortName, th);
                     }
-                    if (quotes != null) {
+                    if (quotes != null && quotes.size()>0) {
                         FileOutputStream fos = new FileOutputStream("/var/lib/mysql-files/market.txt");
                         BufferedOutputStream bos = new BufferedOutputStream(fos);
                         Writer writer = new OutputStreamWriter(bos);

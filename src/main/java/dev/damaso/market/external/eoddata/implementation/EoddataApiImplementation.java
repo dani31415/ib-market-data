@@ -48,7 +48,8 @@ public class EoddataApiImplementation implements EoddataApi {
         return restTemplate;
     }
 
-    protected String getToken() {
+    @Override
+    public String getToken() {
         String user = env.getProperty("EODDATA_USER");
         String password = env.getProperty("EODDATA_PASSWORD");
         String url = "%s/data.asmx/Login?Username=%s&Password=%s".formatted(baseUrl, user, password);
