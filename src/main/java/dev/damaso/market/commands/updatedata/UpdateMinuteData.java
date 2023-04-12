@@ -97,7 +97,7 @@ public class UpdateMinuteData implements Runnable {
                         from = LocalDate.now().plusDays(-5); // some days
                     }
                     // Optimization to avoid a call to eod when there is no need
-                    if (from.compareTo(to) >= 0) {
+                    if (from.compareTo(to) > 0) {
                         continue;
                     }
                     List<EodQuote> quotes;
