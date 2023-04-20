@@ -12,7 +12,6 @@ import java.util.Optional;
 import java.util.TreeMap;
 import java.util.Vector;
 
-import org.jetbrains.bio.npy.NpyFile;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -29,6 +28,7 @@ import dev.damaso.market.repositories.ItemRepository;
 import dev.damaso.market.repositories.MinuteItemRepository;
 import dev.damaso.market.repositories.PeriodRepository;
 import dev.damaso.market.repositories.SymbolRepository;
+import dev.damaso.market.utils.NpyBytes;
 
 @RestController
 public class Items {
@@ -170,9 +170,7 @@ public class Items {
         }
 
         int [] shape = {nSymbols, 420};
-        Path path = new File("minute.npy").toPath();
-        NpyFile.write(path, fs, shape);
-        byte [] bs = Files.readAllBytes(path);
+        byte [] bs = NpyBytes.fromArray(fs, shape);
         System.out.println("Returning: " + bs.length + "bytes");
         return bs;
     }
@@ -209,9 +207,7 @@ public class Items {
         }
 
         int [] shape = {nSymbols, 420, 2};
-        Path path = new File("rawminute.npy").toPath();
-        NpyFile.write(path, fs, shape);
-        byte [] bs = Files.readAllBytes(path);
+        byte [] bs = NpyBytes.fromArray(fs, shape);
         System.out.println("Returning: " + bs.length + "bytes");
         return bs;
     }
@@ -255,9 +251,7 @@ public class Items {
         }
 
         int [] shape = {nSymbols, n_groups_per_day, n};
-        Path path = new File("rawminute.npy").toPath();
-        NpyFile.write(path, fs, shape);
-        byte [] bs = Files.readAllBytes(path);
+        byte [] bs = NpyBytes.fromArray(fs, shape);
         System.out.println("Returning: " + bs.length + "bytes");
         return bs;
     }
