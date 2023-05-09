@@ -19,7 +19,6 @@ import javax.sql.DataSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.ResourceAccessException;
 
 import dev.damaso.market.entities.LastItem;
 import dev.damaso.market.entities.MinuteItem;
@@ -163,11 +162,12 @@ public class UpdateMinuteData implements Runnable {
         while (true) {
             try {
                 return eoddataApi.quotes(from, to, shortName);
-            } catch (ResourceAccessException rae) {
-                if (!rae.getMessage().contains("Read timed out") || attempts>10) {
-                    throw new Error("Error", rae);
+            } catch (Throwable th) {
+                if (!th.getMessage().contains("Read timed out") || attempts>10) {
+                    throw new Error("Error", th);
                 }
                 try {
+                    log("Reattempt in 30s...")
                     Thread.sleep(30000);
                 } catch (InterruptedException ex) {
                     throw new Error("Interrupted", ex);
