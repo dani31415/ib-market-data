@@ -19,6 +19,7 @@ import javax.sql.DataSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.ResourceAccessException;
 
 import dev.damaso.market.entities.LastItem;
 import dev.damaso.market.entities.MinuteItem;
@@ -103,7 +104,7 @@ public class UpdateMinuteData implements Runnable {
                     List<EodQuote> quotes;
                     try {
                         log("Getting quotes for symbol %s (%d) from %s to %s...".formatted(symbol.shortName, symbol.id, from.toString(), to.toString()));
-                        quotes = eoddataApi.quotes(from, to, symbol.shortName);
+                        quotes = getQuotesWithReattempts(from, to, symbol.shortName);
                     } catch (Throwable th) {
                         throw new Error("Failed order for " + from + ", " + to + ", " + symbol.shortName, th);
                     }
@@ -153,6 +154,25 @@ public class UpdateMinuteData implements Runnable {
                         statement.close();
                     }
                 }
+            }
+        }
+    }
+
+    private List<EodQuote> getQuotesWithReattempts(LocalDate from, LocalDate to, String shortName) {
+        int attempts = 0;
+        while (true) {
+            try {
+                return eoddataApi.quotes(from, to, shortName);
+            } catch (ResourceAccessException rae) {
+                if (!rae.getMessage().contains("Read timed out") || attempts>10) {
+                    throw new Error("Error", rae);
+                }
+                try {
+                    Thread.sleep(30000);
+                } catch (InterruptedException ex) {
+                    throw new Error("Interrupted", ex);
+                }
+                attempts += 1;
             }
         }
     }
