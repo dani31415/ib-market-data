@@ -60,7 +60,7 @@ public class Orders {
         order.date = LocalDate.now(ZoneId.of("America/New_York"));
         order.createdAt = LocalDateTime.now(ZoneId.of("UTC"));
         order.openPrice = orderRequest.openPrice;
-        order.status = "created";
+        order.status = orderRequest.status;
         orderRepository.save(order);
         return true;
     }

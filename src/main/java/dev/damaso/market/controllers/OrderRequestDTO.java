@@ -6,4 +6,5 @@ public class OrderRequestDTO {
     public int order;
     public float openPrice;
     public String modelName;
+    public String status;
 }
