@@ -3,6 +3,8 @@ package dev.damaso.market.controllers;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -18,9 +20,12 @@ import org.springframework.web.bind.annotation.RestController;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 
+import dev.damaso.market.brokerentities.Log;
 import dev.damaso.market.brokerentities.Order;
+import dev.damaso.market.brokerrepositories.LogRepository;
 import dev.damaso.market.brokerrepositories.OrderRepository;
 import dev.damaso.market.entities.Symbol;
+import dev.damaso.market.operations.Date;
 import dev.damaso.market.operations.Purchase;
 import dev.damaso.market.operations.PurchaseOperations;
 import dev.damaso.market.repositories.SymbolRepository;
@@ -32,6 +37,9 @@ public class Orders {
 
     @Autowired
     SymbolRepository symbolRepository;
+
+    @Autowired
+    LogRepository logRepository;
 
     @Autowired
     ObjectMapper objectMapper;
@@ -86,6 +94,35 @@ public class Orders {
         updatedOrder.updatedAt = LocalDateTime.now(ZoneId.of("UTC"));
         orderRepository.save(updatedOrder);
         return updatedOrder;
+    }
+
+    @GetMapping("/orders/{orderId}/orders")
+    public List<IbOrderDTO> findOrdersOrderById(@PathVariable Integer orderId) throws Exception {
+        Optional<Order> optionalOrder = orderRepository.findById(orderId);
+        if (!optionalOrder.isPresent()) {
+            throw new NotFoundException();
+        }
+        Order order = optionalOrder.get();
+        LocalDateTime from = order.createdAt;
+        LocalDateTime to;
+        if (order.boughtQuantity != null && order.boughtQuantity == order.soldQuantity) {
+            to = order.sellAt;
+            // Maybe the log is created after a while
+            to = to.plus(5, ChronoUnit.MINUTES);
+        } else {
+            to = LocalDateTime.now();
+        }
+        Iterable<Log> logs = logRepository.findByDateRangeAndSubstring(from, to, "%" + orderId + "@%");
+        List<IbOrderDTO> ibOrderList = new ArrayList<>();
+        for (Log log : logs) {
+            String logOrderJson = objectMapper.readValue(log.object, String.class);
+            IbOrderDTO logOrder = objectMapper.readValue(logOrderJson, IbOrderDTO.class);
+            logOrder.createdAt = log.createdAt;
+            LocalDateTime preOpen = Date.getPreOpen(order.createdAt);
+            logOrder.minuteSincePreOpen = Date.minutesBetween(preOpen, log.createdAt);
+            ibOrderList.add(logOrder);
+        }
+        return ibOrderList;
     }
 
     @GetMapping("/orders/{orderId}")
