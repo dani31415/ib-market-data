@@ -18,6 +18,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpServerErrorException;
 
 import dev.damaso.market.entities.Item;
 import dev.damaso.market.entities.ItemId;
@@ -285,8 +286,38 @@ public class Snapshot {
         // return Float.parseFloat(str);
     }
 
+    private MarketdataSnapshotResult[] iserverMarketdataSnapshot(List<String> conids) {
+        try {
+            return api.iserverMarketdataSnapshot(conids); 
+        } catch (HttpServerErrorException.ServiceUnavailable ex) {
+            try {
+                // Reattempt after unsubscribe
+                try {
+                    Thread.sleep(5000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                api.iserverMarketdataUnsubscribeall();
+                try {
+                    Thread.sleep(2000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                return api.iserverMarketdataSnapshot(conids); 
+            } catch (HttpServerErrorException.ServiceUnavailable ex2) {
+                // Reattempt after 20s
+                try {
+                    Thread.sleep(20000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                return api.iserverMarketdataSnapshot(conids);
+            }
+        }
+    }
+
     void iserverMarketdataSnapshotHelper(List<String> conids, List<MarketdataSnapshotResult> result) {
-        MarketdataSnapshotResult[] msrs = api.iserverMarketdataSnapshot(conids); 
+        MarketdataSnapshotResult[] msrs = iserverMarketdataSnapshot(conids); 
         for (MarketdataSnapshotResult msr : msrs) {
             // if (msr.bidPrice == null || msr.askPrice == null || msr.bidSize == null || msr.askSize == null || msr.todayOpeningPrice == null) {
             if (msr.lastPrice == null || msr.todayOpeningPrice == null) {
