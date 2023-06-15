@@ -13,6 +13,7 @@ public class Trade {
     public String id;
 
     public int orderId;
+    public String ibOrderRef;
     public LocalDateTime tradeTime;
 
     @Enumerated(EnumType.STRING)

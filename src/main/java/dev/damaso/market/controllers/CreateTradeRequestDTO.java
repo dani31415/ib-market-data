@@ -6,6 +6,7 @@ import dev.damaso.market.brokerentities.TradeSideEnum;
 
 public class CreateTradeRequestDTO {
     public String id;
+    public String ibOrderRef;
     public LocalDateTime tradeTime;
     public TradeSideEnum side;
     public double size;

@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import dev.damaso.market.brokerentities.Order;
@@ -26,6 +27,15 @@ public class Trades {
     @Autowired
     OrderRepository orderRepository;
 
+    @GetMapping("/orders/trades/size")
+    double getSizeByOrderRef(@RequestParam String ibOrderRef) {
+        Double quantity = tradeRepository.sizeByOrderRef(ibOrderRef);
+        if (quantity == null) {
+            return 0;
+        }
+        return quantity;
+    }
+
     @GetMapping("/orders/{orderId}/trades")
     Iterable<TradeDTO> getOrderTrades(@PathVariable Integer orderId) {
         Optional<Order> optionalOrder = orderRepository.findById(orderId);
@@ -40,6 +50,7 @@ public class Trades {
             TradeDTO tradeDTO = new TradeDTO();
             tradeDTO.id = trade.id;
             tradeDTO.orderId = trade.orderId;
+            tradeDTO.ibOrderRef = trade.ibOrderRef;
             tradeDTO.tradeTime = trade.tradeTime;
             tradeDTO.side = trade.side;
             tradeDTO.size = trade.size;
@@ -56,6 +67,7 @@ public class Trades {
         Trade trade = new Trade();
         trade.id = createTradeDTO.id;
         trade.orderId = orderId;
+        trade.ibOrderRef = createTradeDTO.ibOrderRef;
         trade.tradeTime = createTradeDTO.tradeTime;
         trade.side = createTradeDTO.side;
         trade.size = createTradeDTO.size;

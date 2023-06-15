@@ -66,6 +66,17 @@ CREATE PROCEDURE configureDatabase()
 
             ALTER TABLE `order` ADD COLUMN `optimization` TEXT;
         END IF;
+
+        -- Version 4 --> 5
+        IF @schemaVersion = '4' THEN
+            UPDATE configuration SET value='5' WHERE `key`='schemaVersion';
+
+            ALTER TABLE `order` ADD COLUMN sell_desired_price FLOAT after sell_position_price;
+            ALTER TABLE `order` ADD COLUMN buy_desired_price FLOAT after buy_position_price;
+            ALTER TABLE `trade` ADD COLUMN ib_order_ref VARCHAR(64) after order_id;
+            ALTER TABLE `trade` ADD INDEX (ib_order_ref);
+        END IF;
+
     END //
 
 DELIMITER ;

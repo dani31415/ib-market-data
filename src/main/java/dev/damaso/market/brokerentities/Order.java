@@ -46,8 +46,10 @@ public class Order {
 
     public Float buyOrderPrice;
     public Float buyPositionPrice;
+    public Float buyDesiredPrice;
     public Float sellOrderPrice;
     public Float sellPositionPrice;
+    public Float sellDesiredPrice;
 
     public Float askPriceAtBuyOrder;
     public Float lastPriceAtBuyOrder;
