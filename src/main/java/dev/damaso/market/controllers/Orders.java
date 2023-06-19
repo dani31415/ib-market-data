@@ -112,15 +112,25 @@ public class Orders {
         } else {
             to = LocalDateTime.now();
         }
-        Iterable<Log> logs = logRepository.findByDateRangeAndSubstring(from, to, "%" + orderId + "@%");
+        LocalDateTime preOpen = Date.getPreOpen(order.createdAt);
+        Iterable<Log> logs = logRepository.findByDateRangeAndSubstring2(from, to, "%" + orderId + "@%", "%:" + orderId + "%");
         List<IbOrderDTO> ibOrderList = new ArrayList<>();
         for (Log log : logs) {
             String logOrderJson = objectMapper.readValue(log.object, String.class);
-            IbOrderDTO logOrder = objectMapper.readValue(logOrderJson, IbOrderDTO.class);
-            logOrder.createdAt = log.createdAt;
-            LocalDateTime preOpen = Date.getPreOpen(order.createdAt);
-            logOrder.minuteSincePreOpen = Date.minutesBetween(preOpen, log.createdAt);
-            ibOrderList.add(logOrder);
+            if (logOrderJson.contains("newPrice")) {
+                ChangeLog changeLog = objectMapper.readValue(logOrderJson, ChangeLog.class);
+                IbOrderDTO logOrder = new IbOrderDTO();
+                logOrder.minuteSincePreOpen = Date.minutesBetween(preOpen, log.createdAt);
+                logOrder.side = changeLog.side;
+                logOrder.quantity = changeLog.newQuantity;
+                logOrder.price = changeLog.newPrice;
+                ibOrderList.add(logOrder);
+            } else {
+                IbOrderDTO logOrder = objectMapper.readValue(logOrderJson, IbOrderDTO.class);
+                logOrder.createdAt = log.createdAt;
+                logOrder.minuteSincePreOpen = Date.minutesBetween(preOpen, log.createdAt);
+                ibOrderList.add(logOrder);
+            }
         }
         return ibOrderList;
     }
