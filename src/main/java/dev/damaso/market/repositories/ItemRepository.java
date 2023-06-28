@@ -45,4 +45,6 @@ public interface ItemRepository extends CrudRepository<Item, ItemId> {
     Iterable<Item> findByDate(LocalDate date);
 
     Iterable<Item> findAllBySymbolIdAndDate(int symbolId, LocalDate date);
+
+    Iterable<Item> findAllBySymbolIdAndDateAndVersion(int symbolId, LocalDate date, int version);
 }
