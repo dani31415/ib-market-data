@@ -14,6 +14,7 @@ import dev.damaso.market.commands.openminute.OpenMinute2;
 import dev.damaso.market.commands.performance.Performance;
 import dev.damaso.market.commands.pingservices.PingServices;
 import dev.damaso.market.commands.snapshot.Snapshot;
+import dev.damaso.market.commands.snapshot.Snapshot2;
 import dev.damaso.market.commands.symbols.SymbolListUpdater;
 import dev.damaso.market.commands.updatedata.UpdateDailyData;
 import dev.damaso.market.commands.updatedata.UpdateData;
@@ -39,6 +40,9 @@ public class CommandLine implements CommandLineRunner {
 
     @Autowired
     Snapshot snapshot;
+
+    @Autowired
+    Snapshot2 snapshot2;
 
     @Autowired
     Explore explore;
@@ -82,6 +86,8 @@ public class CommandLine implements CommandLineRunner {
             updateMinuteData.run();
         } else if (args[0].equals("snapshot")) {
             snapshot.run();
+        } else if (args[0].equals("snapshot2")) {
+            snapshot2.run();
         } else if (args[0].equals("explore")) {
             explore.run();
         } else if (args[0].equals("update-means")) {
