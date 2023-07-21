@@ -144,6 +144,7 @@ public class Snapshot2 {
 
     public void persistMarketData(List<MarketdataSnapshotResult> marketData, SnapshotState state) {
         // Compute sincePreOpen as soon as possible
+        List<Snapshot> snapshots = new Vector<>();
         for (MarketdataSnapshotResult msr : marketData) {
             Snapshot ms = convert(msr, state);
             if (msr.shortName.equals("-")) {
@@ -152,17 +153,9 @@ public class Snapshot2 {
             // LocalDateTime date = LocalDateTime.ofInstant(Instant.ofEpochMilli(msr.epoch), ZoneId.systemDefault());
             // System.out.println(msr.shortName + ", " + ms.symbolId + ", " + ms.last + ", "+ msr.lastPrice + ", " + ms.volume + ", " + ms.status + ", " + ms.updatedAt);
 
-            SnapshotId snapshotId = new SnapshotId();
-            snapshotId.symbolId = ms.symbolId;
-            snapshotId.updatedAt = ms.updatedAt;
-            snapshotId.date = ms.date;
-
-            Optional<Snapshot> optionalSnapshot = snapshotRepository.findById(snapshotId);
-            if (!optionalSnapshot.isPresent()) {
-                // System.out.println("Save");
-                snapshotRepository.save(ms);
-            }
+            snapshots.add(ms);    
         }
+        snapshotRepository.saveAll(snapshots);
     }
 
     private int findByConid(List<Symbol> symbolList, String conid) {
