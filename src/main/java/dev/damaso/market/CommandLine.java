@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 
 import dev.damaso.market.commands.explore.Explore;
 import dev.damaso.market.commands.fixdata.FixData;
+import dev.damaso.market.commands.fixdata.FixData2;
 import dev.damaso.market.commands.localdata.LoadData;
 import dev.damaso.market.commands.means.UpdateMeans;
 import dev.damaso.market.commands.openminute.FixOpenMinuteForDay;
@@ -49,6 +50,9 @@ public class CommandLine implements CommandLineRunner {
     FixData fixData;
 
     @Autowired
+    FixData2 fixData2;
+
+    @Autowired
     OpenMinute2 openMinute2;
 
     @Autowired
@@ -84,6 +88,8 @@ public class CommandLine implements CommandLineRunner {
             updateMeans.run();
         } else if (args[0].equals("fix-data")) {
             fixData.run();
+        } else if (args[0].equals("fix-data2")) {
+            fixData2.run();
         } else if (args[0].equals("open-minute")) {
             openMinute2.run();
         } else if (args[0].equals("fix-day")) {
