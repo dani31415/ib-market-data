@@ -23,4 +23,10 @@ public class MarketdataSnapshotResult {
 
     @JsonProperty("7295")
     public String todayOpeningPrice;
+
+    @JsonProperty("7762")
+    public String todayVolume;
+
+    @JsonProperty("55")
+    public String shortName;
 }

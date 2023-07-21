@@ -183,6 +183,14 @@ public class ApiImplementation implements Api {
     }
 
     @Retryable(value = Throwable.class, exceptionExpression = "#{message.contains('timed out')}")
+    public MarketdataSnapshotResult[] iserverMarketdataSnapshot2(List<String> conids, String fields) {
+        String strConids = String.join(",", conids);
+        String url = "%s/v1/api/iserver/marketdata/snapshot?fields=%s&conids=%s".formatted(baseUrl, fields, strConids);
+        ResponseEntity<MarketdataSnapshotResult[]> response = restTemplate.getForEntity(url, MarketdataSnapshotResult[].class);
+        return response.getBody();
+    }
+
+    @Retryable(value = Throwable.class, exceptionExpression = "#{message.contains('timed out')}")
     public void iserverMarketdataUnsubscribeall() {
         String url = "%s/v1/api/iserver/marketdata/unsubscribeall".formatted(baseUrl);
         restTemplate.getForEntity(url, Void.class);
