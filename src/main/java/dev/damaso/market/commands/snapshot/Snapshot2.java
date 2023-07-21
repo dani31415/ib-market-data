@@ -67,6 +67,13 @@ public class Snapshot2 {
             state.conidToSymbol.put(symbol.ib_conid, symbol.id);
         }
 
+        Symbol fake = new Symbol();
+        fake.shortName = "FAKE";
+        fake.ib_conid = "00000";
+        fake.id = -1;
+        pendingSymbolList.add(fake);
+        state.conidToSymbol.put(fake.ib_conid, fake.id);
+
         ExecutorService executor = Executors.newFixedThreadPool(4);
 
         int noChanged = 0;
@@ -111,15 +118,18 @@ public class Snapshot2 {
                     state.cNormal ++;
                 } else if (ms.status == SymbolSnapshotStatusEnum.CLOSED) {
                     state.cClosed ++;
-                } else {
+                } else if (ms.status == SymbolSnapshotStatusEnum.HALTED) {
                     state.cHalted ++;
+                } else {
+                    state.cError ++;
                 }
             }
             nowRead = marketData.size();
 
-            System.out.println("Number of open: " + state.openMarketData.size());
+            System.out.println("Number of normal: " + state.cNormal);
             System.out.println("Number of closed: " + state.cClosed);
             System.out.println("Number of halted: " + state.cHalted);
+            System.out.println("Number of error: " + state.cError);
             System.out.println("Now pending: " + pendingSymbolList.size());
             
             sleep(1000);
@@ -130,9 +140,10 @@ public class Snapshot2 {
         System.out.println("Waiting for persistence termination...");
         executor.shutdown();
         executor.awaitTermination(600, TimeUnit.SECONDS);
-        System.out.println("Number of open: " + state.openMarketData.size());
+        System.out.println("Number of normal: " + state.cNormal);
         System.out.println("Number of closed: " + state.cClosed);
         System.out.println("Number of halted: " + state.cHalted);
+        System.out.println("Number of error: " + state.cError);
         System.out.println("Done!");
     }
 
@@ -141,6 +152,9 @@ public class Snapshot2 {
         // Compute sincePreOpen as soon as possible
         for (MarketdataSnapshotResult msr : marketData) {
             SymbolSnapshot ms = convert(msr);
+            if (msr.shortName.equals("-")) {
+                continue;
+            }
             System.out.println(msr.shortName + ", "+ ms.lastPrice + ", "+ msr.lastPrice + ", " + msr.todayVolume);
             // ms.updateId = now;
             // ms.symbolId = state.conidToSymbol.get(ms.ibConid);
@@ -213,6 +227,10 @@ public class Snapshot2 {
     private SymbolSnapshot convert(MarketdataSnapshotResult msr) {
         SymbolSnapshot ms = new SymbolSnapshot();
         ms.ibConid = msr.conid;
+        if (msr.shortName.equals("-")) {
+            ms.status = SymbolSnapshotStatusEnum.ERROR;
+            return ms;
+        }
         ms.status = SymbolSnapshotStatusEnum.NORMAL;
         if (msr.lastPrice.startsWith("C")) {
             ms.status = SymbolSnapshotStatusEnum.CLOSED;
@@ -277,8 +295,14 @@ public class Snapshot2 {
 
     void iserverMarketdataSnapshotHelper(List<String> conids, List<MarketdataSnapshotResult> result) {
         MarketdataSnapshotResult[] msrs = iserverMarketdataSnapshot(conids); 
+        int i = 0;
         for (MarketdataSnapshotResult msr : msrs) {
-            // System.out.println("0 " + msr.shortName + ", " + msr.lastPrice + ", " + msr.todayVolume);
+            System.out.println("0 " + msr.shortName + ", " + msr.lastPrice + ", " + msr.todayVolume);
+            if (msr.shortName.equals("-")) {
+                msr.conid = conids.get(i); // we need to know which failed
+                System.out.println("FAILED: " + msr.conid);
+                result.add(msr);
+            }
             if (msr.lastPrice == null) {
                 // no price
             } else {
@@ -292,6 +316,7 @@ public class Snapshot2 {
                     }
                 }
             }
+            i++;
         }
     }
 
