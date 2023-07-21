@@ -74,7 +74,7 @@ public class Snapshot2 {
         pendingSymbolList.add(fake);
         state.conidToSymbol.put(fake.ib_conid, fake.id);
 
-        ExecutorService executor = Executors.newFixedThreadPool(4);
+        ExecutorService executor = Executors.newFixedThreadPool(8);
 
         int iteration = 0;
         do {
