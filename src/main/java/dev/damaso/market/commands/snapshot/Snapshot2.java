@@ -300,7 +300,7 @@ public class Snapshot2 {
         MarketdataSnapshotResult[] msrs = iserverMarketdataSnapshot(conids); 
         int i = 0;
         for (MarketdataSnapshotResult msr : msrs) {
-            System.out.println("0 " + msr.shortName + ", " + msr.lastPrice + ", " + msr.todayVolume);
+            // System.out.println("0 " + msr.shortName + ", " + msr.lastPrice + ", " + msr.todayVolume);
             if (msr.shortName.equals("-")) {
                 msr.conid = conids.get(i); // we need to know which failed
                 System.out.println("FAILED: " + msr.conid);
