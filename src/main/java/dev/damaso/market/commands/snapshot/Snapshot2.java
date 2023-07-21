@@ -1,6 +1,7 @@
 package dev.damaso.market.commands.snapshot;
 
 import java.text.NumberFormat;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -156,7 +157,8 @@ public class Snapshot2 {
             if (msr.shortName.equals("-")) {
                 continue;
             }
-            System.out.println(msr.shortName + ", "+ ms.lastPrice + ", "+ msr.lastPrice + ", " + msr.todayVolume);
+            LocalDateTime date = LocalDateTime.ofInstant(Instant.ofEpochMilli(msr.epoch), ZoneId.systemDefault());
+            System.out.println(msr.shortName + ", "+ ms.lastPrice + ", "+ msr.lastPrice + ", " + msr.todayVolume + ", " + date);
             // ms.updateId = now;
             // ms.symbolId = state.conidToSymbol.get(ms.ibConid);
             // // About filtering by status when saving the snapshot:

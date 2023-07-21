@@ -29,4 +29,7 @@ public class MarketdataSnapshotResult {
 
     @JsonProperty("55")
     public String shortName;
+
+    @JsonProperty("_updated")
+    public Long epoch;
 }
