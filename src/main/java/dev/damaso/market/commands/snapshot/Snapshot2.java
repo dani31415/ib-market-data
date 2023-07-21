@@ -114,7 +114,8 @@ public class Snapshot2 {
 
                 // Create stats
                 SymbolSnapshot ms = convert(msr);
-                if (ms.status == SymbolSnapshotStatusEnum.NORMAL) {    
+                if (ms.status == SymbolSnapshotStatusEnum.NORMAL) {
+                    state.openMarketData.add(ms);
                     state.cNormal ++;
                 } else if (ms.status == SymbolSnapshotStatusEnum.CLOSED) {
                     state.cClosed ++;
@@ -126,7 +127,7 @@ public class Snapshot2 {
             }
             nowRead = marketData.size();
 
-            System.out.println("Number of normal: " + state.cNormal);
+            System.out.println("Number of open: " + state.openMarketData.size());
             System.out.println("Number of closed: " + state.cClosed);
             System.out.println("Number of halted: " + state.cHalted);
             System.out.println("Number of error: " + state.cError);
@@ -136,11 +137,11 @@ public class Snapshot2 {
             System.out.println(iteration);
         } while (pendingSymbolList.size()>0);
 
-        System.out.println("TOTAL: " + state.openMarketData.size());
+        System.out.println("TOTAL: " + (state.openMarketData.size() + state.cClosed + state.cHalted + state.cError));
         System.out.println("Waiting for persistence termination...");
         executor.shutdown();
         executor.awaitTermination(600, TimeUnit.SECONDS);
-        System.out.println("Number of normal: " + state.cNormal);
+        System.out.println("Number of open: " + state.openMarketData.size());
         System.out.println("Number of closed: " + state.cClosed);
         System.out.println("Number of halted: " + state.cHalted);
         System.out.println("Number of error: " + state.cError);
