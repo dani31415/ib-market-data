@@ -1,5 +1,6 @@
 package dev.damaso.market.repositories;
 
+import java.time.LocalDate;
 import java.util.Optional;
 
 import org.springframework.cache.annotation.Cacheable;
@@ -22,4 +23,13 @@ public interface SymbolRepository extends CrudRepository<Symbol, Integer> {
 
     @Query(nativeQuery = true, value = "SELECT s.* FROM symbol s WHERE s.ib_conid = ?1")
     Optional<Symbol> findByIb_conid(String ib_conid);
+
+   @Query("""
+        SELECT s
+            FROM Symbol s 
+            INNER JOIN Item i
+            ON s.id = i.symbolId AND i.version = 0 AND i.date = ?1 AND i.volume > ?2
+            ORDER BY s.id ASC
+    """)
+    Iterable<Symbol> findAllActive(LocalDate date, long volume);
 }

@@ -25,5 +25,8 @@ public interface PeriodRepository extends CrudRepository<Period, Integer> {
            GROUP BY p2.id, p2.date
     """)
     Optional<Double> computeMeanByDate(LocalDate date);
+
+    @Query("SELECT max(p.date) FROM Period AS p WHERE p.date != ?1")
+    LocalDate getLastExcept(LocalDate date);
 }
 
