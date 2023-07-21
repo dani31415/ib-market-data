@@ -19,6 +19,7 @@ import dev.damaso.market.external.ibgw.Api;
 import dev.damaso.market.external.ibgw.HistoryResult;
 import dev.damaso.market.external.ibgw.MarketdataSnapshotResult;
 import dev.damaso.market.external.ibgw.SearchResult;
+import dev.damaso.market.operations.Date;
 import dev.damaso.market.external.ibgw.AuthStatusResult;
 import dev.damaso.market.external.ibgw.ContractInfoResult;
 import dev.damaso.market.utils.RestTemplateConfiguration;
