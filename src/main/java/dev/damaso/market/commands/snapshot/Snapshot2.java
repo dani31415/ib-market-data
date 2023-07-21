@@ -150,7 +150,7 @@ public class Snapshot2 {
                 continue;
             }
             // LocalDateTime date = LocalDateTime.ofInstant(Instant.ofEpochMilli(msr.epoch), ZoneId.systemDefault());
-            System.out.println(msr.shortName + ", " + ms.symbolId + ", " + ms.last + ", "+ msr.lastPrice + ", " + ms.volume + ", " + ms.status + ", " + ms.updatedAt);
+            // System.out.println(msr.shortName + ", " + ms.symbolId + ", " + ms.last + ", "+ msr.lastPrice + ", " + ms.volume + ", " + ms.status + ", " + ms.updatedAt);
 
             SnapshotId snapshotId = new SnapshotId();
             snapshotId.symbolId = ms.symbolId;
@@ -159,7 +159,7 @@ public class Snapshot2 {
 
             Optional<Snapshot> optionalSnapshot = snapshotRepository.findById(snapshotId);
             if (!optionalSnapshot.isPresent()) {
-                System.out.println("Save");
+                // System.out.println("Save");
                 snapshotRepository.save(ms);
             }
         }
