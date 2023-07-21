@@ -41,8 +41,6 @@ public class Snapshot {
     @Autowired
     Api api;
 
-    static NumberFormat format = NumberFormat.getInstance(Locale.US);
-
     public void run() throws Exception {
         boolean save = true;
         if (!api.nasdaqIsOpen()) {
@@ -277,6 +275,8 @@ public class Snapshot {
     private float convertFloat(String str) {
         if (str==null) return 0;
         try {
+            // Create a new NumberFormat to ensure thread safe
+            NumberFormat format = NumberFormat.getInstance(Locale.US);
             Number number = format.parse(str);
             return number.floatValue();    
         } catch (Exception ex) {

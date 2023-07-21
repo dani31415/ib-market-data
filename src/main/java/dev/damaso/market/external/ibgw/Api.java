@@ -11,6 +11,7 @@ public interface Api {
     void ssoValidate();
     AuthStatusResult iserverAuthStatus();
     MarketdataSnapshotResult[] iserverMarketdataSnapshot(List<String> conids);
+    MarketdataSnapshotResult[] iserverMarketdataSnapshot2(List<String> conids, String fields);
     void logout();
     void tickle();
     void reauthenticateHelper();

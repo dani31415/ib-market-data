@@ -46,9 +46,8 @@ public class Snapshot2 {
     @Autowired
     Api api;
 
-    static NumberFormat format = NumberFormat.getInstance(Locale.US);
-
     public void run() throws Exception {
+        boolean save = true;
         // today
         LocalDate today = LocalDate.now(); 
         LocalDate date = periodRepository.getLastExcept(today);
@@ -58,23 +57,9 @@ public class Snapshot2 {
         List<Symbol> symbols = new ArrayList<Symbol>();
         iterableSymbols.forEach(symbols::add);
         System.out.println(symbols.size());
-    }
 
-    public void run2() throws Exception {
-        boolean save = true;
-        if (!api.nasdaqIsOpen()) {
-            // This prevents to trade during non bank days since Jenkins is not able to skip execution
-            save = false;
-            System.out.println("Save will be ignored since market is closed.");
-        }
-        api.reauthenticateHelper();
-
-        Iterable<Symbol> symbols = symbolRepository.findAllIB();
-        List<Symbol> pendingSymbolList = new Vector<>();
         SnapshotState state = new SnapshotState();
-        int minimumResults = 3200;
-        int existing = 0;
-
+        List<Symbol> pendingSymbolList = new Vector<>();
         Iterator<Symbol> iterator = symbols.iterator();
         while (iterator.hasNext()) {
             Symbol symbol = iterator.next();
@@ -82,27 +67,15 @@ public class Snapshot2 {
             state.conidToSymbol.put(symbol.ib_conid, symbol.id);
         }
 
-        // Remove symbols that already have data
-        LocalDate today = LocalDateTime.now().atZone(ZoneId.of("UTC")).toLocalDate();
-        Iterable<Item> items = itemRepository.findAllIBFromDate(today, 0);
-        for (Item item : items) {
-            if (item.open>0) {
-                existing ++;
-                int symbolIdx = findBySymbolId(pendingSymbolList, item.symbolId);
-                if (symbolIdx >= 0) {
-                    pendingSymbolList.remove(symbolIdx);
-                }
-            }
-        }
-        System.out.println("Already existing symbols: " + existing);
-
         ExecutorService executor = Executors.newFixedThreadPool(4);
 
         int noChanged = 0;
         int previousRead = 0;
         int nowRead = 0;
         boolean doContinue = false;
+        int iteration = 0;
         do {
+            iteration += 1;
             iterator = pendingSymbolList.iterator();
             int batchSize = 200;
             List<String> conids;
@@ -130,11 +103,11 @@ public class Snapshot2 {
             state.cHalted = 0;
             for (MarketdataSnapshotResult msr : marketData) {
                 int symbolIdx = findByConid(pendingSymbolList, msr.conid);
-                // Add only open symbols
+                pendingSymbolList.remove(symbolIdx);
+
+                // Create stats
                 SymbolSnapshot ms = convert(msr);
                 if (ms.status == SymbolSnapshotStatusEnum.NORMAL) {    
-                    pendingSymbolList.remove(symbolIdx);
-                    state.openMarketData.add(ms);
                     state.cNormal ++;
                 } else if (ms.status == SymbolSnapshotStatusEnum.CLOSED) {
                     state.cClosed ++;
@@ -148,45 +121,11 @@ public class Snapshot2 {
             System.out.println("Number of closed: " + state.cClosed);
             System.out.println("Number of halted: " + state.cHalted);
             System.out.println("Now pending: " + pendingSymbolList.size());
-            if (
-                existing + state.openMarketData.size() + pendingSymbolList.size()
-                    !=
-                state.conidToSymbol.size()
-            ) {
-                throw new Error("Incorred number of symbols.");
-            }
+            
+            sleep(1000);
+            System.out.println(iteration);
+        } while (pendingSymbolList.size()>0);
 
-            if (nowRead != previousRead) {
-                noChanged = 0;
-            } else {
-                noChanged ++;
-            }
-            System.out.println("No changed consecutive occurrences: " + noChanged);
-
-            // Do continue?
-            if (existing + state.openMarketData.size()==0 && save) {
-                System.out.println("Continue because was empty.");
-                doContinue = true;
-            } else if (nowRead != previousRead) {
-                System.out.println("Continue because was progress.");
-                doContinue = true;
-            } else if (existing + state.openMarketData.size()<minimumResults && noChanged<10) {
-                System.out.println("Continue because the minimum is not reached.");
-                doContinue = true;
-            // } else if (noChanged<4) {
-            //     System.out.println("Continue because we want to ensure no one is left.");
-            //     doContinue = true;
-            } else {
-                System.out.println("Let's stop.");
-                doContinue = false;
-            };
-
-            if (marketData.size() == 0 && doContinue) {
-                sleep(5000);
-            }
-
-            previousRead = nowRead;
-        } while (doContinue);
         System.out.println("TOTAL: " + state.openMarketData.size());
         System.out.println("Waiting for persistence termination...");
         executor.shutdown();
@@ -200,17 +139,17 @@ public class Snapshot2 {
     public void persistMarketData(List<MarketdataSnapshotResult> marketData, SnapshotState state) {
         Date now = new Date();
         // Compute sincePreOpen as soon as possible
-        int sincePreOpen = getSincePreOpen();
         for (MarketdataSnapshotResult msr : marketData) {
             SymbolSnapshot ms = convert(msr);
-            ms.updateId = now;
-            ms.symbolId = state.conidToSymbol.get(ms.ibConid);
-            // About filtering by status when saving the snapshot:
-            //   If status is closed, the value is not the opening price.
-            //   Also if using no accurate data, we might end up not chosing the best symbols.
-            if (ms.status == SymbolSnapshotStatusEnum.NORMAL) {
-                saveTodayOpeningPrice(ms.symbolId, msr.todayOpeningPrice, sincePreOpen);
-            }
+            System.out.println(msr.shortName + ", "+ ms.lastPrice + ", "+ msr.lastPrice + ", " + msr.todayVolume);
+            // ms.updateId = now;
+            // ms.symbolId = state.conidToSymbol.get(ms.ibConid);
+            // // About filtering by status when saving the snapshot:
+            // //   If status is closed, the value is not the opening price.
+            // //   Also if using no accurate data, we might end up not chosing the best symbols.
+            // if (ms.status == SymbolSnapshotStatusEnum.NORMAL) {
+            //     saveTodayOpeningPrice(ms.symbolId, msr.todayOpeningPrice, sincePreOpen);
+            // }
         }
     }
 
@@ -288,11 +227,13 @@ public class Snapshot2 {
         ms.askSize = convertFloat(msr.askSize);
         ms.bidPrice = convertFloat(msr.bidPrice);
         ms.bidSize = convertFloat(msr.bidSize);
+        // ms.volume = convertFloat(msr.todayVolume);
         return ms;
     }
 
     private float convertFloat(String str) {
         if (str==null) return 0;
+        NumberFormat format = NumberFormat.getInstance(Locale.US);
         try {
             Number number = format.parse(str);
             return number.floatValue();    
@@ -304,8 +245,9 @@ public class Snapshot2 {
     }
 
     private MarketdataSnapshotResult[] iserverMarketdataSnapshot(List<String> conids) {
+        String fields = "55,31,7762";
         try {
-            return api.iserverMarketdataSnapshot(conids); 
+            return api.iserverMarketdataSnapshot2(conids, fields); 
         } catch (HttpServerErrorException.ServiceUnavailable ex) {
             try {
                 // Reattempt after unsubscribe
@@ -320,7 +262,7 @@ public class Snapshot2 {
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-                return api.iserverMarketdataSnapshot(conids); 
+                return api.iserverMarketdataSnapshot2(conids, fields);
             } catch (HttpServerErrorException.ServiceUnavailable ex2) {
                 // Reattempt after 20s
                 try {
@@ -328,7 +270,7 @@ public class Snapshot2 {
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-                return api.iserverMarketdataSnapshot(conids);
+                return api.iserverMarketdataSnapshot2(conids, fields);
             }
         }
     }
@@ -336,10 +278,19 @@ public class Snapshot2 {
     void iserverMarketdataSnapshotHelper(List<String> conids, List<MarketdataSnapshotResult> result) {
         MarketdataSnapshotResult[] msrs = iserverMarketdataSnapshot(conids); 
         for (MarketdataSnapshotResult msr : msrs) {
-            // if (msr.bidPrice == null || msr.askPrice == null || msr.bidSize == null || msr.askSize == null || msr.todayOpeningPrice == null) {
-            if (msr.lastPrice == null || msr.todayOpeningPrice == null) {
+            // System.out.println("0 " + msr.shortName + ", " + msr.lastPrice + ", " + msr.todayVolume);
+            if (msr.lastPrice == null) {
+                // no price
             } else {
-                result.add(msr);
+                if (msr.lastPrice.startsWith("C") || msr.lastPrice.startsWith("H")) {
+                    // lastPrice and volume is not required
+                    result.add(msr);
+                } else {
+                    if (msr.todayVolume != null) {
+                        // lastPrice and volume
+                        result.add(msr);
+                    }
+                }
             }
         }
     }
