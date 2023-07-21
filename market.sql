@@ -262,6 +262,21 @@ CREATE PROCEDURE configureDatabase()
             ALTER TABLE item DROP PRIMARY KEY;
             ALTER TABLE item ADD PRIMARY KEY (symbol_id, `date`, `version`);
         END IF;
+
+        -- Version 20 --> 21
+        IF @schemaVersion = '20' THEN
+            UPDATE configuration SET value='21' WHERE `key`='schemaVersion';
+
+            CREATE TABLE snapshot  (
+                `symbol_id` INT,
+                `date` date,
+                `last` float,
+                `volume` bigint,
+                `status` TINYINT(4),
+                `updated_at` DATETIME,
+                PRIMARY KEY (`symbol_id`, `date`, `updated_at`)
+            ) CHARACTER SET utf8mb4;
+        END IF;
     END //
 
     -- ALTER TABLE minute_item ADD INDEX (`date`, symbol_id);

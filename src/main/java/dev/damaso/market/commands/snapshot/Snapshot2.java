@@ -22,27 +22,26 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpServerErrorException;
 
-import dev.damaso.market.entities.Item;
-import dev.damaso.market.entities.ItemId;
 import dev.damaso.market.entities.Symbol;
-import dev.damaso.market.entities.SymbolSnapshot;
+import dev.damaso.market.entities.Snapshot;
+import dev.damaso.market.entities.SnapshotId;
 import dev.damaso.market.entities.SymbolSnapshotStatusEnum;
 import dev.damaso.market.external.ibgw.Api;
 import dev.damaso.market.external.ibgw.MarketdataSnapshotResult;
-import dev.damaso.market.repositories.ItemRepository;
 import dev.damaso.market.repositories.PeriodRepository;
+import dev.damaso.market.repositories.SnapshotRepository;
 import dev.damaso.market.repositories.SymbolRepository;
 
 @Component
 public class Snapshot2 {
     @Autowired
-    ItemRepository itemRepository;
-
-    @Autowired
     SymbolRepository symbolRepository;
 
     @Autowired
     PeriodRepository periodRepository;
+
+    @Autowired
+    SnapshotRepository snapshotRepository;
 
     @Autowired
     Api api;
@@ -77,10 +76,6 @@ public class Snapshot2 {
 
         ExecutorService executor = Executors.newFixedThreadPool(4);
 
-        int noChanged = 0;
-        int previousRead = 0;
-        int nowRead = 0;
-        boolean doContinue = false;
         int iteration = 0;
         do {
             iteration += 1;
@@ -114,9 +109,9 @@ public class Snapshot2 {
                 pendingSymbolList.remove(symbolIdx);
 
                 // Create stats
-                SymbolSnapshot ms = convert(msr);
+                Snapshot ms = convert(msr, state);
                 if (ms.status == SymbolSnapshotStatusEnum.NORMAL) {
-                    state.openMarketData.add(ms);
+                    // state.openMarketData.add(ms);
                     state.cNormal ++;
                 } else if (ms.status == SymbolSnapshotStatusEnum.CLOSED) {
                     state.cClosed ++;
@@ -126,8 +121,6 @@ public class Snapshot2 {
                     state.cError ++;
                 }
             }
-            nowRead = marketData.size();
-
             System.out.println("Number of open: " + state.openMarketData.size());
             System.out.println("Number of closed: " + state.cClosed);
             System.out.println("Number of halted: " + state.cHalted);
@@ -150,34 +143,26 @@ public class Snapshot2 {
     }
 
     public void persistMarketData(List<MarketdataSnapshotResult> marketData, SnapshotState state) {
-        Date now = new Date();
         // Compute sincePreOpen as soon as possible
         for (MarketdataSnapshotResult msr : marketData) {
-            SymbolSnapshot ms = convert(msr);
+            Snapshot ms = convert(msr, state);
             if (msr.shortName.equals("-")) {
                 continue;
             }
-            LocalDateTime date = LocalDateTime.ofInstant(Instant.ofEpochMilli(msr.epoch), ZoneId.systemDefault());
-            System.out.println(msr.shortName + ", "+ ms.lastPrice + ", "+ msr.lastPrice + ", " + msr.todayVolume + ", " + date);
-            // ms.updateId = now;
-            // ms.symbolId = state.conidToSymbol.get(ms.ibConid);
-            // // About filtering by status when saving the snapshot:
-            // //   If status is closed, the value is not the opening price.
-            // //   Also if using no accurate data, we might end up not chosing the best symbols.
-            // if (ms.status == SymbolSnapshotStatusEnum.NORMAL) {
-            //     saveTodayOpeningPrice(ms.symbolId, msr.todayOpeningPrice, sincePreOpen);
-            // }
-        }
-    }
+            // LocalDateTime date = LocalDateTime.ofInstant(Instant.ofEpochMilli(msr.epoch), ZoneId.systemDefault());
+            System.out.println(msr.shortName + ", " + ms.symbolId + ", " + ms.last + ", "+ msr.lastPrice + ", " + ms.volume + ", " + ms.status + ", " + ms.updatedAt);
 
-    private int findBySymbolId(List<Symbol> symbolList, int symbolId) {
-        for (int i = 0; i < symbolList.size(); i++) {
-            Symbol symbol = symbolList.get(i);
-            if (symbol.id == symbolId) {
-                return i;
+            SnapshotId snapshotId = new SnapshotId();
+            snapshotId.symbolId = ms.symbolId;
+            snapshotId.updatedAt = ms.updatedAt;
+            snapshotId.date = ms.date;
+
+            Optional<Snapshot> optionalSnapshot = snapshotRepository.findById(snapshotId);
+            if (!optionalSnapshot.isPresent()) {
+                System.out.println("Save");
+                snapshotRepository.save(ms);
             }
         }
-        return -1;
     }
 
     private int findByConid(List<Symbol> symbolList, String conid) {
@@ -190,46 +175,10 @@ public class Snapshot2 {
         return -1;
     }
 
-    int getSincePreOpen() {
-        ZonedDateTime zdtNow = ZonedDateTime.now(ZoneId.of("America/New_York"));
-        ZonedDateTime zdtOpen = ZonedDateTime.of(
-            zdtNow.getYear(),
-            zdtNow.getMonthValue(),
-            zdtNow.getDayOfMonth(),
-            9,
-            0,
-            1, // second extra so between(9:00:01, 9:30:00) = 29 (29 + 1 = 30). See return
-            0,
-            ZoneId.of("America/New_York"));
-        // Between returns completed minutes (floor)
-        long minutes = ChronoUnit.MINUTES.between(zdtOpen, zdtNow);
-        return (int)minutes + 1;
-    }
+    private Snapshot convert(MarketdataSnapshotResult msr, SnapshotState state) {
+        Snapshot ms = new Snapshot();
 
-    void saveTodayOpeningPrice(int symbolId, String todayOpeningPrice, int sincePreOpen) {
-        float open = convertFloat(todayOpeningPrice);
-        LocalDateTime date = LocalDateTime.now().atZone(ZoneId.of("UTC")).toLocalDateTime();
-
-        ItemId id = new ItemId();
-        id.symbolId = symbolId;
-        id.date = date.toLocalDate();
-        Optional<Item> optionalItem = itemRepository.findById(id);
-        if (!optionalItem.isPresent()) {
-            Item item = new Item();
-            item.symbolId = symbolId;
-            item.date = date.toLocalDate();
-            item.open = open;
-            item.source = 2; // from snapshot
-            item.sincePreOpen = sincePreOpen;
-            item.version = 0;
-            item.stagging = true;
-            itemRepository.save(item);
-        }
-    }
-
-    private SymbolSnapshot convert(MarketdataSnapshotResult msr) {
-        SymbolSnapshot ms = new SymbolSnapshot();
-        ms.ibConid = msr.conid;
+        ms.symbolId = state.conidToSymbol.get(msr.conid);
         if (msr.shortName.equals("-")) {
             ms.status = SymbolSnapshotStatusEnum.ERROR;
             return ms;
@@ -237,19 +186,23 @@ public class Snapshot2 {
         ms.status = SymbolSnapshotStatusEnum.NORMAL;
         if (msr.lastPrice.startsWith("C")) {
             ms.status = SymbolSnapshotStatusEnum.CLOSED;
-            ms.lastPrice = convertFloat(msr.lastPrice.substring(1));
+            ms.last = convertFloat(msr.lastPrice.substring(1));
         } else if (msr.lastPrice.startsWith("H")) {
             ms.status = SymbolSnapshotStatusEnum.HALTED;
-            ms.lastPrice = convertFloat(msr.lastPrice.substring(1));
+            ms.last = convertFloat(msr.lastPrice.substring(1));
         } else {
-            ms.lastPrice = convertFloat(msr.lastPrice);
+            ms.last = convertFloat(msr.lastPrice);
         }
-        ms.askPrice = convertFloat(msr.askPrice);
-        ms.askSize = convertFloat(msr.askSize);
-        ms.bidPrice = convertFloat(msr.bidPrice);
-        ms.bidSize = convertFloat(msr.bidSize);
-        // ms.volume = convertFloat(msr.todayVolume);
+        ms.volume = convertLong(msr.todayVolume);
+        ms.updatedAt = LocalDateTime.ofInstant(Instant.ofEpochMilli(msr.epoch), ZoneId.of("UTC"));
+        ms.updatedAt = ms.updatedAt.truncatedTo(ChronoUnit.SECONDS);
+        ms.date = ms.updatedAt.toLocalDate();
         return ms;
+    }
+
+    private long convertLong(String str) {
+        if (str==null) return 0;
+        return Long.parseLong(str);
     }
 
     private float convertFloat(String str) {
@@ -340,5 +293,4 @@ public class Snapshot2 {
         } catch (InterruptedException ex) {
         }    
     }
-
 }
