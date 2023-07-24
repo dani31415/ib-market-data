@@ -147,7 +147,7 @@ public class Snapshot2 {
         List<Snapshot> snapshots = new Vector<>();
         for (MarketdataSnapshotResult msr : marketData) {
             Snapshot ms = convert(msr, state);
-            if (msr.shortName.equals("-")) {
+            if (msr.shortName!=null && msr.shortName.equals("-")) {
                 continue;
             }
             // LocalDateTime date = LocalDateTime.ofInstant(Instant.ofEpochMilli(msr.epoch), ZoneId.systemDefault());
@@ -172,7 +172,7 @@ public class Snapshot2 {
         Snapshot ms = new Snapshot();
 
         ms.symbolId = state.conidToSymbol.get(msr.conid);
-        if (msr.shortName.equals("-")) {
+        if (msr.shortName!=null && msr.shortName.equals("-")) {
             ms.status = SymbolSnapshotStatusEnum.ERROR;
             return ms;
         }
@@ -247,7 +247,7 @@ public class Snapshot2 {
         int i = 0;
         for (MarketdataSnapshotResult msr : msrs) {
             // System.out.println("0 " + msr.shortName + ", " + msr.lastPrice + ", " + msr.todayVolume);
-            if (msr.shortName.equals("-")) {
+            if (msr.shortName!=null && msr.shortName.equals("-")) {
                 msr.conid = conids.get(i); // we need to know which failed
                 System.out.println("FAILED: " + msr.conid);
                 result.add(msr);
