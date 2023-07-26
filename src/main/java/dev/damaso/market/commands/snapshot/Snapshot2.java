@@ -24,7 +24,6 @@ import org.springframework.web.client.HttpServerErrorException;
 
 import dev.damaso.market.entities.Symbol;
 import dev.damaso.market.entities.Snapshot;
-import dev.damaso.market.entities.SnapshotId;
 import dev.damaso.market.entities.SymbolSnapshotStatusEnum;
 import dev.damaso.market.external.ibgw.Api;
 import dev.damaso.market.external.ibgw.MarketdataSnapshotResult;
@@ -47,6 +46,7 @@ public class Snapshot2 {
     Api api;
 
     public void run() throws Exception {
+        api.reauthenticateHelper();
         boolean save = true;
         // today
         LocalDate today = LocalDate.now(); 
