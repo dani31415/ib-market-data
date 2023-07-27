@@ -285,8 +285,12 @@ public class Items {
                     fs[i][0] = order;
                 }
             }
-            fs[item.getMinute()][1] = item.getLast();
-            fs[item.getMinute()][2] = item.getVolume() == 0 ? 0 : (float)Math.log(item.getVolume());
+            int m = item.getMinute();
+            if (m < 0) {
+                m = 0;
+            }
+            fs[m][1] = item.getLast();
+            fs[m][2] = item.getVolume() == 0 ? 0 : (float)Math.log(item.getVolume());
         }
         if (fs != null) {
             list.add(fs);
