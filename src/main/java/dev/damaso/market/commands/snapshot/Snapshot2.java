@@ -170,12 +170,8 @@ public class Snapshot2 {
                 itemId.date = ms.date;
                 itemId.symbolId = state.conidToSymbol.get(msr.conid);
                 itemId.version = 0;
-                System.out.println(itemId.date);
-                System.out.println(itemId.symbolId);
-                System.out.println(itemId.version);
                 Optional<Item> optionalItem = itemRepository.findById(itemId);
                 if (!optionalItem.isPresent()) {
-                    System.out.println("Save item");
                     Item item = new Item();
                     item.date = itemId.date;
                     item.symbolId = itemId.symbolId;
