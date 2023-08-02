@@ -23,10 +23,13 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpServerErrorException;
 
 import dev.damaso.market.entities.Symbol;
+import dev.damaso.market.entities.Item;
+import dev.damaso.market.entities.ItemId;
 import dev.damaso.market.entities.Snapshot;
 import dev.damaso.market.entities.SymbolSnapshotStatusEnum;
 import dev.damaso.market.external.ibgw.Api;
 import dev.damaso.market.external.ibgw.MarketdataSnapshotResult;
+import dev.damaso.market.repositories.ItemRepository;
 import dev.damaso.market.repositories.PeriodRepository;
 import dev.damaso.market.repositories.SnapshotRepository;
 import dev.damaso.market.repositories.SymbolRepository;
@@ -41,6 +44,9 @@ public class Snapshot2 {
 
     @Autowired
     SnapshotRepository snapshotRepository;
+
+    @Autowired
+    ItemRepository itemRepository;
 
     @Autowired
     Api api;
@@ -148,6 +154,7 @@ public class Snapshot2 {
     public void persistMarketData(List<MarketdataSnapshotResult> marketData, SnapshotState state) {
         // Compute sincePreOpen as soon as possible
         List<Snapshot> snapshots = new Vector<>();
+        List<Item> items = new Vector<>();
         for (MarketdataSnapshotResult msr : marketData) {
             Snapshot ms = convert(msr, state);
             if (msr.shortName!=null && msr.shortName.equals("-")) {
@@ -156,9 +163,45 @@ public class Snapshot2 {
             // LocalDateTime date = LocalDateTime.ofInstant(Instant.ofEpochMilli(msr.epoch), ZoneId.systemDefault());
             // System.out.println(msr.shortName + ", " + ms.symbolId + ", " + ms.last + ", "+ msr.lastPrice + ", " + ms.volume + ", " + ms.status + ", " + ms.updatedAt);
 
-            snapshots.add(ms);    
+            snapshots.add(ms);
+
+            if (msr.todayOpeningPrice != null) {
+                ItemId itemId = new ItemId();
+                itemId.date = ms.date;
+                itemId.symbolId = state.conidToSymbol.get(msr.conid);
+                itemId.version = 0;
+                Optional<Item> optionalItem = itemRepository.findById(itemId);
+                if (!optionalItem.isPresent()) {
+                    Item item = new Item();
+                    item.date = itemId.date;
+                    item.symbolId = itemId.symbolId;
+                    item.version = itemId.version;
+                    item.source = 2;
+                    item.open = convertFloat(msr.todayOpeningPrice);
+                    item.sincePreOpen = getSincePreOpen(msr.epoch);
+                    item.stagging = true;
+                    items.add(item);
+                }
+            }
         }
         snapshotRepository.saveAll(snapshots);
+        itemRepository.saveAll(items);
+    }
+
+    int getSincePreOpen(long epoch) {
+        ZonedDateTime zdtNow = ZonedDateTime.ofInstant(Instant.ofEpochMilli(epoch), ZoneId.of("America/New_York"));
+        ZonedDateTime zdtOpen = ZonedDateTime.of(
+            zdtNow.getYear(),
+            zdtNow.getMonthValue(),
+            zdtNow.getDayOfMonth(),
+            9,
+            0,
+            1, // second extra so between(9:00:01, 9:30:00) = 29 (29 + 1 = 30). See return
+            0,
+            ZoneId.of("America/New_York"));
+        // Between returns completed minutes (floor)
+        long minutes = ChronoUnit.MINUTES.between(zdtOpen, zdtNow);
+        return (int)minutes + 1;
     }
 
     private int findByConid(List<Symbol> symbolList, String conid) {
