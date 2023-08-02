@@ -212,7 +212,8 @@ public class Snapshot2 {
     }
 
     private MarketdataSnapshotResult[] iserverMarketdataSnapshot(List<String> conids) {
-        String fields = "55,31,7762";
+        // symbol, lastPrice, volume, open
+        String fields = "55,31,7762,7295";
         try {
             return api.iserverMarketdataSnapshot2(conids, fields); 
         } catch (HttpServerErrorException.ServiceUnavailable ex) {
@@ -256,10 +257,10 @@ public class Snapshot2 {
                 // no price
             } else {
                 if (msr.lastPrice.startsWith("C") || msr.lastPrice.startsWith("H")) {
-                    // lastPrice and volume is not required
+                    // volume and open price is not required
                     result.add(msr);
                 } else {
-                    if (msr.todayVolume != null) {
+                    if (msr.todayVolume != null && msr.todayOpeningPrice != null) {
                         // lastPrice and volume
                         result.add(msr);
                     }
