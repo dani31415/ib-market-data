@@ -45,6 +45,8 @@ public class Snapshot2 {
     @Autowired
     Api api;
 
+    int totalOpen = 0;
+
     public void run() throws Exception {
         api.reauthenticateHelper();
         boolean save = true;
@@ -89,6 +91,7 @@ public class Snapshot2 {
                 if (conids.size()>0) {
                     iserverMarketdataSnapshotHelper(conids, marketData);
                     System.out.println("Read: " + marketData.size());
+                    System.out.println("Open: " + totalOpen);
                 }
             } while (conids.size()>0);    
 
@@ -260,7 +263,10 @@ public class Snapshot2 {
                     // volume and open price is not required
                     result.add(msr);
                 } else {
-                    if (msr.todayVolume != null && msr.todayOpeningPrice != null) {
+                    if (msr.todayVolume != null) {
+                        if (msr.todayOpeningPrice !=null) {
+                            totalOpen += 1;
+                        }
                         // lastPrice and volume
                         result.add(msr);
                     }
