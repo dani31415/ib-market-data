@@ -216,7 +216,7 @@ public class Items {
     }
 
     @GetMapping("/ib/rawitems/minute2")
-    public byte [] raw10MinuteItems(@RequestParam int period, @RequestParam(required=false) Integer minute_group) throws Exception {
+    public byte [] raw10MinuteItems(@RequestParam int period, @RequestParam(required=false) Integer minute_group, @RequestParam(required=false) String field) throws Exception {
         Optional<Period> optionalPeriod = periodRepository.findById(period);
         if (!optionalPeriod.isPresent()) {
             throw new ResponseStatusException(
@@ -227,6 +227,9 @@ public class Items {
         LocalDate date = optionalPeriod.get().date;
         if (minute_group == null) {
             minute_group = 1;
+        }
+        if (field == null) {
+            field = "o";
         }
         int n_groups_per_day = 420 / minute_group;
         Iterable<MinuteItemBase> allMinuteItems = minuteItemRepository.findByDateGroupByMinute(date, minute_group);
@@ -247,7 +250,15 @@ public class Items {
                 for (MinuteItemBase minuteItem : minuteItems) {
                     int j = minuteItem.getMinute() / minute_group;
                     if (0 <= j && j < n_groups_per_day) {
-                        fs[n * n_groups_per_day * i + n * j] = minuteItem.getOpen();
+                        float value;
+                        if (field.equals("o")) {
+                            value = minuteItem.getOpen();
+                        } else if (field.equals("c")) {
+                            value = minuteItem.getClose();
+                        } else {
+                            throw new Error("Unknown field " + field);
+                        }
+                        fs[n * n_groups_per_day * i + n * j] = value;
                     }
                 }
             }

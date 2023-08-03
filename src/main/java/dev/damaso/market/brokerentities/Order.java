@@ -19,6 +19,7 @@ public class Order {
 
     public String groupGuid;
     public LocalDate date;
+    public Integer minute;
     public String ib_conid;
     public int symbolId;
     @Column(name = "\"order\"")

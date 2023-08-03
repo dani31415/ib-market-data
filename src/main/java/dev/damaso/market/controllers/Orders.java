@@ -48,35 +48,45 @@ public class Orders {
     PurchaseOperations purchaseOperations;
 
     @PostMapping("/orders")
-    public boolean createOrder(@RequestBody OrderRequestDTO orderRequest) throws Exception {
-        Symbol symbol = symbolRepository.findSymbolByShortName(orderRequest.symbol);
+    public Order createOrder(@RequestBody OrderRequestDTO orderRequest) throws Exception {
+        Symbol symbol = symbolRepository.findSymbolByShortName(orderRequest.symbolSrcName);
         if (symbol==null) {
-            throw new Exception("Missing symbol " + orderRequest.symbol);
+            throw new Exception("Missing symbol " + orderRequest.symbolSrcName);
         }
-        Optional<Order> optionalOrder = orderRepository.findByGroupGuidAndSymbolId(orderRequest.guid, symbol.id);
+        Optional<Order> optionalOrder = orderRepository.findByGroupGuidAndSymbolId(orderRequest.groupGuid, symbol.id);
         if (optionalOrder.isPresent()) {
             // nothing to do
-            return true;
+            return optionalOrder.get();
         }
         Order order = new Order();
-        order.groupGuid = orderRequest.guid;
+        order.groupGuid = orderRequest.groupGuid;
         order.order = orderRequest.order;
         order.modelName = orderRequest.modelName;
         order.symbolId = symbol.id;
-        order.symbolSrcName = orderRequest.symbol;
+        order.symbolSrcName = orderRequest.symbolSrcName;
         order.ib_conid = symbol.ib_conid;
-        order.date = LocalDate.now(ZoneId.of("America/New_York"));
+        if (orderRequest.date == null) {
+            order.date = LocalDate.now(ZoneId.of("America/New_York"));
+        } else {
+            // Used during testing
+            LocalDate localDate = LocalDate.parse(orderRequest.date);
+            order.date = localDate;
+        }
         order.createdAt = LocalDateTime.now(ZoneId.of("UTC"));
         order.openPrice = orderRequest.openPrice;
         order.status = orderRequest.status;
-        orderRepository.save(order);
-        return true;
+        order.minute = orderRequest.minute;
+        Order newOrder = orderRepository.save(order);
+        return newOrder;
     }
 
     @GetMapping("/orders")
-    public Iterable<Order> getOrders(@RequestParam(required=false) String status, @RequestParam(required=false) String date) throws Exception {
+    public Iterable<Order> getOrders(@RequestParam(required=false) String status, @RequestParam(required=false) String date, @RequestParam(required=false) Integer minute) throws Exception {
         if (status != null) {
             return orderRepository.findAllByStatus(status);
+        } else if (date != null && minute != null) {
+            LocalDate localDate = LocalDate.parse(date);
+            return orderRepository.findAllByDateAndMinute(localDate, minute);
         } else if (date != null) {
             LocalDate localDate = LocalDate.parse(date);
             return orderRepository.findAllByDate(localDate);

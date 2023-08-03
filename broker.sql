@@ -77,6 +77,24 @@ CREATE PROCEDURE configureDatabase()
             ALTER TABLE `trade` ADD INDEX (ib_order_ref);
         END IF;
 
+        -- Version 5 --> 6
+        IF @schemaVersion = '5' THEN
+            UPDATE configuration SET value='6' WHERE `key`='schemaVersion';
+
+            ALTER TABLE `order` ADD COLUMN `minute` int after `date`;
+            ALTER TABLE `order` ADD INDEX (`date`, `minute`);
+
+            CREATE TABLE replay  (
+                `order_id` INT PRIMARY KEY,
+                `symbol_id` INT NOT NULL,
+                `minute` INT,
+                `period` INT,
+                `variant` VARCHAR(100),
+                `iteration` INT,
+                `epoch` INT,
+                `friends` TEXT
+            ) CHARACTER SET utf8mb4;
+        END IF;
     END //
 
 DELIMITER ;

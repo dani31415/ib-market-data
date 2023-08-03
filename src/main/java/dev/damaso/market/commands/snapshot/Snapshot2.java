@@ -23,10 +23,13 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpServerErrorException;
 
 import dev.damaso.market.entities.Symbol;
+import dev.damaso.market.entities.Item;
+import dev.damaso.market.entities.ItemId;
 import dev.damaso.market.entities.Snapshot;
 import dev.damaso.market.entities.SymbolSnapshotStatusEnum;
 import dev.damaso.market.external.ibgw.Api;
 import dev.damaso.market.external.ibgw.MarketdataSnapshotResult;
+import dev.damaso.market.repositories.ItemRepository;
 import dev.damaso.market.repositories.PeriodRepository;
 import dev.damaso.market.repositories.SnapshotRepository;
 import dev.damaso.market.repositories.SymbolRepository;
@@ -43,7 +46,12 @@ public class Snapshot2 {
     SnapshotRepository snapshotRepository;
 
     @Autowired
+    ItemRepository itemRepository;
+
+    @Autowired
     Api api;
+
+    int totalOpen = 0;
 
     public void run() throws Exception {
         api.reauthenticateHelper();
@@ -89,6 +97,7 @@ public class Snapshot2 {
                 if (conids.size()>0) {
                     iserverMarketdataSnapshotHelper(conids, marketData);
                     System.out.println("Read: " + marketData.size());
+                    System.out.println("Open: " + totalOpen);
                 }
             } while (conids.size()>0);    
 
@@ -145,6 +154,7 @@ public class Snapshot2 {
     public void persistMarketData(List<MarketdataSnapshotResult> marketData, SnapshotState state) {
         // Compute sincePreOpen as soon as possible
         List<Snapshot> snapshots = new Vector<>();
+        List<Item> items = new Vector<>();
         for (MarketdataSnapshotResult msr : marketData) {
             Snapshot ms = convert(msr, state);
             if (msr.shortName!=null && msr.shortName.equals("-")) {
@@ -153,9 +163,48 @@ public class Snapshot2 {
             // LocalDateTime date = LocalDateTime.ofInstant(Instant.ofEpochMilli(msr.epoch), ZoneId.systemDefault());
             // System.out.println(msr.shortName + ", " + ms.symbolId + ", " + ms.last + ", "+ msr.lastPrice + ", " + ms.volume + ", " + ms.status + ", " + ms.updatedAt);
 
-            snapshots.add(ms);    
+            snapshots.add(ms);
+
+            if (msr.todayOpeningPrice != null) {
+                float openPrice = convertFloat(msr.todayOpeningPrice);
+                if (openPrice>0) {
+                    ItemId itemId = new ItemId();
+                    itemId.date = ms.date;
+                    itemId.symbolId = state.conidToSymbol.get(msr.conid);
+                    itemId.version = 0;
+                    Optional<Item> optionalItem = itemRepository.findById(itemId);
+                    if (!optionalItem.isPresent()) {
+                        Item item = new Item();
+                        item.date = itemId.date;
+                        item.symbolId = itemId.symbolId;
+                        item.version = itemId.version;
+                        item.source = 2;
+                        item.open = openPrice;
+                        item.sincePreOpen = getSincePreOpen(msr.epoch);
+                        item.stagging = true;
+                        items.add(item);
+                    }
+                }
+            }
         }
         snapshotRepository.saveAll(snapshots);
+        itemRepository.saveAll(items);
+    }
+
+    int getSincePreOpen(long epoch) {
+        ZonedDateTime zdtNow = ZonedDateTime.ofInstant(Instant.ofEpochMilli(epoch), ZoneId.of("America/New_York"));
+        ZonedDateTime zdtOpen = ZonedDateTime.of(
+            zdtNow.getYear(),
+            zdtNow.getMonthValue(),
+            zdtNow.getDayOfMonth(),
+            9,
+            0,
+            1, // second extra so between(9:00:01, 9:30:00) = 29 (29 + 1 = 30). See return
+            0,
+            ZoneId.of("America/New_York"));
+        // Between returns completed minutes (floor)
+        long minutes = ChronoUnit.MINUTES.between(zdtOpen, zdtNow);
+        return (int)minutes + 1;
     }
 
     private int findByConid(List<Symbol> symbolList, String conid) {
@@ -212,7 +261,8 @@ public class Snapshot2 {
     }
 
     private MarketdataSnapshotResult[] iserverMarketdataSnapshot(List<String> conids) {
-        String fields = "55,31,7762";
+        // symbol, lastPrice, volume, open
+        String fields = "55,31,7762,7295";
         try {
             return api.iserverMarketdataSnapshot2(conids, fields); 
         } catch (HttpServerErrorException.ServiceUnavailable ex) {
@@ -256,10 +306,13 @@ public class Snapshot2 {
                 // no price
             } else {
                 if (msr.lastPrice.startsWith("C") || msr.lastPrice.startsWith("H")) {
-                    // lastPrice and volume is not required
+                    // volume and open price is not required
                     result.add(msr);
                 } else {
                     if (msr.todayVolume != null) {
+                        if (msr.todayOpeningPrice !=null) {
+                            totalOpen += 1;
+                        }
                         // lastPrice and volume
                         result.add(msr);
                     }
