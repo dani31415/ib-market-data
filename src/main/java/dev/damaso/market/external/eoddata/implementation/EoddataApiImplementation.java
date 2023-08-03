@@ -52,7 +52,7 @@ public class EoddataApiImplementation implements EoddataApi {
     public String getToken() {
         String user = env.getProperty("EODDATA_USER");
         String password = env.getProperty("EODDATA_PASSWORD");
-        String url = "%s/data.asmx/Login?Username=%s&Password=%s".formatted(baseUrl, user, password);
+        String url = String.format("%s/data.asmx/Login?Username=%s&Password=%s", baseUrl, user, password);
         ResponseEntity<LoginResponse> loginResponse = xmlRestTemplate.getForEntity(url, LoginResponse.class);
         LoginResponse login = loginResponse.getBody();
         return login.token;
@@ -62,7 +62,7 @@ public class EoddataApiImplementation implements EoddataApi {
     public Iterable<EodSymbol> symbolList() {
         String token = this.getToken();
         System.out.println(token);
-        String url = "%s/data.asmx/SymbolList?Token=%s&Exchange=NASDAQ".formatted(baseUrl, token);
+        String url = String.format("%s/data.asmx/SymbolList?Token=%s&Exchange=NASDAQ", baseUrl, token);
         ResponseEntity<SymbolListResponse> loginResponse = xmlRestTemplate.getForEntity(url, SymbolListResponse.class);
         List<EodSymbol> symbols = loginResponse.getBody().symbols;
         System.out.println(symbols.size());
@@ -73,7 +73,19 @@ public class EoddataApiImplementation implements EoddataApi {
     public List<EodQuote> quotes(LocalDate date, String symbol) {
         String token = this.getToken();
         String dateStr = date.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
-        String url = "%s/data.asmx/SymbolHistoryPeriod?Token=%s&Exchange=NASDAQ&Symbol=%s&Date=%s&Period=1".formatted(baseUrl, token, symbol, dateStr);
+        String url = String.format("%s/data.asmx/SymbolHistoryPeriod?Token=%s&Exchange=NASDAQ&Symbol=%s&Date=%s&Period=1", baseUrl, token, symbol, dateStr);
+        System.out.println(url);
+        ResponseEntity<Response> response = xmlRestTemplate.getForEntity(url, Response.class);
+        List<EodQuote> quotes = response.getBody().quotes;
+        return quotes;
+    }
+
+    @Override
+    public List<EodQuote> quotesDay(LocalDate date, String symbol) {
+        String token = this.getToken();
+        String dateStr = date.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+        String url = String.format("%s/data.asmx/SymbolHistoryPeriod?Token=%s&Exchange=NASDAQ&Symbol=%s&Date=%s&Period=d", baseUrl, token, symbol, dateStr);
+        System.out.println(url);
         ResponseEntity<Response> response = xmlRestTemplate.getForEntity(url, Response.class);
         List<EodQuote> quotes = response.getBody().quotes;
         return quotes;
@@ -85,7 +97,7 @@ public class EoddataApiImplementation implements EoddataApi {
         String token = this.getToken();
         String fromStr = from.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
         String toStr = to.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
-        String url = "%s/data.asmx/SymbolHistoryPeriodByDateRange?Token=%s&Exchange=NASDAQ&Symbol=%s&StartDate=%s&EndDate=%s&Period=1".formatted(baseUrl, token, symbol, fromStr, toStr);
+        String url = String.format("%s/data.asmx/SymbolHistoryPeriodByDateRange?Token=%s&Exchange=NASDAQ&Symbol=%s&StartDate=%s&EndDate=%s&Period=1", baseUrl, token, symbol, fromStr, toStr);
         ResponseEntity<Response> response = xmlRestTemplate.getForEntity(url, Response.class);
         List<EodQuote> quotes = response.getBody().quotes;
         return quotes;

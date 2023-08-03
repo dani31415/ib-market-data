@@ -18,6 +18,9 @@ public interface ItemRepository extends CrudRepository<Item, ItemId> {
     @Query(nativeQuery = true, value = "SELECT symbol_id as symbolId, MAX(date) AS date FROM item WHERE since_pre_open > 0 GROUP BY symbol_id")
     List<LastItem> findLastOpenDates();
 
+    @Query(nativeQuery = true, value = "SELECT MAX(date) AS date FROM item")
+    LocalDate findLastDate();
+
     @Query(nativeQuery = true, value = "SELECT i.* FROM item i INNER JOIN symbol s ON i.symbol_id=s.id WHERE s.ib_conid IS NOT NULL AND i.version=?1 ORDER BY date ASC, symbol_id ASC")
     Iterable<Item> findAllIB(int version);
 
@@ -47,4 +50,13 @@ public interface ItemRepository extends CrudRepository<Item, ItemId> {
     Iterable<Item> findAllBySymbolIdAndDate(int symbolId, LocalDate date);
 
     Iterable<Item> findAllBySymbolIdAndDateAndVersion(int symbolId, LocalDate date, int version);
+
+    @Query(nativeQuery = true, value = """
+        SELECT I1.symbol_id
+            FROM market.item  AS I1
+            LEFT JOIN market.item AS I2 ON I1.symbol_id = I2.symbol_id AND I2.date = ?2
+            WHERE I1.date >= ?1 AND I1.date < ?2 AND I2.symbol_id IS NULL
+            GROUP BY I1.symbol_id           
+    """)
+    Iterable<Integer> findMissingItems(LocalDate since, LocalDate date);
 }

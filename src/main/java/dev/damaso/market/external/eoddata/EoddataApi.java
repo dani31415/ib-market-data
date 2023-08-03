@@ -8,4 +8,5 @@ public interface EoddataApi {
     String getToken();
     List<EodQuote> quotes(LocalDate date, String symbol);
     List<EodQuote> quotes(LocalDate from, LocalDate to, String symbol);
+    List<EodQuote> quotesDay(LocalDate date, String symbol);
 }
