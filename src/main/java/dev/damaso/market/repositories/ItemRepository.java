@@ -52,11 +52,14 @@ public interface ItemRepository extends CrudRepository<Item, ItemId> {
     Iterable<Item> findAllBySymbolIdAndDateAndVersion(int symbolId, LocalDate date, int version);
 
     @Query(nativeQuery = true, value = """
-        SELECT I1.symbol_id
-            FROM market.item  AS I1
-            LEFT JOIN market.item AS I2 ON I1.symbol_id = I2.symbol_id AND I2.date = ?2
-            WHERE I1.date >= ?1 AND I1.date < ?2 AND I2.symbol_id IS NULL
-            GROUP BY I1.symbol_id           
-    """)
+        SELECT symbol_id FROM (
+            SELECT I1.symbol_id, max(I2.close) as m
+                FROM market.item AS I1
+                LEFT JOIN market.item AS I2 ON I1.symbol_id = I2.symbol_id AND I2.date = '2023-08-03'
+                WHERE I1.date >= '2023-08-02' AND I1.date < '2023-08-03'
+                GROUP BY I1.symbol_id
+                HAVING m is null
+            ) as S
+        """)
     Iterable<Integer> findMissingItems(LocalDate since, LocalDate date);
 }

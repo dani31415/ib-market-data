@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import dev.damaso.market.entities.Item;
+import dev.damaso.market.entities.ItemId;
 import dev.damaso.market.entities.Symbol;
 import dev.damaso.market.external.eoddata.EodQuote;
 import dev.damaso.market.external.eoddata.EoddataApi;
@@ -52,7 +53,20 @@ public class UpdateDailyData2 implements Runnable {
                 if (eodQuotes != null && eodQuotes.size()>0) {
                     c += 1;
                     EodQuote eodQuote = eodQuotes.get(0);
+
                     Item item = new Item();
+
+                    ItemId itemId = new ItemId();
+                    itemId.date = lastDate;
+                    itemId.symbolId = symbol.id;
+                    itemId.version = 0;
+                    Optional<Item> optionalItem = itemRepository.findById(itemId);
+                    if (optionalItem.isPresent()) {
+                        Item lastItem = optionalItem.get();
+                        System.out.println("-------------------------------------");
+                        System.out.println(itemId.symbolId + ", " + lastItem.sincePreOpen);
+                        item.sincePreOpen = lastItem.sincePreOpen;
+                    }
                     item.symbolId = symbol.id;
                     item.date = lastDate;
                     item.version = 0;
