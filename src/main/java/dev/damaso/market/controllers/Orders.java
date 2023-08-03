@@ -113,36 +113,40 @@ public class Orders {
             to = LocalDateTime.now();
         }
         LocalDateTime preOpen = Date.getPreOpen(order.createdAt);
-        Iterable<Log> logs = logRepository.findByDateRangeAndSubstring2(from, to, "%" + orderId + "@%", "%:" + orderId + "%");
+        Iterable<Log> logs = logRepository.findByDateRangeAndSubstringAndSource(from, to, "%" + orderId + "%", "EXECUTE_ORDER");
         List<IbOrderDTO> ibOrderList = new ArrayList<>();
         IbOrderDTO previousLogOrder = null;
         for (Log log : logs) {
             String logOrderJson = objectMapper.readValue(log.object, String.class);
-            IbOrderDTO logOrder;
-            if (logOrderJson.contains("newPrice")) {
+            IbOrderDTO logOrder = null;
+            if (log.message.equals("Http PATCH")) {
                 ChangeLog changeLog = objectMapper.readValue(logOrderJson, ChangeLog.class);
                 logOrder = new IbOrderDTO();
                 logOrder.side = changeLog.side;
                 logOrder.quantity = changeLog.newQuantity;
                 logOrder.price = changeLog.newPrice;
-                
-            } else {
+            } else if (log.message.equals("Http POST")) {
                 logOrder = objectMapper.readValue(logOrderJson, IbOrderDTO.class);
+            } else if (log.message.equals("Http DELETE")) {
+                logOrder = new IbOrderDTO();
+                logOrder.side = "STOP";
             }
-            logOrder.createdAt = log.createdAt;
-            logOrder.minuteSincePreOpen = Date.minutesBetween(preOpen, log.createdAt);
+            if (logOrder != null) {
+                logOrder.createdAt = log.createdAt;
+                logOrder.minuteSincePreOpen = Date.minutesBetween(preOpen, log.createdAt);
 
-            // Add only if price, quantity or side change
-            boolean ignoreLogOrder = false;
-            if (previousLogOrder != null) {
-                if (previousLogOrder.quantity == logOrder.quantity && previousLogOrder.price == logOrder.price && previousLogOrder.side.equals(logOrder.side)) {
-                    ignoreLogOrder = true;
+                // Add only if price, quantity or side change
+                boolean ignoreLogOrder = false;
+                if (previousLogOrder != null) {
+                    if (previousLogOrder.quantity == logOrder.quantity && previousLogOrder.price == logOrder.price && previousLogOrder.side.equals(logOrder.side)) {
+                        ignoreLogOrder = true;
+                    }
                 }
+                if (!ignoreLogOrder) {
+                    ibOrderList.add(logOrder);
+                }
+                previousLogOrder = logOrder;
             }
-            if (!ignoreLogOrder) {
-                ibOrderList.add(logOrder);
-            }
-            previousLogOrder = logOrder;
         }
         return ibOrderList;
     }
