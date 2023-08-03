@@ -166,21 +166,24 @@ public class Snapshot2 {
             snapshots.add(ms);
 
             if (msr.todayOpeningPrice != null) {
-                ItemId itemId = new ItemId();
-                itemId.date = ms.date;
-                itemId.symbolId = state.conidToSymbol.get(msr.conid);
-                itemId.version = 0;
-                Optional<Item> optionalItem = itemRepository.findById(itemId);
-                if (!optionalItem.isPresent()) {
-                    Item item = new Item();
-                    item.date = itemId.date;
-                    item.symbolId = itemId.symbolId;
-                    item.version = itemId.version;
-                    item.source = 2;
-                    item.open = convertFloat(msr.todayOpeningPrice);
-                    item.sincePreOpen = getSincePreOpen(msr.epoch);
-                    item.stagging = true;
-                    items.add(item);
+                float openPrice = convertFloat(msr.todayOpeningPrice);
+                if (openPrice>0) {
+                    ItemId itemId = new ItemId();
+                    itemId.date = ms.date;
+                    itemId.symbolId = state.conidToSymbol.get(msr.conid);
+                    itemId.version = 0;
+                    Optional<Item> optionalItem = itemRepository.findById(itemId);
+                    if (!optionalItem.isPresent()) {
+                        Item item = new Item();
+                        item.date = itemId.date;
+                        item.symbolId = itemId.symbolId;
+                        item.version = itemId.version;
+                        item.source = 2;
+                        item.open = openPrice;
+                        item.sincePreOpen = getSincePreOpen(msr.epoch);
+                        item.stagging = true;
+                        items.add(item);
+                    }
                 }
             }
         }
