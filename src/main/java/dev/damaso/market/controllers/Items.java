@@ -271,7 +271,7 @@ public class Items {
     }
 
     @GetMapping("/ib/snapshot")
-    public byte [] snapshot(@RequestParam String date) throws Exception {
+    public byte [] snapshot(@RequestParam String date, @RequestParam(required=false) String field) throws Exception {
         List<Integer> symbols = new Vector<Integer>();
         Iterable<Symbol> iterSymbols = this.symbolRepository.findAll();
         for (Symbol symbol : iterSymbols) {
@@ -281,6 +281,17 @@ public class Items {
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         LocalDate localDate = LocalDate.parse(date, dtf);
         Iterable<SnapshotWithMinute> items = snapshotRepository.findByDate(localDate);
+        if (field == null) {
+            field = "o";
+        }
+        int min;
+        if (field.equals("o")) {
+            min = -1;
+        } else if (field.equals("c")) {
+            min = 0;
+        } else {
+            throw new Error("Unknown field " + field);
+        }
         float fs[][] = null;
         List<float[][]> list = new Vector<>();
         int lastSymbolId = -1;
@@ -297,11 +308,13 @@ public class Items {
                 }
             }
             int m = item.getMinute();
-            if (m < 0) {
-                m = 0;
+            if (m < min) {
+                m = min;
             }
-            fs[m][1] = item.getLast();
-            fs[m][2] = item.getVolume() == 0 ? 0 : (float)Math.log(item.getVolume());
+            if (m-min < 42) {
+                fs[m-min][1] = item.getLast();
+                fs[m-min][2] = item.getVolume() == 0 ? 0 : (float)Math.log(item.getVolume());
+            }
         }
         if (fs != null) {
             list.add(fs);
