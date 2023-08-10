@@ -6,5 +6,6 @@ public interface MinuteItemBase {
     public float getClose();
     public float getHigh();
     public float getLow();
+    public long getVolume();
     public int getMinute();
 }

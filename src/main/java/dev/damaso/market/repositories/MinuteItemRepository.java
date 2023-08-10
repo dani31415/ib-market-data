@@ -34,8 +34,8 @@ public interface MinuteItemRepository extends CrudRepository<MinuteItem, MinuteI
     Iterable<MinuteItem> findBySymbolIdAndDateRange(int symbolId, LocalDate from, LocalDate to);
 
     @Query(nativeQuery = true, value = """
-    SELECT ot.open AS open, ct.close AS close, h AS high, l AS low, T.minute_group as minute, T.symbol_id as symbolId FROM (
-        SELECT MIN(minute) AS o, MAX(minute) AS c, MAX(high) as h, MIN(low) as l, ?2*FLOOR(minute/?2) AS minute_group, symbol_id, date 
+    SELECT ot.open AS open, ct.close AS close, h AS high, l AS low, v as volume, T.minute_group as minute, T.symbol_id as symbolId FROM (
+        SELECT MIN(minute) AS o, MAX(minute) AS c, MAX(high) as h, MIN(low) as l, SUM(volume) as v, ?2*FLOOR(minute/?2) AS minute_group, symbol_id, date 
         FROM market.minute_item 
         WHERE date=?1
         GROUP BY symbol_id, minute_group, date
