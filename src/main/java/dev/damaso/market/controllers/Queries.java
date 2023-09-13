@@ -71,8 +71,8 @@ public class Queries {
 		return result;
     }
 
-    @GetMapping("/dates")
-    public Collection<OrderDateDTO> dates(@RequestParam(required=false) String from) {
+    @GetMapping("/dates.old")
+    public Collection<OrderDateDTO> datesOld(@RequestParam(required=false) String from) {
         // TODO remove me (temporal solution to update period)
         periodOperations.updateDateMeans();
         Iterable<LocalDate> result;
@@ -95,6 +95,35 @@ public class Queries {
             resultDTO.add(orderDate);
             // TODO remove me (temporal solution to update period)
             periodOperations.updateDate(date, false);
+        }
+		return resultDTO;
+    }
+
+    @GetMapping("/dates")
+    public Collection<OrderDateDTO> dates(@RequestParam(required=false) String from) {
+        // TODO remove me (temporal solution to update period)
+        periodOperations.updateDateMeans();
+        Iterable<Period> result;
+        if (from!=null) {
+            DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+            LocalDate fromDate = LocalDate.parse(from, dtf);
+            result = periodRepository.findAllFromDate(fromDate);
+        } else {
+            result = periodRepository.findAll();
+        }
+
+        Vector<OrderDateDTO> resultDTO = new Vector<>();
+        int order = 0;
+        for (Period period : result) {
+            OrderDateDTO orderDate = new OrderDateDTO();
+            orderDate.order = order;
+            orderDate.date = period.date.toString();
+            orderDate.dayOfWeek = period.date.getDayOfWeek().toString();
+            orderDate.mean = period.mean;
+            order++;
+            resultDTO.add(orderDate);
+            // TODO remove me (temporal solution to update period)
+            periodOperations.updateDate(period.date, false);
         }
 		return resultDTO;
     }

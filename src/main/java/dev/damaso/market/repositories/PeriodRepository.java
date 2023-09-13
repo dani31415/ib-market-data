@@ -10,6 +10,12 @@ import org.springframework.data.repository.CrudRepository;
 import dev.damaso.market.entities.Period;
 
 public interface PeriodRepository extends CrudRepository<Period, Integer> {
+    @Query("SELECT p FROM Period as p ORDER by p.id ASC")
+    Iterable<Period> findAll();
+
+    @Query("SELECT p FROM Period as p WHERE p.date >= ?1 ORDER by p.id ASC")
+    Iterable<Period> findAllFromDate(LocalDate date);
+
     Optional<Period> findByDate(LocalDate date);
 
     List<Period> findByUpdated(boolean updated);

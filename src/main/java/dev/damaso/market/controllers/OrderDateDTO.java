@@ -4,4 +4,5 @@ public class OrderDateDTO {
     public int order;
     public String date;
     public String dayOfWeek;
+    public Float mean;
 }
