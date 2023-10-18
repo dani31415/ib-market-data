@@ -252,6 +252,11 @@ public class Queries {
         return api.nasdaqIsOpen();
     }
 
+    @GetMapping("/nasdaq/preopen")
+    public boolean nasdaqPreopen() throws Exception {
+        return api.nasdaqIsPreopen();
+    }
+
     @GetMapping("/nasdaq/openday")
     public boolean nasdaqOpenDay(String date) throws Exception {
         LocalDate localDate = LocalDate.parse(date);

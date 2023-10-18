@@ -18,6 +18,7 @@ public interface Api {
     void iserverMarketdataUnsubscribeall();
     void iserverMarketdataUnsubscribe(String conid);
     boolean nasdaqIsOpen();
+    boolean nasdaqIsPreopen();
     boolean nasdaqIsOpenDay(LocalDate localDate);
     ContractInfoResult contractInfo(String conid);
 }
