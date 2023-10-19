@@ -282,7 +282,7 @@ CREATE PROCEDURE configureDatabase()
         IF @schemaVersion = '21' THEN 
             UPDATE configuration SET value='22' WHERE `key`='schemaVersion';
 
-            ALTER TABLE `symbol` ADD COLUMN forbidden INT(1) DEFAULT 0 AFTER `disabled`;
+            ALTER TABLE `symbol` ADD COLUMN forbidden BIT DEFAULT 0 AFTER `disabled`;
         END IF;
     END //
 
