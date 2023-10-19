@@ -319,14 +319,17 @@ public class Items {
             }
         }
 
-        // Partial difference
-        for (int i=41; i>0; i--) {
-            fs[i][2] = fs[i][2] - fs[i-1][2];
-        }
-
         if (fs != null) {
             list.add(fs);
         }
+
+        // Partial difference
+        for(float f[][] : list) {
+            for (int i=41; i>0; i--) {
+                f[i][2] = f[i][2] - f[i-1][2];
+            }
+        }
+
         float fs2[] = new float[list.size() * 42 * 3];
         for (int i=0; i<list.size(); i++) {
             for (int j=0;j<42;j++) {
