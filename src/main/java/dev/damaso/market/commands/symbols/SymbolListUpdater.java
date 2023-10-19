@@ -52,6 +52,7 @@ public class SymbolListUpdater {
                                 newSymbol.shortName = cir.symbol;
                                 newSymbol.ib_conid = "" + cir.underlyingConId;
                                 newSymbol.createdAt = LocalDateTime.now(ZoneId.of("UTC"));
+                                newSymbol.forbidden = symbol.forbidden;
                                 symbolRepository.save(newSymbol);
                             }
                         }
@@ -103,6 +104,7 @@ public class SymbolListUpdater {
                                 newSymbol.shortName = symbol.shortName;
                                 newSymbol.ib_conid = conid;
                                 newSymbol.createdAt = LocalDateTime.now(ZoneId.of("UTC"));
+                                newSymbol.forbidden = symbol.forbidden;
                                 symbolRepository.save(newSymbol);
                             } else {
                                 System.out.println("Error (bad) for " + symbol.shortName + " " + symbol.id + " '" + symbol.ib_conid + "'");

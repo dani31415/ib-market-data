@@ -277,6 +277,13 @@ CREATE PROCEDURE configureDatabase()
                 PRIMARY KEY (`symbol_id`, `date`, `updated_at`)
             ) CHARACTER SET utf8mb4;
         END IF;
+
+        -- Version 21 --> 22
+        IF @schemaVersion = '21' THEN 
+            UPDATE configuration SET value='22' WHERE `key`='schemaVersion';
+
+            ALTER TABLE `symbol` ADD COLUMN forbidden INT(1) DEFAULT 0 AFTER `disabled`;
+        END IF;
     END //
 
     -- ALTER TABLE minute_item ADD INDEX (`date`, symbol_id);

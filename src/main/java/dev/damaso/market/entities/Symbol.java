@@ -17,6 +17,7 @@ public class Symbol {
     public String ib_conid;
     public String oldNames;
     public boolean disabled;
+    public boolean forbidden;
     public LocalDateTime createdAt;
     public LocalDateTime updatedAt;
 }
