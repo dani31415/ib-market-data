@@ -315,9 +315,15 @@ public class Items {
             }
             if (m-min < 42) {
                 fs[m-min][1] = item.getLast();
-                fs[m-min][2] = item.getVolume() == 0 ? 0 : (float)Math.log(item.getVolume());
+                fs[m-min][2] = item.getVolume();
             }
         }
+
+        // Partial difference
+        for (int i=41; i>0; i--) {
+            fs[i][2] = fs[i][2] - fs[i-1][2];
+        }
+
         if (fs != null) {
             list.add(fs);
         }
