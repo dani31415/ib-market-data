@@ -7,5 +7,5 @@ import java.time.LocalDateTime;
 public class SnapshotId implements Serializable {
     public LocalDate date;
     public int symbolId;
-    public LocalDateTime updatedAt;
+    public LocalDateTime datetime;
 }

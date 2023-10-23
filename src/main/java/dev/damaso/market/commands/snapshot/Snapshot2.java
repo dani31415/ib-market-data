@@ -236,9 +236,9 @@ public class Snapshot2 {
             ms.last = convertFloat(msr.lastPrice);
         }
         ms.volume = convertLong(msr.todayVolume);
-        ms.updatedAt = LocalDateTime.ofInstant(Instant.ofEpochMilli(msr.epoch), ZoneId.of("UTC"));
-        ms.updatedAt = ms.updatedAt.truncatedTo(ChronoUnit.SECONDS);
-        ms.date = ms.updatedAt.toLocalDate();
+        ms.datetime = LocalDateTime.ofInstant(Instant.ofEpochMilli(msr.epoch), ZoneId.of("UTC"));
+        ms.datetime = ms.datetime.truncatedTo(ChronoUnit.SECONDS);
+        ms.date = ms.datetime.toLocalDate();
         return ms;
     }
 

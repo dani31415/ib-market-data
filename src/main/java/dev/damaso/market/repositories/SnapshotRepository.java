@@ -16,10 +16,10 @@ public interface SnapshotRepository extends CrudRepository<Snapshot, SnapshotId>
             s.volume,
             s.last,
             s.date,
-            s.updated_at as updatedAt,
-            FLOOR( (60*hour(s.updated_at)+minute(updated_at) - 1)/10 ) - 78 as minute
+            s.datetime,
+            FLOOR( (60*hour(s.datetime)+minute(datetime) - 1)/10 ) - 78 as minute
         FROM snapshot as s
-        WHERE date=?1 order by symbol_id, minute, updated_at
+        WHERE date=?1 order by symbol_id, minute, datetime
     """)
     Iterable<SnapshotWithMinute> findByDate(LocalDate date);
 }

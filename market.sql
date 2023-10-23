@@ -284,6 +284,18 @@ CREATE PROCEDURE configureDatabase()
 
             ALTER TABLE `symbol` ADD COLUMN forbidden BIT DEFAULT 0 AFTER `disabled`;
         END IF;
+
+        -- Version 22 --> 23
+        IF @schemaVersion = '22' THEN 
+            UPDATE configuration SET value='23' WHERE `key`='schemaVersion';
+
+            -- defaults null
+            ALTER TABLE `snapshot` ADD COLUMN created_at DATETIME AFTER `updated_at`;
+            -- dfaults datetime
+            ALTER TABLE `snapshot` CHANGE created_at created_at DATETIME DEFAULT CURRENT_TIMESTAMP;
+            ALTER TABLE `snapshot` CHANGE `updated_at` `datetime` DATETIME;
+        END IF;
+
     END //
 
     -- ALTER TABLE minute_item ADD INDEX (`date`, symbol_id);

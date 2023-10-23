@@ -7,7 +7,7 @@ public interface SnapshotWithMinute {
     public int getSymbolId();
     public float getLast();
     public long getVolume();
-    public LocalDateTime getUpdatedAt();
+    public LocalDateTime getDatetime();
     public int getMinute();
     public LocalDate getDate();
 }
