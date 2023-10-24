@@ -296,6 +296,14 @@ CREATE PROCEDURE configureDatabase()
             ALTER TABLE `snapshot` CHANGE `updated_at` `datetime` DATETIME;
         END IF;
 
+        -- Version 23 --> 24
+        IF @schemaVersion = '23' THEN 
+            UPDATE configuration SET value='24' WHERE `key`='schemaVersion';
+
+            -- dfaults back to null
+            ALTER TABLE `snapshot` CHANGE created_at created_at DATETIME DEFAULT NULL;
+        END IF;
+
     END //
 
     -- ALTER TABLE minute_item ADD INDEX (`date`, symbol_id);

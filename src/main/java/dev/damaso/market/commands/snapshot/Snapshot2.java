@@ -8,7 +8,6 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -26,6 +25,7 @@ import dev.damaso.market.entities.Symbol;
 import dev.damaso.market.entities.Item;
 import dev.damaso.market.entities.ItemId;
 import dev.damaso.market.entities.Snapshot;
+import dev.damaso.market.entities.SnapshotId;
 import dev.damaso.market.entities.SymbolSnapshotStatusEnum;
 import dev.damaso.market.external.ibgw.Api;
 import dev.damaso.market.external.ibgw.MarketdataSnapshotResult;
@@ -163,7 +163,16 @@ public class Snapshot2 {
             // LocalDateTime date = LocalDateTime.ofInstant(Instant.ofEpochMilli(msr.epoch), ZoneId.systemDefault());
             // System.out.println(msr.shortName + ", " + ms.symbolId + ", " + ms.last + ", "+ msr.lastPrice + ", " + ms.volume + ", " + ms.status + ", " + ms.updatedAt);
 
-            snapshots.add(ms);
+            SnapshotId snapshotId;
+            snapshotId = new SnapshotId();
+            snapshotId.date = ms.date;
+            snapshotId.datetime = ms.datetime;
+            snapshotId.symbolId = ms.symbolId;
+            // Since ms.createdAt is different, we need to check that exists
+            // to avoid saving it again with updated createdAt
+            if (!snapshotRepository.existsById(snapshotId)) {
+                snapshots.add(ms);
+            }
 
             if (msr.todayOpeningPrice != null) {
                 float openPrice = convertFloat(msr.todayOpeningPrice);
@@ -239,6 +248,7 @@ public class Snapshot2 {
         ms.datetime = LocalDateTime.ofInstant(Instant.ofEpochMilli(msr.epoch), ZoneId.of("UTC"));
         ms.datetime = ms.datetime.truncatedTo(ChronoUnit.SECONDS);
         ms.date = ms.datetime.toLocalDate();
+        ms.createdAt = msr.requestAt;
         return ms;
     }
 
@@ -295,7 +305,9 @@ public class Snapshot2 {
     void iserverMarketdataSnapshotHelper(List<String> conids, List<MarketdataSnapshotResult> result) {
         MarketdataSnapshotResult[] msrs = iserverMarketdataSnapshot(conids); 
         int i = 0;
+        LocalDateTime requestAt = LocalDateTime.now().atZone(ZoneId.of("UTC")).toLocalDateTime();
         for (MarketdataSnapshotResult msr : msrs) {
+            msr.requestAt = requestAt;
             // System.out.println("0 " + msr.shortName + ", " + msr.lastPrice + ", " + msr.todayVolume);
             if (msr.shortName!=null && msr.shortName.equals("-")) {
                 msr.conid = conids.get(i); // we need to know which failed

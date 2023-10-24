@@ -31,4 +31,7 @@ public class Snapshot {
 
     @Id
     public LocalDateTime datetime;
+
+    @Id
+    public LocalDateTime createdAt;
 }

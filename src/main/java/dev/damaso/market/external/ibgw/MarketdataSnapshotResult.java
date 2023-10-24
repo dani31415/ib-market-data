@@ -1,5 +1,7 @@
 package dev.damaso.market.external.ibgw;
 
+import java.time.LocalDateTime;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class MarketdataSnapshotResult {
@@ -32,4 +34,6 @@ public class MarketdataSnapshotResult {
 
     @JsonProperty("_updated")
     public Long epoch;
+
+    public LocalDateTime requestAt;
 }
