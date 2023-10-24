@@ -1,7 +1,12 @@
 package dev.damaso.market.controllers;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -21,6 +26,7 @@ import dev.damaso.market.entities.Item;
 import dev.damaso.market.entities.MinuteItem;
 import dev.damaso.market.entities.MinuteItemBase;
 import dev.damaso.market.entities.Period;
+import dev.damaso.market.entities.Snapshot;
 import dev.damaso.market.entities.SnapshotWithMinute;
 import dev.damaso.market.entities.Symbol;
 import dev.damaso.market.repositories.ItemRepository;
@@ -273,7 +279,7 @@ public class Items {
     }
 
     @GetMapping("/ib/snapshot")
-    public byte [] snapshot(@RequestParam String date, @RequestParam(required=false) String field) throws Exception {
+    public byte [] snapshotOld(@RequestParam String date, @RequestParam(required=false) String field) throws Exception {
         List<Integer> symbols = new Vector<Integer>();
         Iterable<Symbol> iterSymbols = this.symbolRepository.findAll();
         for (Symbol symbol : iterSymbols) {
@@ -316,6 +322,91 @@ public class Items {
             if (m-min < 42) {
                 fs[m-min][1] = item.getLast();
                 fs[m-min][2] = item.getVolume();
+            }
+        }
+
+        if (fs != null) {
+            list.add(fs);
+        }
+
+        // Partial difference
+        for(float f[][] : list) {
+            for (int i=41; i>0; i--) {
+                f[i][2] = f[i][2] - f[i-1][2];
+            }
+        }
+
+        float fs2[] = new float[list.size() * 42 * 3];
+        for (int i=0; i<list.size(); i++) {
+            for (int j=0;j<42;j++) {
+                fs2[i*42*3 + 3*j + 0] = list.get(i)[j][0];
+                fs2[i*42*3 + 3*j + 1] = list.get(i)[j][1];
+                fs2[i*42*3 + 3*j + 2] = list.get(i)[j][2];
+            }
+        }
+        int [] shape = {list.size(), 42, 3};
+        byte [] bs = NpyBytes.fromArray(fs2, shape);
+        System.out.println("Returning: " + bs.length + "bytes");
+        return bs;
+    }
+
+    private int snapshotMinutes(LocalDateTime local, ZonedDateTime nasdaq) {
+        ZonedDateTime utc = local.atZone(ZoneId.of("UTC"));
+        long minutes = nasdaq.until(utc, ChronoUnit.MINUTES);
+        System.out.println(utc);
+        System.out.println(nasdaq);
+        System.out.println((int)(minutes/10));
+        return (int)(minutes / 10);
+    }
+
+    @GetMapping("/ib/snapshot.new")
+    public byte [] snapshot(@RequestParam String date, @RequestParam(required=false) String field) throws Exception {
+        List<Integer> symbols = new Vector<Integer>();
+        Iterable<Symbol> iterSymbols = this.symbolRepository.findAll();
+        for (Symbol symbol : iterSymbols) {
+            symbols.add(symbol.id);
+        }
+
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        LocalDate localDate = LocalDate.parse(date, dtf);
+
+        // Open hour same day
+        ZonedDateTime nasdaqOpen = ZonedDateTime.of(localDate, LocalTime.of(9,0), ZoneId.of("America/New_York"));
+
+        Iterable<Snapshot> items = snapshotRepository.findByDateDeterministic(localDate);
+        if (field == null) {
+            field = "o";
+        }
+        int min;
+        if (field.equals("o")) {
+            min = -1;
+        } else if (field.equals("c")) {
+            min = 0;
+        } else {
+            throw new Error("Unknown field " + field);
+        }
+        float fs[][] = null;
+        List<float[][]> list = new Vector<>();
+        int lastSymbolId = -1;
+        for (Snapshot item : items) {
+            if (lastSymbolId!=item.symbolId) {
+                lastSymbolId = item.symbolId;
+                int order = symbols.indexOf(lastSymbolId);
+                if (fs != null) {
+                    list.add(fs);
+                }
+                fs = new float[42][3];
+                for (int i=0;i<42;i++) {
+                    fs[i][0] = order;
+                }
+            }
+            int m = snapshotMinutes(item.datetime, nasdaqOpen);
+            if (m < min) {
+                m = min;
+            }
+            if (m-min < 42) {
+                fs[m-min][1] = item.last;
+                fs[m-min][2] = item.volume;
             }
         }
 

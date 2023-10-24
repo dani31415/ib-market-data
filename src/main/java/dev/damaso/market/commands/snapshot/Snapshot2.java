@@ -305,7 +305,7 @@ public class Snapshot2 {
     void iserverMarketdataSnapshotHelper(List<String> conids, List<MarketdataSnapshotResult> result) {
         MarketdataSnapshotResult[] msrs = iserverMarketdataSnapshot(conids); 
         int i = 0;
-        LocalDateTime requestAt = LocalDateTime.now().atZone(ZoneId.of("UTC")).toLocalDateTime();
+        LocalDateTime requestAt = LocalDateTime.now(ZoneId.of("UTC"));
         for (MarketdataSnapshotResult msr : msrs) {
             msr.requestAt = requestAt;
             // System.out.println("0 " + msr.shortName + ", " + msr.lastPrice + ", " + msr.todayVolume);

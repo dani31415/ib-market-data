@@ -10,8 +10,6 @@ import javax.persistence.Enumerated;
 import javax.persistence.Id;
 import javax.persistence.IdClass;
 
-import org.springframework.data.annotation.ReadOnlyProperty;
-
 @Entity
 @IdClass(SnapshotId.class)
 public class Snapshot {
@@ -32,6 +30,5 @@ public class Snapshot {
     @Id
     public LocalDateTime datetime;
 
-    @Id
     public LocalDateTime createdAt;
 }
