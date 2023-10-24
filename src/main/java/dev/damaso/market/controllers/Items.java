@@ -278,7 +278,7 @@ public class Items {
         return bs;
     }
 
-    @GetMapping("/ib/snapshot")
+    @GetMapping("/ib/snapshot.old")
     public byte [] snapshotOld(@RequestParam String date, @RequestParam(required=false) String field) throws Exception {
         List<Integer> symbols = new Vector<Integer>();
         Iterable<Symbol> iterSymbols = this.symbolRepository.findAll();
@@ -353,13 +353,29 @@ public class Items {
     private int snapshotMinutes(LocalDateTime local, ZonedDateTime nasdaq) {
         ZonedDateTime utc = local.atZone(ZoneId.of("UTC"));
         long minutes = nasdaq.until(utc, ChronoUnit.MINUTES);
-        System.out.println(utc);
-        System.out.println(nasdaq);
-        System.out.println((int)(minutes/10));
-        return (int)(minutes / 10);
+        int res = (int)Math.floor((minutes-1)/10.0);
+        // int res2 = snapshotMinutes2(local);
+        // if (res!=res2) {
+        //     System.out.println(utc);
+        //     // System.out.println(nasdaq);
+        //     System.out.println(minutes + " --> " + res);
+        //     System.out.println(res);
+        //     System.out.println(res2);
+        //     throw new Error("Error");
+        // }
+        return res;
     }
 
-    @GetMapping("/ib/snapshot.new")
+    private int snapshotMinutes2(LocalDateTime local) {
+        int hour = local.getHour();
+        int minute = local.getMinute();
+
+        // FLOOR( (60*hour(s.datetime)+minute(datetime) - 1)/10 ) - 78 as minute
+        int res = (int)Math.floor( (60*hour+minute - 1)/10 ) - 78;
+        return res;
+    }
+
+    @GetMapping("/ib/snapshot")
     public byte [] snapshot(@RequestParam String date, @RequestParam(required=false) String field) throws Exception {
         List<Integer> symbols = new Vector<Integer>();
         Iterable<Symbol> iterSymbols = this.symbolRepository.findAll();
