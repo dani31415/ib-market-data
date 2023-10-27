@@ -138,7 +138,7 @@ public class Snapshot2 {
             
             sleep(1000);
             System.out.println(iteration);
-        } while (pendingSymbolList.size()>16 && iteration < 16);
+        } while (pendingSymbolList.size()>10 && iteration < 16);
 
         System.out.println("TOTAL: " + (state.openMarketData.size() + state.cClosed + state.cHalted + state.cError));
         System.out.println("Waiting for persistence termination...");
