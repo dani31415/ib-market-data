@@ -14,6 +14,10 @@ import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import dev.damaso.market.external.ibgw.Api;
 import dev.damaso.market.external.ibgw.HistoryResult;
 import dev.damaso.market.external.ibgw.MarketdataSnapshotResult;
@@ -35,6 +39,9 @@ public class ApiImplementation implements Api {
     @Autowired
     RestTemplateConfiguration restTemplateConfiguration;
 
+    @Autowired
+    ObjectMapper objectMapper;
+
     @Retryable(value = Throwable.class, exceptionExpression = "#{message.contains('timed out')}")
     @Override
     public SearchResult[] iserverSecdefSearch(String symbol) {
@@ -42,12 +49,23 @@ public class ApiImplementation implements Api {
         SearchRequest searchRequest = new SearchRequest();
         searchRequest.symbol = symbol;
         String url = "%s/v1/api/iserver/secdef/search".formatted(baseUrl);
-        ResponseEntity<SearchResult[]> response = restTemplate0.postForEntity(
+        ResponseEntity<String> responseStr =   restTemplate0.postForEntity(
             url,
-            searchRequest,
-            SearchResult[].class);
+            searchRequest,            
+            String.class);
 
-        SearchResult[] result = response.getBody();
+        String str = responseStr.getBody();
+        if (str.startsWith("{\"error\":")) {
+            return null;
+        }
+        SearchResult[] result;
+        try {
+            result = objectMapper.readValue(str, SearchResult[].class);
+        } catch (JsonMappingException e) {
+            throw new Error(e);
+        } catch (JsonProcessingException e) {
+            throw new Error(e);
+        }
         return result;
     }
 

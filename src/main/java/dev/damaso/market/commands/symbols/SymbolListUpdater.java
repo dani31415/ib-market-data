@@ -88,9 +88,11 @@ public class SymbolListUpdater {
                         try {
                             SearchResult[] results = api.iserverSecdefSearch(symbol.shortName);
                             String conid = null;
-                            for (SearchResult result : results) {
-                                if (result.description.equals("NASDAQ")) {
-                                    conid = result.conid;
+                            if (results != null) {
+                                for (SearchResult result : results) {
+                                    if (result.description.equals("NASDAQ")) {
+                                        conid = result.conid;
+                                    }
                                 }
                             }
                             if (conid != null) {
@@ -126,10 +128,12 @@ public class SymbolListUpdater {
                 // System.out.println("Find conid for " + symbol.shortName);
                 try {
                     SearchResult[] searchResults = api.iserverSecdefSearch(symbol.shortName);
-                    for (SearchResult searchResult : searchResults) {
-                        if (searchResult.description != null && searchResult.description.equals("NASDAQ")) {
-                            // System.out.println(symbol.shortName + ", " + searchResult.conid + ", " + searchResult.description);
-                            conid = searchResult.conid;
+                    if (searchResults != null) {
+                        for (SearchResult searchResult : searchResults) {
+                            if (searchResult.description != null && searchResult.description.equals("NASDAQ")) {
+                                // System.out.println(symbol.shortName + ", " + searchResult.conid + ", " + searchResult.description);
+                                conid = searchResult.conid;
+                            }
                         }
                     }
                 } catch (HttpServerErrorException exception) {
