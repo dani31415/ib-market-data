@@ -60,8 +60,13 @@ public class UpdateDailyData implements Runnable {
     }
 
     private void runWithException() throws Exception {
-        // Stops quickly if there is no access to ib
-        api.reauthenticateHelper();
+        try {
+            api.reauthenticateHelper();
+        } catch (Throwable th) {
+            // Stops quickly if there is no access to ib
+            th.printStackTrace();
+            System.exit(1);
+        }
 
         loadOpenItemsBySymbolId();
 
