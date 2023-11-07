@@ -76,6 +76,7 @@ public class Orders {
         order.openPrice = orderRequest.openPrice;
         order.status = orderRequest.status;
         order.minute = orderRequest.minute;
+        order.buyDesiredPrice = orderRequest.buyDesiredPrice;
         Order newOrder = orderRepository.save(order);
         return newOrder;
     }

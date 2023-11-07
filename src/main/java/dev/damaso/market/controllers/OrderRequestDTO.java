@@ -9,4 +9,5 @@ public class OrderRequestDTO {
     public String status;
     public Integer minute;
     public String date;
+    public Float buyDesiredPrice;
 }
