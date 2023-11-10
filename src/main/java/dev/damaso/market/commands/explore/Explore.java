@@ -41,7 +41,7 @@ public class Explore {
     Api api;
 
     public void run() throws Exception {
-        HistoryResult hr = api.iserverMarketdataHistory("558869868", "11d", "1d");
+        HistoryResult hr = api.iserverMarketdataHistory("558869868", "11d", "1d", false);
         //ObjectMapper mapper = new ObjectMapper();
         for (HistoryResultData hrd : hr.data) {
             System.out.println(hrd.getT().toLocalDate());

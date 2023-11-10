@@ -64,7 +64,7 @@ public class Ping {
 		if (conid == null) {
 			throw new NotFoundException();
 		}
-		HistoryResult history = api.iserverMarketdataHistory(conid, days+"d", "1d");
+		HistoryResult history = api.iserverMarketdataHistory(conid, days+"d", "1d", false);
 		return history;
 	}
 

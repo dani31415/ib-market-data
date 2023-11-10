@@ -54,7 +54,7 @@ public class FixData2 {
           itemRepository.findAllBySymbolIdAndDateAndVersion(symbol.id, from, 0);
         for (Item item : items) {
             if (item.open == 0) {
-                HistoryResult historyResult = api.iserverMarketdataHistory(symbol.ib_conid, "30d", "1d");
+                HistoryResult historyResult = api.iserverMarketdataHistory(symbol.ib_conid, "30d", "1d", false);
                 for (HistoryResultData data : historyResult.data) {
                     if (data.getT().toLocalDate().equals(from)) {
                         System.out.println(symbol.id + ", " + data.getT() + ", " + data.o);
