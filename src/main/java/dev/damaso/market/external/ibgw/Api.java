@@ -6,7 +6,7 @@ import java.util.List;
 // https://www.interactivebrokers.com/api/doc.html
 public interface Api {
     SearchResult[] iserverSecdefSearch(String symbol);
-    HistoryResult iserverMarketdataHistory(String conid, String period, String var);
+    HistoryResult iserverMarketdataHistory(String conid, String period, String var, boolean outsideRth);
     void iserverReauthenticate();
     void ssoValidate();
     AuthStatusResult iserverAuthStatus();

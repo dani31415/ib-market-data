@@ -98,9 +98,9 @@ public class ApiImplementation implements Api {
 
     @Retryable(value = Throwable.class, exceptionExpression = "#{message.contains('timed out')}")
     @Override
-    public HistoryResult iserverMarketdataHistory(String conid, String period, String bar) {
+    public HistoryResult iserverMarketdataHistory(String conid, String period, String bar, boolean outsideRth) {
         RestTemplate restTemplate0 = restTemplateConfiguration.getRestTemplate();
-        String url = "%s/v1/api/iserver/marketdata/history?conid=%s&period=%s&bar=%s".formatted(baseUrl, conid, period, bar);
+        String url = "%s/v1/api/iserver/marketdata/history?conid=%s&period=%s&bar=%s&outsideRth=%s".formatted(baseUrl, conid, period, bar, outsideRth);
         ResponseEntity<HistoryResult> response = restTemplate0.exchange(
             url,
             HttpMethod.GET,

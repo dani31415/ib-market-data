@@ -119,7 +119,7 @@ public class UpdateDailyData implements Runnable {
     }
 
     private HistoryResult iserverMarketdataHistory(String ib_conid, long days) {
-        HistoryResult historyResult = api.iserverMarketdataHistory(ib_conid, "" + days + "d", "1d");
+        HistoryResult historyResult = api.iserverMarketdataHistory(ib_conid, "" + days + "d", "1d", false);
         return historyResult;
     }
 
@@ -131,7 +131,7 @@ public class UpdateDailyData implements Runnable {
         do {
             attempts++;
             try {
-                historyResult = api.iserverMarketdataHistory(ib_conid, "" + days + "d", "1d");
+                historyResult = api.iserverMarketdataHistory(ib_conid, "" + days + "d", "1d", false);
             } catch (HttpClientErrorException.Unauthorized ex) {
                 lastException = ex;
                 log("Unauthorized. Attempt to reauthorize.");
