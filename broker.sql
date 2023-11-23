@@ -95,6 +95,21 @@ CREATE PROCEDURE configureDatabase()
                 `friends` TEXT
             ) CHARACTER SET utf8mb4;
         END IF;
+
+        -- Version 6 --> 7
+        IF @schemaVersion = '6' THEN
+            UPDATE configuration SET value='7' WHERE `key`='schemaVersion';
+
+            ALTER TABLE `simulation_item` CHANGE `open_price` `purchase` float;
+            ALTER TABLE `simulation_item` CHANGE `gain` `gains` float;
+            ALTER TABLE `simulation_item` CHANGE `symbol_id` `symbol_id` int;
+            ALTER TABLE `simulation_item` CHANGE `ib_conid` `ib_conid` varchar(20);
+            ALTER TABLE `simulation_item` CHANGE `group_guid` `group_guid` varchar(36);
+            ALTER TABLE `simulation_item` ADD COLUMN `minute` int after `period`;
+            ALTER TABLE `simulation_item` ADD COLUMN `simulation_name` varchar(100) not null after `model_name`;
+            -- ALTER TABLE `simulation_item` DROP `group_guid` `purchase` float
+        END IF;
+
     END //
 
 DELIMITER ;

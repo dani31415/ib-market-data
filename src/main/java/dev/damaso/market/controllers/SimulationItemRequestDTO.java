@@ -1,11 +1,12 @@
 package dev.damaso.market.controllers;
 
 public class SimulationItemRequestDTO {
-    public String guid;
     public String symbol;
     public int period;
+    public Integer minute;
     public int order;
-    public float openPrice;
-    public float gain;
+    public Float purchase;
+    public Float gains;
     public String modelName;
+    public String simulationName;
 }
