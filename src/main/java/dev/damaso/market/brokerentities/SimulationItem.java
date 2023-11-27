@@ -18,11 +18,13 @@ public class SimulationItem {
     @Column(name = "\"order\"")
     public int order;
     public int period;
-    public int symbolId;
+    public Integer minute;
+    public Integer symbolId;
     public String ib_conid;
     public String symbolSrcName;
-    public float openPrice;
-    public float gain;
+    public Float purchase;
+    public Float gains;
     public String modelName;
+    public String simulationName;
     public LocalDateTime createdAt;
 }
