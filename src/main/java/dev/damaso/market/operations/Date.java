@@ -81,6 +81,28 @@ public class Date {
             "2023-09-04", // Labor Day
             "2023-11-23", // Thanksgiving Day
             "2023-12-25", // Christmas
+
+            "2024-01-01", // new year's day
+            "2024-01-15", // birthday of Martin Luther King, Jr
+            "2024-02-19", // Washington's birthday
+            "2024-03-29", // Good Friday
+            "2024-05-27", // Memorial Day
+            "2024-06-19", // Juneteenth
+            "2024-07-04", // Independence Day
+            "2024-09-02", // Labor Day
+            "2024-11-28", // Thanksgiving Day
+            "2024-12-25", // Christmas
+
+            "2025-01-01", // new year's day
+            "2025-01-20", // birthday of Martin Luther King, Jr
+            "2025-02-17", // Washington's birthday
+            "2025-04-18", // Good Friday
+            "2025-05-26", // Memorial Day
+            "2025-06-19", // Juneteenth
+            "2025-07-04", // Independence Day
+            "2025-09-01", // Labor Day
+            "2025-11-27", // Thanksgiving Day
+            "2025-12-25", // Christmas
         };
         DayOfWeek dow = localDate.getDayOfWeek();
         if (dow == DayOfWeek.SATURDAY || dow == DayOfWeek.SUNDAY) {
