@@ -4,7 +4,7 @@ public class OrderRequestDTO {
     public String groupGuid;
     public String symbolSrcName;
     public int order;
-    public float openPrice;
+    public Float openPrice;
     public String modelName;
     public String status;
     public Integer minute;
