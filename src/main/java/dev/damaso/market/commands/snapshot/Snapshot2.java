@@ -258,7 +258,12 @@ public class Snapshot2 {
 
     private long convertLong(String str) {
         if (str==null) return 0;
-        return Long.parseLong(str);
+        try {
+            return Long.parseLong(str);
+        } catch (Throwable th) {
+            th.printStackTrace();
+            return 0;
+        }
     }
 
     private float convertFloat(String str) {
