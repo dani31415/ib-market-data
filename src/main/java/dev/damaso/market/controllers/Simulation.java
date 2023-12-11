@@ -34,11 +34,12 @@ public class Simulation {
                 symbolId = symbol.id;
                 conid = symbol.ib_conid;
             }
-            Optional<SimulationItem> opt = simulationItemRepository.findBySimulationNameAndPeriodAndMinuteAndOrder(
+            Optional<SimulationItem> opt = simulationItemRepository.findBySimulationNameAndPeriodAndMinuteAndOrderAndModelName(
                 simulationItemRequest.simulationName,
                 simulationItemRequest.period,
                 simulationItemRequest.minute,
-                simulationItemRequest.order
+                simulationItemRequest.order,
+                simulationItemRequest.modelName
             );
             SimulationItem item;
             if (opt.isPresent()) {
