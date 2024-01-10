@@ -61,7 +61,7 @@ CREATE PROCEDURE configureDatabase()
         IF @schemaVersion = '2' THEN 
             UPDATE configuration SET value='3' WHERE `key`='schemaVersion';
 
-            CREATE TABLE `order` (
+            CREATE TABLE `order-old` (
                 `id` INT AUTO_INCREMENT PRIMARY KEY,
                 `group_guid` VARCHAR(36) NOT NULL,
                 `symbol_id` INT NOT NULL,
@@ -81,56 +81,56 @@ CREATE PROCEDURE configureDatabase()
         IF @schemaVersion = '3' THEN 
             UPDATE configuration SET value='4' WHERE `key`='schemaVersion';
 
-            ALTER TABLE `order` ADD COLUMN quantity FLOAT;
-            ALTER TABLE `order` ADD COLUMN `description` TEXT;
-            ALTER TABLE `order` ADD COLUMN renewal_date DATETIME;
-            ALTER TABLE `order` ADD COLUMN `created_at` DATETIME;
-            ALTER TABLE `order` ADD COLUMN `updated_at` DATETIME;
-            ALTER TABLE `order` ADD COLUMN `buy_order_id` VARCHAR(100);
-            ALTER TABLE `order` ADD COLUMN `sell_order_id` VARCHAR(100);
+            ALTER TABLE `order-old` ADD COLUMN quantity FLOAT;
+            ALTER TABLE `order-old` ADD COLUMN `description` TEXT;
+            ALTER TABLE `order-old` ADD COLUMN renewal_date DATETIME;
+            ALTER TABLE `order-old` ADD COLUMN `created_at` DATETIME;
+            ALTER TABLE `order-old` ADD COLUMN `updated_at` DATETIME;
+            ALTER TABLE `order-old` ADD COLUMN `buy_order_id` VARCHAR(100);
+            ALTER TABLE `order-old` ADD COLUMN `sell_order_id` VARCHAR(100);
         END IF;
 
         -- Version 4 --> 5
         IF @schemaVersion = '4' THEN 
             UPDATE configuration SET value='5' WHERE `key`='schemaVersion';
 
-            ALTER TABLE `order` ADD COLUMN buy_order_price FLOAT;
-            ALTER TABLE `order` ADD COLUMN buy_position_price FLOAT;
-            ALTER TABLE `order` ADD COLUMN sell_order_price FLOAT;
-            ALTER TABLE `order` ADD COLUMN sell_position_price FLOAT;
+            ALTER TABLE `order-old` ADD COLUMN buy_order_price FLOAT;
+            ALTER TABLE `order-old` ADD COLUMN buy_position_price FLOAT;
+            ALTER TABLE `order-old` ADD COLUMN sell_order_price FLOAT;
+            ALTER TABLE `order-old` ADD COLUMN sell_position_price FLOAT;
         END IF;
 
         -- Version 5 --> 6
         IF @schemaVersion = '5' THEN 
             UPDATE configuration SET value='6' WHERE `key`='schemaVersion';
 
-            ALTER TABLE `order` ADD COLUMN ask_price_at_buy_order FLOAT;
-            ALTER TABLE `order` ADD COLUMN last_price_at_buy_order FLOAT;
-            ALTER TABLE `order` ADD COLUMN ask_price_at_buy FLOAT;
-            ALTER TABLE `order` ADD COLUMN last_price_at_buy FLOAT;
-            ALTER TABLE `order` ADD COLUMN bid_price_at_sell_order FLOAT;
-            ALTER TABLE `order` ADD COLUMN last_price_at_sell_order FLOAT;
-            ALTER TABLE `order` ADD COLUMN bid_price_at_sell FLOAT;
-            ALTER TABLE `order` ADD COLUMN last_price_at_sell FLOAT;
+            ALTER TABLE `order-old` ADD COLUMN ask_price_at_buy_order FLOAT;
+            ALTER TABLE `order-old` ADD COLUMN last_price_at_buy_order FLOAT;
+            ALTER TABLE `order-old` ADD COLUMN ask_price_at_buy FLOAT;
+            ALTER TABLE `order-old` ADD COLUMN last_price_at_buy FLOAT;
+            ALTER TABLE `order-old` ADD COLUMN bid_price_at_sell_order FLOAT;
+            ALTER TABLE `order-old` ADD COLUMN last_price_at_sell_order FLOAT;
+            ALTER TABLE `order-old` ADD COLUMN bid_price_at_sell FLOAT;
+            ALTER TABLE `order-old` ADD COLUMN last_price_at_sell FLOAT;
         END IF;
 
         -- Version 6 --> 7
         IF @schemaVersion = '6' THEN 
             UPDATE configuration SET value='7' WHERE `key`='schemaVersion';
 
-            ALTER TABLE `order` ADD COLUMN buy_order_at DATETIME;
-            ALTER TABLE `order` ADD COLUMN buy_at DATETIME;
-            ALTER TABLE `order` ADD COLUMN sell_order_at DATETIME;
-            ALTER TABLE `order` ADD COLUMN sell_at DATETIME;
-            ALTER TABLE `order` ADD COLUMN model_name VARCHAR(100);
+            ALTER TABLE `order-old` ADD COLUMN buy_order_at DATETIME;
+            ALTER TABLE `order-old` ADD COLUMN buy_at DATETIME;
+            ALTER TABLE `order-old` ADD COLUMN sell_order_at DATETIME;
+            ALTER TABLE `order-old` ADD COLUMN sell_at DATETIME;
+            ALTER TABLE `order-old` ADD COLUMN model_name VARCHAR(100);
         END IF;
 
         -- Version 7 --> 8
         IF @schemaVersion = '7' THEN 
             UPDATE configuration SET value='8' WHERE `key`='schemaVersion';
 
-            ALTER TABLE `order` ADD COLUMN next_renewal_order_id INT;
-            ALTER TABLE `order` ADD COLUMN previous_renewal_order_id INT;
+            ALTER TABLE `order-old` ADD COLUMN next_renewal_order_id INT;
+            ALTER TABLE `order-old` ADD COLUMN previous_renewal_order_id INT;
         END IF;
 
         -- Version 8 --> 9
@@ -138,8 +138,8 @@ CREATE PROCEDURE configureDatabase()
             UPDATE configuration SET value='9' WHERE `key`='schemaVersion';
 
             -- ALTER TABLE `symbol` ADD COLUMN available INT(1) DEFAULT 1;
-            ALTER TABLE `order` ADD COLUMN buy_order_at_date date as (date(buy_order_at));
-            ALTER TABLE `order` ADD COLUMN sell_order_at_date date as (date(sell_order_at));
+            ALTER TABLE `order-old` ADD COLUMN buy_order_at_date date as (date(buy_order_at));
+            ALTER TABLE `order-old` ADD COLUMN sell_order_at_date date as (date(sell_order_at));
         END IF;
 
         -- Version 9 --> 10
@@ -159,14 +159,14 @@ CREATE PROCEDURE configureDatabase()
         IF @schemaVersion = '10' THEN 
             UPDATE configuration SET value='11' WHERE `key`='schemaVersion';
 
-            ALTER TABLE `order` ADD COLUMN symbol_src_name VARCHAR(100);
+            ALTER TABLE `order-old` ADD COLUMN symbol_src_name VARCHAR(100);
         END IF;
 
         -- Version 11 --> 12
         IF @schemaVersion = '11' THEN 
             UPDATE configuration SET value='12' WHERE `key`='schemaVersion';
 
-            CREATE TABLE `simulation_item` (
+            CREATE TABLE `simulation_item-old` (
                 `id` INT AUTO_INCREMENT PRIMARY KEY,
                 `group_guid` VARCHAR(36) NOT NULL,
                 `symbol_id` INT NOT NULL,
@@ -207,7 +207,7 @@ CREATE PROCEDURE configureDatabase()
         IF @schemaVersion = '15' THEN 
             UPDATE configuration SET value='16' WHERE `key`='schemaVersion';
 
-            CREATE TABLE `log` (
+            CREATE TABLE `log-old` (
                 `id` INT AUTO_INCREMENT PRIMARY KEY,
                 `source` VARCHAR(36) NOT NULL,
                 `message` TEXT NOT NULL,
@@ -302,6 +302,17 @@ CREATE PROCEDURE configureDatabase()
 
             -- dfaults back to null
             ALTER TABLE `snapshot` CHANGE created_at created_at DATETIME DEFAULT NULL;
+        END IF;
+
+        -- Version 24 --> 25
+        IF @schemaVersion = '24' THEN 
+            UPDATE configuration SET value='25' WHERE `key`='schemaVersion';
+
+            CREATE TABLE update_log  (
+                `id` INT AUTO_INCREMENT PRIMARY KEY,
+                `name` varchar(255),
+                `datetime` datetime
+            ) CHARACTER SET utf8mb4;
         END IF;
 
     END //
