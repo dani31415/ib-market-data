@@ -274,7 +274,7 @@ CREATE PROCEDURE configureDatabase()
                 `volume` bigint,
                 `status` TINYINT(4),
                 `updated_at` DATETIME,
-                PRIMARY KEY (`symbol_id`, `date`, `updated_at`)
+                PRIMARY KEY (`date`, `symbol_id`, `updated_at`)
             ) CHARACTER SET utf8mb4;
         END IF;
 
