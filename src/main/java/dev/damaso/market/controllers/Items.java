@@ -263,6 +263,10 @@ public class Items {
                             value = minuteItem.getClose();
                         } else if (field.equals("v")) {
                             value = (float)minuteItem.getVolume();
+                        } else if (field.equals("l")) {
+                            value = (float)minuteItem.getLow();
+                        } else if (field.equals("h")) {
+                            value = (float)minuteItem.getHigh();
                         } else {
                             throw new Error("Unknown field " + field);
                         }
