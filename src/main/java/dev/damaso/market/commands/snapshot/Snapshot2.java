@@ -27,6 +27,7 @@ import dev.damaso.market.entities.ItemId;
 import dev.damaso.market.entities.Snapshot;
 import dev.damaso.market.entities.SnapshotId;
 import dev.damaso.market.entities.SymbolSnapshotStatusEnum;
+import dev.damaso.market.entities.UpdateLog;
 import dev.damaso.market.external.ibgw.Api;
 import dev.damaso.market.external.ibgw.MarketdataSnapshotResult;
 import dev.damaso.market.operations.Date;
@@ -34,6 +35,7 @@ import dev.damaso.market.repositories.ItemRepository;
 import dev.damaso.market.repositories.PeriodRepository;
 import dev.damaso.market.repositories.SnapshotRepository;
 import dev.damaso.market.repositories.SymbolRepository;
+import dev.damaso.market.repositories.UpdateLogRepository;
 
 @Component
 public class Snapshot2 {
@@ -48,6 +50,9 @@ public class Snapshot2 {
 
     @Autowired
     ItemRepository itemRepository;
+
+    @Autowired
+    UpdateLogRepository updateLogRepository;
 
     @Autowired
     Api api;
@@ -145,6 +150,13 @@ public class Snapshot2 {
         System.out.println("Waiting for persistence termination...");
         executor.shutdown();
         executor.awaitTermination(600, TimeUnit.SECONDS);
+
+        LocalDateTime now = LocalDateTime.now(ZoneId.of("UTC"));
+        UpdateLog updateLog = new UpdateLog();
+        updateLog.name = "snapshot10";
+        updateLog.datetime = now;
+        updateLogRepository.save(updateLog);
+
         System.out.println("Number of open: " + state.openMarketData.size());
         System.out.println("Number of closed: " + state.cClosed);
         System.out.println("Number of halted: " + state.cHalted);
