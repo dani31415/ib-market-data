@@ -5,6 +5,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
 import dev.damaso.market.commands.explore.Explore;
+import dev.damaso.market.commands.fixdata.FixDailyData;
 import dev.damaso.market.commands.fixdata.FixData;
 import dev.damaso.market.commands.fixdata.FixData2;
 import dev.damaso.market.commands.localdata.LoadData;
@@ -51,6 +52,9 @@ public class CommandLine implements CommandLineRunner {
 
     @Autowired
     Snapshot2Fix snapshot2Fix;
+
+    @Autowired
+    FixDailyData fixDailyData;
 
     @Autowired
     Explore explore;
@@ -100,6 +104,8 @@ public class CommandLine implements CommandLineRunner {
             snapshot2.run();
         } else if (args[0].equals("snapshot2-fix")) {
             snapshot2Fix.run();
+        } else if (args[0].equals("daily-fix")) {
+            fixDailyData.run();
         } else if (args[0].equals("explore")) {
             explore.run();
         } else if (args[0].equals("update-means")) {

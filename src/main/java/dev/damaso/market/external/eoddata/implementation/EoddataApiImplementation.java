@@ -31,6 +31,9 @@ public class EoddataApiImplementation implements EoddataApi {
     // http://ws.eoddata.com/data.asmx
     String baseUrl = "http://ws.eoddata.com";
 
+    int tokenUsage = 0;
+    String token;
+
     public EoddataApiImplementation() {
         this.xmlRestTemplate = createXMLRestTemplate(); 
     }
@@ -50,12 +53,18 @@ public class EoddataApiImplementation implements EoddataApi {
 
     @Override
     public String getToken() {
-        String user = env.getProperty("EODDATA_USER");
-        String password = env.getProperty("EODDATA_PASSWORD");
-        String url = String.format("%s/data.asmx/Login?Username=%s&Password=%s", baseUrl, user, password);
-        ResponseEntity<LoginResponse> loginResponse = xmlRestTemplate.getForEntity(url, LoginResponse.class);
-        LoginResponse login = loginResponse.getBody();
-        return login.token;
+        if (this.token == null || this.tokenUsage > 1000) {
+            String user = env.getProperty("EODDATA_USER");
+            String password = env.getProperty("EODDATA_PASSWORD");
+            String url = String.format("%s/data.asmx/Login?Username=%s&Password=%s", baseUrl, user, password);
+            ResponseEntity<LoginResponse> loginResponse = xmlRestTemplate.getForEntity(url, LoginResponse.class);
+            LoginResponse login = loginResponse.getBody();
+            this.tokenUsage = 0;
+            this.token = login.token;
+            return this.token;
+        }
+        this.tokenUsage ++;
+        return this.token;
     }
 
     @Override
