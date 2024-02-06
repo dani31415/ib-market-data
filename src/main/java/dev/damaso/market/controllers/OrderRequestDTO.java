@@ -10,4 +10,5 @@ public class OrderRequestDTO {
     public Integer minute;
     public String date;
     public Float buyDesiredPrice;
+    public String optimization;
 }
