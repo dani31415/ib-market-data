@@ -83,7 +83,7 @@ public class Orders {
     }
 
     @GetMapping("/orders")
-    public Iterable<Order> getOrders(@RequestParam(required=false) String status, @RequestParam(required=false) String date, @RequestParam(required=false) Integer minute) throws Exception {
+    public Iterable<Order> getOrders(@RequestParam(required=false) String status, @RequestParam(required=false) String date, @RequestParam(required=false) Integer minute, @RequestParam(required=false) String modelName) throws Exception {
         if (status != null) {
             return orderRepository.findAllByStatus(status);
         } else if (date != null && minute != null) {
@@ -92,6 +92,8 @@ public class Orders {
         } else if (date != null) {
             LocalDate localDate = LocalDate.parse(date);
             return orderRepository.findAllByDate(localDate);
+        } else if (modelName != null) {
+            return orderRepository.findAllByModelName(modelName);
         } else {
             return orderRepository.findAll();
         }
