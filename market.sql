@@ -315,13 +315,16 @@ CREATE PROCEDURE configureDatabase()
             ) CHARACTER SET utf8mb4;
         END IF;
 
+        -- Version 25 --> 26
+        IF @schemaVersion = '25' THEN
+            UPDATE configuration SET value='26' WHERE `key`='schemaVersion';
+
+            ALTER TABLE `symbol` ADD COLUMN `forbidden_at` DATETIME after `forbidden`;
+            -- ALTER TABLE `simulation_item` DROP `group_guid` `purchase` float
+        END IF;
+
     END //
 
-    -- ALTER TABLE minute_item ADD INDEX (`date`, symbol_id);
-    -- ALTER TABLE item ADD INDEX (`date`, symbol_id);
-
-    -- ALTER TABLE item DROP PRIMARY KEY;
-    -- ALTER TABLE item ADD PRIMARY KEY (`date`, symbol_id);
 
 DELIMITER ;
 

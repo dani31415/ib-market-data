@@ -149,8 +149,12 @@ public class Queries {
 	public Symbol symbolAllowed(@PathVariable Integer symbolId, @RequestBody String inputJson) throws Exception {
         System.out.println(inputJson);
         Symbol symbol = symbolRepository.findById(symbolId).orElseThrow(NotFoundException::new);
+        boolean forbidden = symbol.forbidden;
         ObjectReader objectReader = objectMapper.readerForUpdating(symbol);
         Symbol updatedSymbol = objectReader.readValue(inputJson);
+        if (forbidden != updatedSymbol.forbidden) {
+            updatedSymbol.forbiddenAt = LocalDateTime.now(ZoneId.of("UTC"));
+        }
         updatedSymbol.updatedAt = LocalDateTime.now(ZoneId.of("UTC"));
         symbolRepository.save(updatedSymbol);
         return updatedSymbol;

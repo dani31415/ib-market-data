@@ -18,6 +18,7 @@ public class Symbol {
     public String oldNames;
     public boolean disabled;
     public boolean forbidden;
+    public LocalDateTime forbiddenAt;
     public LocalDateTime createdAt;
     public LocalDateTime updatedAt;
 }
