@@ -1,7 +1,9 @@
 package dev.damaso.market.commands.snapshot;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -69,32 +71,44 @@ public class Snapshot2Fix {
         }
 
         ExecutorService executor = Executors.newFixedThreadPool(8);
-        ZonedDateTime start = ZonedDateTime.of(2023, 11, 10, 0, 0, 0, 0, ZoneId.of("America/New_York"));
-        ZonedDateTime open = ZonedDateTime.of(2023, 11, 10, 8, 40, 0, 0, ZoneId.of("America/New_York"));
-        ZonedDateTime end = ZonedDateTime.of(2023, 11, 10, 15, 20, 0, 0, ZoneId.of("UTC"));
+        ZonedDateTime open  = ZonedDateTime.of(2024, 4, 26, 8, 40, 0, 0, ZoneId.of("America/New_York"));
+        // Dates where snapshot failed, multiple of 10 minutes (inclusive)
+        ZonedDateTime start = ZonedDateTime.of(2024, 4, 26, 18, 10, 0, 0, ZoneId.of("Europe/Madrid"));
+        ZonedDateTime end   = ZonedDateTime.of(2024, 4, 26, 22, 0, 0, 0, ZoneId.of("Europe/Madrid"));
         System.out.println(start);
         System.out.println(end);
 
+        ZonedDateTime start0 = start;
+        start = start.plus(-11, ChronoUnit.MINUTES);
+        end = end.plus(-10, ChronoUnit.MINUTES);
         for (Symbol symbol : pendingSymbolList) {
             if (symbol.id <= 0) {
                 continue;
             }
-            System.out.println("conid: " + symbol.ib_conid + " id: " + symbol.id);
             try {
-                HistoryResult historyResult = this.api.iserverMarketdataHistory(symbol.ib_conid, "1d", "10min", true);
+                HistoryResult historyResult = this.api.iserverMarketdataHistory(symbol.ib_conid, "4d", "10min", true);
+                System.out.println("conid: " + symbol.ib_conid + " id: " + symbol.id + " len: " + historyResult.data.size());
                 long volume = 0;
                 List<Snapshot> snapshots = new Vector<>();
+                // Get last volume same day
+                LocalDateTime utcStart0 = start0.withZoneSameInstant(ZoneOffset.UTC).toLocalDateTime();
+                Iterable<Snapshot> lastIterable = snapshotRepository.findByDatAndSymbolId(start.toLocalDate(), symbol.id, utcStart0);
+                if (lastIterable.iterator().hasNext()) {
+                    Snapshot lastSnapshot = lastIterable.iterator().next();
+                    volume = lastSnapshot.volume;
+                }
                 for (HistoryResultData item : historyResult.data) {
                     ZonedDateTime itemTime = item.getT().atZone(ZoneId.of("UTC"));
+
                     // ZonedDateTime nyItemTime = itemTime.withZoneSameInstant(ZoneId.of("America/New_York"));
                     // System.out.println(itemTime);
-                    if (start.compareTo(itemTime) <= 0 && itemTime.compareTo(end) < 0) {
+                    if (start.compareTo(itemTime) <= 0 && itemTime.compareTo(end) <= 0) {
                         volume += item.v*100;
-                        if (open.compareTo(itemTime) <= 0 && itemTime.compareTo(end) < 0) {
+                        if (open.compareTo(itemTime) <= 0 && itemTime.compareTo(end) <= 0) {
                             // Values account to close
                             ZonedDateTime saveTime = itemTime.plus(10, ChronoUnit.MINUTES);
                             ZonedDateTime utcSaveTime = saveTime.withZoneSameInstant(ZoneId.of("UTC"));
-                            // System.out.println(saveTime);
+                            System.out.println(saveTime);
                             // System.out.println(item.c);
                             // System.out.println(volume);
                             Snapshot snapshot = new Snapshot();
@@ -113,7 +127,9 @@ public class Snapshot2Fix {
                     snapshotRepository.saveAll(snapshots);
                 });
             } catch (HttpServerErrorException.InternalServerError ex) {
-                System.out.println("Failed");
+                if (!symbol.disabled) {
+                    System.out.println("Failed");
+                }
             }
         }
         executor.shutdown();
