@@ -1,6 +1,8 @@
 package dev.damaso.market.controllers;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -15,8 +17,14 @@ import java.nio.file.Path;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
+
 import org.springframework.web.bind.annotation.RequestParam;
 
 import org.jetbrains.bio.npy.NpyFile;
@@ -56,6 +64,9 @@ public class Queries {
 
     @Autowired
     Api api;
+
+    @Autowired
+    ObjectMapper objectMapper;
 
     @GetMapping("/snapshot")
 	public List<SymbolSnapshot> snapshot() {
@@ -132,6 +143,21 @@ public class Queries {
 	public Iterable<Symbol> allSymbolsIB() {
 		Iterable<Symbol> iterable = symbolRepository.findAll();
 		return iterable;
+	}
+
+    @PatchMapping("/ib/symbols/{symbolId}")
+	public Symbol symbolAllowed(@PathVariable Integer symbolId, @RequestBody String inputJson) throws Exception {
+        System.out.println(inputJson);
+        Symbol symbol = symbolRepository.findById(symbolId).orElseThrow(NotFoundException::new);
+        boolean forbidden = symbol.forbidden;
+        ObjectReader objectReader = objectMapper.readerForUpdating(symbol);
+        Symbol updatedSymbol = objectReader.readValue(inputJson);
+        if (forbidden != updatedSymbol.forbidden) {
+            updatedSymbol.forbiddenAt = LocalDateTime.now(ZoneId.of("UTC"));
+        }
+        updatedSymbol.updatedAt = LocalDateTime.now(ZoneId.of("UTC"));
+        symbolRepository.save(updatedSymbol);
+        return updatedSymbol;
 	}
 
     @GetMapping("/ib/averagevolume")
