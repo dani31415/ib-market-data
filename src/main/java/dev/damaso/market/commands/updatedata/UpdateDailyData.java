@@ -8,6 +8,10 @@ import java.time.ZoneId;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
+import java.util.Vector;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -42,6 +46,8 @@ public class UpdateDailyData implements Runnable {
 
     HashMap<Integer, LocalDate> lastOpenItemsBySymbolId;
 
+    int totalUpdated = 0;
+
     public void run() {
         try {
             runWithException();
@@ -72,7 +78,9 @@ public class UpdateDailyData implements Runnable {
 
         List<LastItem> lastItems = itemRepository.findMaxDateGroupBySymbol();
         LocalDate now = LocalDate.now();
-        int totalUpdated = 0;
+        List<Exception> exceptionList = new Vector<>();
+        ExecutorService executor = Executors.newFixedThreadPool(4);
+
         for(LastItem lastItem : lastItems) {
             try {
                 Symbol symbol = getSymbolById(lastItem.getSymbolId());
@@ -87,9 +95,16 @@ public class UpdateDailyData implements Runnable {
                     log(symbol.ib_conid);
                     log("Get from " + lastItem.getDate() + " and " + days + "days");
                     HistoryResult historyResult = iserverMarketdataHistory(symbol.ib_conid, days);
-                    int result = saveResult(historyResult, symbol.id);
-                    totalUpdated += result;
-                    log("Saved for id=" + symbol.id + " " + result + " items");
+                    executor.submit( () -> {
+                        try {
+                            int result = saveResult(historyResult, symbol.id);
+                            totalUpdated += result;
+                            log("Saved for id=" + symbol.id + " " + result + " items");
+                        } catch (Exception ex) {
+                            ex.printStackTrace();
+                            exceptionList.add(ex);
+                        }
+                    });
                 }
             } catch (HttpServerErrorException.InternalServerError ex) {
                 // Some symbols raise this exception. We can safely continue with other symbols.
@@ -114,8 +129,14 @@ public class UpdateDailyData implements Runnable {
                 throw ex;
             }
         }
+
+        executor.shutdown();
+        executor.awaitTermination(600, TimeUnit.SECONDS);
         System.out.println("Total updates: " + totalUpdated);
         periodOperations.updateDateMeans();
+        if (exceptionList.size()>0) {
+            System.exit(1);
+        }
     }
 
     private HistoryResult iserverMarketdataHistory(String ib_conid, long days) {
