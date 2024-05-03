@@ -24,6 +24,7 @@ public class SimulationItem {
     public String symbolSrcName;
     public Float purchase;
     public Float gains;
+    public Float early;
     public String modelName;
     public String simulationName;
     public LocalDateTime createdAt;

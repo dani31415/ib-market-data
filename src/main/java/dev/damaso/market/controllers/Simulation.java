@@ -70,6 +70,7 @@ public class Simulation {
             item.createdAt = LocalDateTime.now(ZoneId.of("UTC"));
             item.purchase = simulationItemRequest.purchase;
             item.gains = simulationItemRequest.gains;
+            item.early = simulationItemRequest.early;
             simulationItemRepository.save(item);
         }
         return true;
@@ -100,6 +101,7 @@ public class Simulation {
             sir.symbolSrcName = item.symbolSrcName;
             sir.purchase = item.purchase;
             sir.gains = item.gains;
+            sir.early = item.early;
             sir.modelName = item.modelName;
             sir.simulationName = item.simulationName;
             sir.createdAt = item.createdAt;

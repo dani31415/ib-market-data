@@ -110,6 +110,12 @@ CREATE PROCEDURE configureDatabase()
             -- ALTER TABLE `simulation_item` DROP `group_guid` `purchase` float
         END IF;
 
+        IF @schemaVersion = '7' THEN
+            UPDATE configuration SET value='8' WHERE `key`='schemaVersion';
+
+            ALTER TABLE `simulation_item` ADD COLUMN `early` float after `gains`;
+        END IF;
+
     END //
 
 DELIMITER ;
