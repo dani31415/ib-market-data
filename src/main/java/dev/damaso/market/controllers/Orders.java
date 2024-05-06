@@ -127,7 +127,9 @@ public class Orders {
             to = LocalDateTime.now();
         }
         LocalDateTime preOpen = Date.getPreOpen(order.createdAt);
-        Iterable<Log> logs = logRepository.findByDateRangeAndSubstringAndSource(from, to, "%" + orderId + "%", "EXECUTE_ORDER");
+        String pattern0 = "%:" + orderId + "%";
+        String pattern1 = "%#" + orderId + "%";
+        Iterable<Log> logs = logRepository.findByDateRangeAndSubstringAndSource2(from, to, pattern0, pattern1, "EXECUTE_ORDER");
         List<IbOrderDTO> ibOrderList = new ArrayList<>();
         IbOrderDTO previousLogOrder = null;
         for (Log log : logs) {

@@ -14,7 +14,13 @@ public interface LogRepository extends PagingAndSortingRepository<Log, Integer> 
         SELECT l FROM Log AS l
            WHERE l.createdAt >= ?1 AND l.createdAt < ?2 AND l.object LIKE ?3 AND l.source=?4 ORDER BY l.createdAt ASC, l.id ASC
     """)
-    Iterable<Log> findByDateRangeAndSubstringAndSource(LocalDateTime from, LocalDateTime to, String message, String surce);
+    Iterable<Log> findByDateRangeAndSubstringAndSource(LocalDateTime from, LocalDateTime to, String message, String source);
+
+    @Query("""
+        SELECT l FROM Log AS l
+           WHERE l.createdAt >= ?1 AND l.createdAt < ?2 AND (l.object LIKE ?3 or l.object LIKE ?4) AND l.source=?5 ORDER BY l.createdAt ASC, l.id ASC
+    """)
+    Iterable<Log> findByDateRangeAndSubstringAndSource2(LocalDateTime from, LocalDateTime to, String pattern0, String pattern1, String source);
 
     @Query("""
         SELECT l FROM Log AS l
