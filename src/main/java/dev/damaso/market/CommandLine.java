@@ -83,11 +83,14 @@ public class CommandLine implements CommandLineRunner {
     @Autowired
     PingServices pingServices;
 
+    boolean _isCommandLine = false;
+
     @Override
     public void run(String... args) throws Exception {
         if (args.length==0) {
 			return;
 		}
+        _isCommandLine = true;
         if (args[0].equals("load-data")) {
             loadData.run();
         } else if (args[0].equals("update-data")) {
@@ -130,5 +133,9 @@ public class CommandLine implements CommandLineRunner {
             // Configuration configuration = configurationRepository.findById("schemaVersion").get();
             // System.out.println(configuration.getValue());
         }
+    }
+
+    public boolean isCommandLine() {
+        return this._isCommandLine;
     }
 }

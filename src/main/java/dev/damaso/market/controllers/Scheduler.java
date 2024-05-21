@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import dev.damaso.market.CommandLine;
 import dev.damaso.market.brokerentities.Log;
 import dev.damaso.market.brokerentities.Order;
 import dev.damaso.market.brokerrepositories.LogRepository;
@@ -31,6 +32,9 @@ public class Scheduler {
     OrderRepository orderRepository;
 
     @Autowired
+    CommandLine commandLine;
+
+    @Autowired
     Api api;
 
 
@@ -45,6 +49,10 @@ public class Scheduler {
 
     @Scheduled(fixedRate = RATE)
     public void closeOrders() throws InterruptedException {
+        if (commandLine.isCommandLine()) {
+            System.out.println("Disabled command line");
+            return;
+        }
         Iterable<Order> iterableOrder = orderRepository.findOpeningSortedByPurchaseExpires();
         Iterator<Order> iter = iterableOrder.iterator();
         ZonedDateTime now = ZonedDateTime.now(ZoneId.of("UTC"));
