@@ -7,10 +7,11 @@ import java.time.temporal.ChronoUnit;
 import java.util.Iterator;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.WebApplicationType;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import dev.damaso.market.CommandLine;
+import dev.damaso.market.MarketApplication;
 import dev.damaso.market.brokerentities.Log;
 import dev.damaso.market.brokerentities.Order;
 import dev.damaso.market.brokerrepositories.LogRepository;
@@ -32,9 +33,6 @@ public class Scheduler {
     OrderRepository orderRepository;
 
     @Autowired
-    CommandLine commandLine;
-
-    @Autowired
     Api api;
 
 
@@ -49,7 +47,7 @@ public class Scheduler {
 
     @Scheduled(fixedRate = RATE)
     public void closeOrders() throws InterruptedException {
-        if (commandLine.isCommandLine()) {
+        if (MarketApplication.webApplicationType == WebApplicationType.NONE) {
             System.out.println("Disabled command line");
             return;
         }

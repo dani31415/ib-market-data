@@ -8,10 +8,10 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @SpringBootApplication
 @EnableScheduling
 public class MarketApplication {
+	static public WebApplicationType webApplicationType;
 
 	public static void main(String[] args) {
 		// Command line arguments disable server
-		WebApplicationType webApplicationType;
 		if (args.length==0) {
 			webApplicationType = WebApplicationType.SERVLET;
 		} else {
