@@ -1,5 +1,7 @@
 package dev.damaso.market.controllers;
 
+import java.time.LocalDateTime;
+
 public class OrderRequestDTO {
     public String groupGuid;
     public String symbolSrcName;
@@ -11,4 +13,5 @@ public class OrderRequestDTO {
     public String date;
     public Float buyDesiredPrice;
     public String optimization;
+    public LocalDateTime purchaseExpires;
 }

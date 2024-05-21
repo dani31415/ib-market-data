@@ -38,6 +38,7 @@ public class Order {
     public String description;
 
     public LocalDateTime renewalDate;
+    public LocalDateTime purchaseExpires;
     public boolean liquidating;
     public LocalDateTime createdAt;
     public LocalDateTime updatedAt;

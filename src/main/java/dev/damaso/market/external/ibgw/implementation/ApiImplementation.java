@@ -18,6 +18,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import dev.damaso.market.external.ibgw.AccountResult;
 import dev.damaso.market.external.ibgw.Api;
 import dev.damaso.market.external.ibgw.HistoryResult;
 import dev.damaso.market.external.ibgw.MarketdataSnapshotResult;
@@ -265,11 +266,22 @@ public class ApiImplementation implements Api {
 
         return false;
     }
-
     public ContractInfoResult contractInfo(String conid) {
         String url = "%s/v1/api/iserver/contract/%s/info".formatted(baseUrl, conid);
         ResponseEntity<ContractInfoResult> response = restTemplate.getForEntity(url, ContractInfoResult.class);
         return response.getBody();
     }
 
+    public String account() {
+        String url = "%s/v1/api/portfolio/accounts".formatted(baseUrl);
+        ResponseEntity<AccountResult[]> response = restTemplate.getForEntity(url, AccountResult[].class);
+        return response.getBody()[0].accountId;
+    }
+
+    public void cancelOrder(String orderid) {
+        String account = this.account();
+        String url = "%s/v1/api/iserver/account/%s/order/%s".formatted(baseUrl, account, orderid);
+        System.out.println("Delete "+ url);
+        restTemplate.delete(url);
+    }
 }
