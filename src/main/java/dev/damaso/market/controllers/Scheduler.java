@@ -48,7 +48,7 @@ public class Scheduler {
     @Scheduled(fixedRate = RATE)
     public void closeOrders() throws InterruptedException {
         if (MarketApplication.webApplicationType == WebApplicationType.NONE) {
-            System.out.println("Disabled command line");
+            System.out.println("Disabled scheduled due to command line");
             return;
         }
         Iterable<Order> iterableOrder = orderRepository.findOpeningSortedByPurchaseExpires();
