@@ -24,11 +24,13 @@ public class CloseOrder {
             Order updatedOrder = optionalUpdatedOrder.get();
             // Discard it only if it is still opening
             if (updatedOrder.status.equals("opening")) {
-                updatedOrder.status = "discarded";
+                if (updatedOrder.boughtQuantity == null || updatedOrder.boughtQuantity.floatValue()==0.0f) {
+                    updatedOrder.status = "discarded";
+                    orderRepository.save(updatedOrder);
+                }
                 // if (TransactionSynchronizationManager.isActualTransactionActive()) {
                 //     System.out.println("Discard order under transacction.");
                 // }
-                orderRepository.save(updatedOrder);
             }
         }
     }
