@@ -16,12 +16,14 @@ import dev.damaso.market.brokerentities.Log;
 import dev.damaso.market.brokerentities.Order;
 import dev.damaso.market.brokerrepositories.LogRepository;
 import dev.damaso.market.brokerrepositories.OrderRepository;
+import dev.damaso.market.controllers.websocket.IbWebSocketClient;
 import dev.damaso.market.external.ibgw.Api;
 import dev.damaso.market.operations.CloseOrder;
 
 @Component
 public class Scheduler {
     public final int RATE = 60*1000;
+    public final int WEBSOCKET_RATE = 10*1000;
 
     @Autowired
     CloseOrder closeOrder;
@@ -31,6 +33,9 @@ public class Scheduler {
 
     @Autowired
     OrderRepository orderRepository;
+
+    @Autowired
+    IbWebSocketClient ibWebSocketClient;
 
     @Autowired
     Api api;
@@ -83,5 +88,14 @@ public class Scheduler {
                 return;
             }
         }
+    }
+
+    @Scheduled(fixedRate = WEBSOCKET_RATE)
+    public void ensureIbWebSocketClient() throws InterruptedException {
+        if (MarketApplication.webApplicationType == WebApplicationType.NONE) {
+            System.out.println("Disabled scheduled due to command line");
+            return;
+        }
+        ibWebSocketClient.ensure();
     }
 }

@@ -23,6 +23,7 @@ import dev.damaso.market.external.ibgw.Api;
 import dev.damaso.market.external.ibgw.HistoryResult;
 import dev.damaso.market.external.ibgw.MarketdataSnapshotResult;
 import dev.damaso.market.external.ibgw.SearchResult;
+import dev.damaso.market.external.ibgw.TickleResult;
 import dev.damaso.market.operations.Date;
 import dev.damaso.market.external.ibgw.AuthStatusResult;
 import dev.damaso.market.external.ibgw.ContractInfoResult;
@@ -141,11 +142,11 @@ public class ApiImplementation implements Api {
     }
 
     @Override
-    public void tickle() {
+    public TickleResult tickle() {
         RestTemplate restTemplate0 = restTemplateConfiguration.getRestTemplate();
         String url = "%s/v1/api/tickle".formatted(baseUrl);
-        ResponseEntity<String> response = restTemplate0.postForEntity(url, null, String.class);
-        System.out.println(response.getBody());
+        ResponseEntity<TickleResult> response = restTemplate0.postForEntity(url, null, TickleResult.class);
+        return response.getBody();
     }
 
     @Retryable(value = Throwable.class, exceptionExpression = "#{message.contains('timed out')}")

@@ -13,7 +13,7 @@ public interface Api {
     MarketdataSnapshotResult[] iserverMarketdataSnapshot(List<String> conids);
     MarketdataSnapshotResult[] iserverMarketdataSnapshot2(List<String> conids, String fields);
     void logout();
-    void tickle();
+    TickleResult tickle();
     void reauthenticateHelper();
     void iserverMarketdataUnsubscribeall();
     void iserverMarketdataUnsubscribe(String conid);
