@@ -11,8 +11,11 @@ import javax.net.ssl.KeyManager;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 
+import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.Charset;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +38,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import dev.damaso.market.external.ibgw.Api;
 import dev.damaso.market.external.ibgw.TickleResult;
+import dev.damaso.market.operations.Date;
 
 @Component
 public class IbWebSocketClient implements DisposableBean { // implements InitializingBean {
@@ -64,9 +68,12 @@ public class IbWebSocketClient implements DisposableBean { // implements Initial
     public WebSocketSession webSocketSession;
 
     public void ensure() {
-        if (webSocketSession == null || !webSocketSession.isOpen()) {
-            logger.info("reconnect");
-            connect();
+        ZonedDateTime now = ZonedDateTime.now(ZoneId.of("UTC"));
+        if (Date.isNasdaqExtendedOpen(now.toLocalDateTime())) {
+            if (webSocketSession == null || !webSocketSession.isOpen()) {
+                logger.info("reconnect");
+                connect();
+            }
         }
     }
 
@@ -101,7 +108,10 @@ public class IbWebSocketClient implements DisposableBean { // implements Initial
                             JsonNode args = jsonNode.get("args");
                             if (args.has("authenticated")) {
                                 authenticated = jsonNode.get("args").get("authenticated").asBoolean();
-                            } 
+                                if (authenticated) {
+                                    subscribe(session);
+                                }
+                            }
                         } else if (topic.equals("sor") && !jsonNode.has("error")) {
                             // logger.info("received binary message: " + val);
                             JsonNode argsNode = jsonNode.get("args");
@@ -134,12 +144,16 @@ public class IbWebSocketClient implements DisposableBean { // implements Initial
                                 }
                             }
                         } else if (topic.equals("sor") && jsonNode.has("error")) {
-                            logger.info("reauthenticate");
+                            // This error occurs after subscribing when non-authenticated (after logout or authentication expired)
+                            logger.info("reauthenticate due to sor error");
                             api.reauthenticateHelper();
-                            String subs = "sor+{}";
-                            session.sendMessage(new TextMessage(subs));   
+                            subscribe(session);
                         } else if (topic.equals("system")) {
                             // pass
+                            if (jsonNode.has("success")) {
+                               logger.info("success");
+                               subscribe(session);
+                            }
                             // logger.info("received binary message: " + val);
                         } else {
                             logger.info("received binary message: " + val);
@@ -147,7 +161,9 @@ public class IbWebSocketClient implements DisposableBean { // implements Initial
                     } else if (jsonNode.has("message")) {
                         String txtMessage = jsonNode.get("message").asText();
                         if (txtMessage.equals("waiting for session")) {
-                            authenticated = false;
+                            logger.info("sending session...");
+                            setSession(session);
+                            subscribe(session);
                         }
                     } else {
                         logger.info("received binary message: " + val);
@@ -161,37 +177,21 @@ public class IbWebSocketClient implements DisposableBean { // implements Initial
                 @Override
                 public void afterConnectionEstablished(WebSocketSession session) {
                     logger.info("established connection");
-                    try {
-                        TickleResult tickle = api.tickle();
-                        // logger.info(tickle.session);
-                        // "{\"session\":\"%s\"}".formatted(tickle.session));
-                        String sessionMesssage = "{\"session\":\"%s\"}".formatted(tickle.session);
-                        TextMessage text = new TextMessage(sessionMesssage);
-                        byte [] bytes = sessionMesssage.getBytes();
-                        BinaryMessage binary = new BinaryMessage(bytes);
-                        logger.info("is open: " + session.isOpen());
                     // try {
-                        // logger.info(session.getTextMessageSizeLimit());
-                        session.sendMessage(text);
-
-                        // String subs = "smd+265598+{\"fields\":[\"31\",\"83\"]}";
-                        // session.sendMessage(new TextMessage(subs));
-
-                        String subs = "sor+{}";
-                        session.sendMessage(new TextMessage(subs));
-                        logger.info("subscribed");
-
-                        // logger.info("Message sent: " + text.getPayload());
-                    } catch (org.springframework.web.client.HttpClientErrorException.Unauthorized ex) {
-                        logger.info("unauthorized");
-                        try {
-                            session.close();
-                        } catch (Exception ex2) {
-                            ex2.printStackTrace();
-                        }
-                    } catch (Exception ex) {
-                        ex.printStackTrace();
-                    }
+                    //     logger.info("is open: " + session.isOpen());
+                    //     // setSession(session);
+                    //     // subscribe(session);
+                    //     // logger.info("Message sent: " + text.getPayload());
+                    // } catch (org.springframework.web.client.HttpClientErrorException.Unauthorized ex) {
+                    //     logger.info("unauthorized");
+                    //     try {
+                    //         session.close();
+                    //     } catch (Exception ex2) {
+                    //         ex2.printStackTrace();
+                    //     }
+                    // } catch (Exception ex) {
+                    //     ex.printStackTrace();
+                    // }
                 }
 
                 @Override
@@ -210,6 +210,19 @@ public class IbWebSocketClient implements DisposableBean { // implements Initial
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public void setSession(WebSocketSession session) throws IOException {
+        TickleResult tickle = api.tickle();
+        String sessionMesssage = "{\"session\":\"%s\"}".formatted(tickle.session);
+        TextMessage text = new TextMessage(sessionMesssage);
+        session.sendMessage(text);
+    }
+
+    public void subscribe(WebSocketSession session) throws IOException {
+        String subs = "sor+{}";
+        session.sendMessage(new TextMessage(subs));
+        logger.info("subscribed");
     }
 
     @Override
