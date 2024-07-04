@@ -125,7 +125,7 @@ CREATE PROCEDURE configureDatabase()
         IF @schemaVersion = '9' THEN
             UPDATE configuration SET value='10' WHERE `key`='schemaVersion';
 
-            ALTER TABLE `order` ADD COLUMN model_last_price DATETIME AFTER last_price;
+            ALTER TABLE `order` ADD COLUMN model_last_price float AFTER last_price;
         END IF;
 
     END //
