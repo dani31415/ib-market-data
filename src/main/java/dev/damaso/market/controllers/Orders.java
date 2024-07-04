@@ -81,6 +81,7 @@ public class Orders {
         order.buyDesiredPrice = orderRequest.buyDesiredPrice;
         order.optimization = orderRequest.optimization;
         order.purchaseExpires = orderRequest.purchaseExpires;
+        order.modelLastPrice = orderRequest.lastPrice;
         Order newOrder = orderRepository.save(order);
         return newOrder;
     }

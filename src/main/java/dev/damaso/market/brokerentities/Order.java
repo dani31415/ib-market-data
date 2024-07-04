@@ -27,6 +27,7 @@ public class Order {
     public String status;
 
     public Float lastPrice;
+    public Float modelLastPrice;
     public Float askPrice;
     public Float bidPrice;
     public Float openPrice;

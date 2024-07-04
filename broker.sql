@@ -121,6 +121,13 @@ CREATE PROCEDURE configureDatabase()
 
             ALTER TABLE `order` ADD COLUMN purchase_expires DATETIME AFTER renewal_date;
         END IF;
+
+        IF @schemaVersion = '9' THEN
+            UPDATE configuration SET value='10' WHERE `key`='schemaVersion';
+
+            ALTER TABLE `order` ADD COLUMN model_last_price DATETIME AFTER last_price;
+        END IF;
+
     END //
 
 DELIMITER ;
