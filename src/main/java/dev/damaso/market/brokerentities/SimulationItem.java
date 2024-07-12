@@ -25,6 +25,7 @@ public class SimulationItem {
     public Float purchase;
     public Float gains;
     public Float early;
+    public Boolean liquidated;
     public String modelName;
     public String simulationName;
     public LocalDateTime createdAt;

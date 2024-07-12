@@ -8,6 +8,7 @@ public class SimulationItemRequestDTO {
     public Float purchase;
     public Float gains;
     public Float early;
+    public Boolean liquidated;
     public String modelName;
     public String simulationName;
 }

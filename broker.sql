@@ -128,6 +128,11 @@ CREATE PROCEDURE configureDatabase()
             ALTER TABLE `order` ADD COLUMN model_last_price float AFTER last_price;
         END IF;
 
+        IF @schemaVersion = '10' THEN
+            UPDATE configuration SET value='11' WHERE `key`='schemaVersion';
+
+            ALTER TABLE `simulation_item` ADD COLUMN `liquidated` BIT after `early`;
+        END IF;
     END //
 
 DELIMITER ;
