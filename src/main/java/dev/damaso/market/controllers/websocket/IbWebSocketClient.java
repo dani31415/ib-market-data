@@ -110,6 +110,7 @@ public class IbWebSocketClient implements DisposableBean { // implements Initial
                                 authenticated = jsonNode.get("args").get("authenticated").asBoolean();
                                 if (authenticated) {
                                     subscribe(session);
+                                    updateOrder("");
                                 }
                             }
                         } else if (topic.equals("sor") && !jsonNode.has("error")) {
