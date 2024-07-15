@@ -107,7 +107,7 @@ public class Orders {
     @PatchMapping("/orders/{id}")
     @Transactional(transactionManager = "brokerTransactionManager", isolation = Isolation.REPEATABLE_READ)
     public Order patchOrder(@PathVariable Integer id, @RequestBody String inputJson) throws Exception {
-        System.out.println(inputJson);
+        // System.out.println(inputJson);
         Order order = orderRepository.findById(id).orElseThrow(NotFoundException::new);
         ObjectReader objectReader = objectMapper.readerForUpdating(order);
         Order updatedOrder = objectReader.readValue(inputJson);

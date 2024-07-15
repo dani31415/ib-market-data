@@ -62,7 +62,7 @@ public class Scheduler {
         ZonedDateTime endSchedule = now.plus(RATE, ChronoUnit.MILLIS);
         while (iter.hasNext()) {
             Order order = iter.next();
-            System.out.println("=== " + order.id);
+            // System.out.println("=== " + order.id);
 
             ZonedDateTime expires = order.purchaseExpires.atZone(ZoneId.of("UTC"));
             if (expires.isBefore(endSchedule)) { // otherwise, resolve next schedule
