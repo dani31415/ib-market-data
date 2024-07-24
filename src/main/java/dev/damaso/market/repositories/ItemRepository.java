@@ -62,4 +62,7 @@ public interface ItemRepository extends CrudRepository<Item, ItemId> {
             ) as S
         """)
     Iterable<Integer> findMissingItems(LocalDate since, LocalDate date);
+
+    @Query(nativeQuery = true, value = "UPDATE item SET stagging=0 WHERE stagging=1 AND symbol_id>0 AND date>0 AND version>=0")
+    void resetStagging();
 }
