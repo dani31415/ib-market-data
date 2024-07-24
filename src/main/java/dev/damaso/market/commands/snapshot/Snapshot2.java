@@ -206,6 +206,7 @@ public class Snapshot2 {
                             item.open = openPrice;
                             item.sincePreOpen = getSincePreOpen(msr.epoch);
                             item.stagging = true;
+                            item.updatedAt = LocalDateTime.now(ZoneId.of("UTC"));
                             items.add(item);
                         }
                     }
