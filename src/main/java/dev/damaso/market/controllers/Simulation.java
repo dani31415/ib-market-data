@@ -71,6 +71,7 @@ public class Simulation {
             item.purchase = simulationItemRequest.purchase;
             item.gains = simulationItemRequest.gains;
             item.early = simulationItemRequest.early;
+            item.liquidated = simulationItemRequest.liquidated;
             simulationItemRepository.save(item);
         }
         return true;

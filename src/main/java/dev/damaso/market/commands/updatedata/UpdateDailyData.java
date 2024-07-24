@@ -26,6 +26,7 @@ import dev.damaso.market.external.ibgw.Api;
 import dev.damaso.market.external.ibgw.HistoryResult;
 import dev.damaso.market.external.ibgw.HistoryResultData;
 import dev.damaso.market.external.ibgw.SearchResult;
+import dev.damaso.market.operations.Date;
 import dev.damaso.market.operations.PeriodOperations;
 import dev.damaso.market.repositories.ItemRepository;
 import dev.damaso.market.repositories.SymbolRepository;
@@ -77,7 +78,7 @@ public class UpdateDailyData implements Runnable {
         loadOpenItemsBySymbolId();
 
         List<LastItem> lastItems = itemRepository.findMaxDateGroupBySymbol();
-        LocalDate now = LocalDate.now();
+        LocalDate today = LocalDate.now();
         List<Exception> exceptionList = new Vector<>();
         ExecutorService executor = Executors.newFixedThreadPool(4);
 
@@ -90,7 +91,7 @@ public class UpdateDailyData implements Runnable {
                     if (date == null) {
                         days = 1800; // No longer than current database stored days
                     } else {
-                        days = getDays(date, now) + 5;
+                        days = getDays(date, today) + 5;
                     }
                     log(symbol.ib_conid);
                     log("Get from " + lastItem.getDate() + " and " + days + "days");
@@ -133,6 +134,14 @@ public class UpdateDailyData implements Runnable {
         executor.shutdown();
         executor.awaitTermination(600, TimeUnit.SECONDS);
         System.out.println("Total updates: " + totalUpdated);
+
+        LocalDateTime now = LocalDateTime.now(ZoneId.of("UTC"));
+        if (!Date.isNasdaqOpen(now)) {
+            // During open hours, data might be incomlete so do not reset stagging.
+            System.out.println("Reset stagging");
+            this.itemRepository.resetStagging();
+        }
+
         periodOperations.updateDateMeans();
         if (exceptionList.size()>0) {
             System.exit(1);
@@ -222,6 +231,20 @@ public class UpdateDailyData implements Runnable {
         return false;
     }
 
+    private int getVersion(Item item) {
+        Item item0 = getVersionedItem(item, 0);
+        if (item0 == null) {
+            // Fist time, version = 0
+            return 0;
+        }
+        if (item0.stagging) {
+            // If in stagging, still version = 0
+            return 0;
+        }
+        // An udpate, a day after creation
+        return 1;
+    }
+
     private Item getLastItem(Item item) {
         ItemId itemId = new ItemId();
         itemId.date = item.date;
@@ -260,22 +283,23 @@ public class UpdateDailyData implements Runnable {
             item.volume = 100*data.v;
             item.date = date.toLocalDate();
 
-            if (isItemDataUsed(item)) {
-                // Let's save data as new version.
-                // Data was used for actual inference so we save as new version
-                // in order to be able to make future simulations under
-                // the same conditions.
-                item.version = 1;
-            } else {
-                item.version = 0;
-            }
+            item.version = getVersion(item);
+            // if (isItemDataUsed(item, today)) {
+            //     // Let's save data as new version.
+            //     // Data was used for actual inference so we save as new version
+            //     // in order to be able to make future simulations under
+            //     // the same conditions.
+            //     item.version = 1;
+            // } else {
+            //     item.version = 0;
+            // }
 
             boolean save = true;
 
             Item lastItem = getLastItem(item);
-            if (lastItem == null && item.version == 1) {
-                // Avoid create a new item
-                Item version0Item = getVersionedItem(item, 0);
+            // Avoid create a new version
+            if (lastItem == null && item.version > 0) {
+                Item version0Item = getVersionedItem(item, item.version-1);
                 if (version0Item != null) {
                     if (
                         item.close == version0Item.close &&

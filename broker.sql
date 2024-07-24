@@ -116,6 +116,23 @@ CREATE PROCEDURE configureDatabase()
             ALTER TABLE `simulation_item` ADD COLUMN `early` float after `gains`;
         END IF;
 
+        IF @schemaVersion = '8' THEN
+            UPDATE configuration SET value='9' WHERE `key`='schemaVersion';
+
+            ALTER TABLE `order` ADD COLUMN purchase_expires DATETIME AFTER renewal_date;
+        END IF;
+
+        IF @schemaVersion = '9' THEN
+            UPDATE configuration SET value='10' WHERE `key`='schemaVersion';
+
+            ALTER TABLE `order` ADD COLUMN model_last_price float AFTER last_price;
+        END IF;
+
+        IF @schemaVersion = '10' THEN
+            UPDATE configuration SET value='11' WHERE `key`='schemaVersion';
+
+            ALTER TABLE `simulation_item` ADD COLUMN `liquidated` BIT after `early`;
+        END IF;
     END //
 
 DELIMITER ;

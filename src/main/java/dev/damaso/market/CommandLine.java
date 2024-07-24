@@ -130,11 +130,17 @@ public class CommandLine implements CommandLineRunner {
             performance.run();
         } else if (args[0].equals("ping-services")) {
             pingServices.run();
+        } else if (args[0].equals("dummy")) {
+            System.out.println("Dummy command");
+            // pingServices.run();
         } else {
             throw new Exception("Unknown command " + args[0]);
             // System.out.println("Command line");
             // Configuration configuration = configurationRepository.findById("schemaVersion").get();
             // System.out.println(configuration.getValue());
         }
+
+        // Needed since @EnableScheduling
+        System.exit(0);
     }
 }

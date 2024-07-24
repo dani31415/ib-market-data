@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -78,11 +80,14 @@ public class Orders {
         order.minute = orderRequest.minute;
         order.buyDesiredPrice = orderRequest.buyDesiredPrice;
         order.optimization = orderRequest.optimization;
+        order.purchaseExpires = orderRequest.purchaseExpires;
+        order.modelLastPrice = orderRequest.lastPrice;
         Order newOrder = orderRepository.save(order);
         return newOrder;
     }
 
     @GetMapping("/orders")
+    @Transactional(transactionManager = "brokerTransactionManager", isolation = Isolation.REPEATABLE_READ)
     public Iterable<Order> getOrders(@RequestParam(required=false) String status, @RequestParam(required=false) String date, @RequestParam(required=false) Integer minute, @RequestParam(required=false) String modelName) throws Exception {
         if (status != null) {
             return orderRepository.findAllByStatus(status);
@@ -100,8 +105,9 @@ public class Orders {
     }
 
     @PatchMapping("/orders/{id}")
+    @Transactional(transactionManager = "brokerTransactionManager", isolation = Isolation.REPEATABLE_READ)
     public Order patchOrder(@PathVariable Integer id, @RequestBody String inputJson) throws Exception {
-        System.out.println(inputJson);
+        // System.out.println(inputJson);
         Order order = orderRepository.findById(id).orElseThrow(NotFoundException::new);
         ObjectReader objectReader = objectMapper.readerForUpdating(order);
         Order updatedOrder = objectReader.readValue(inputJson);
@@ -129,7 +135,7 @@ public class Orders {
         LocalDateTime preOpen = Date.getPreOpen(order.createdAt);
         String pattern0 = "%:" + orderId + "%";
         String pattern1 = "%#" + orderId + "%";
-        Iterable<Log> logs = logRepository.findByDateRangeAndSubstringAndSource2(from, to, pattern0, pattern1, "EXECUTE_ORDER");
+        Iterable<Log> logs = logRepository.findByDateRangeAndSubstringAndSource2(from, to, pattern0, pattern1, "EXECUTE_ORDER", "SERVER");
         List<IbOrderDTO> ibOrderList = new ArrayList<>();
         IbOrderDTO previousLogOrder = null;
         for (Log log : logs) {
@@ -168,6 +174,7 @@ public class Orders {
     }
 
     @GetMapping("/orders/{orderId}")
+    @Transactional(transactionManager = "brokerTransactionManager", isolation = Isolation.REPEATABLE_READ)
     public Optional<Order> findOrderById(@PathVariable Integer orderId) throws Exception {
         return orderRepository.findById(orderId);
     }

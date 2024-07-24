@@ -144,6 +144,23 @@ public class Date {
         return false;
     }
 
+    static public boolean isNasdaqExtendedOpen(LocalDateTime localDateTime) {
+        // Check day
+        LocalDate localDate = localDateTime.toLocalDate();
+        if (!isNasdaqOpenDay(localDate)) {
+            return false;
+        }
+
+        // Check time
+        ZonedDateTime zonedDateTime = toNasdaqZone(localDateTime);
+        double hour = 0.0 + zonedDateTime.getHour() +zonedDateTime.getMinute()/60.0;
+        if (hour>=8 && hour<17) { // 8:00 -- 17:00
+            return true;
+        }
+
+        return false;
+    }
+
     static public void main(String args []) {
         System.out.println("Hello world");
     }

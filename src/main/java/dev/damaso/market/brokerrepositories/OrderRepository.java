@@ -22,4 +22,7 @@ public interface OrderRepository extends CrudRepository<Order, Integer> {
 
     @Query("SELECT o FROM Order o WHERE o.date = ?1 AND o.minute = ?2 ORDER BY o.order ASC")
     Iterable<Order> findAllByDateAndMinute(LocalDate date, int minute);
+
+    @Query("SELECT o FROM Order o WHERE o.status = 'opening' AND o.purchaseExpires IS NOT NULL ORDER BY o.purchaseExpires ASC")
+    Iterable<Order> findOpeningSortedByPurchaseExpires();
 }

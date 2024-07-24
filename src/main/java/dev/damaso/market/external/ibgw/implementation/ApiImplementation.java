@@ -18,10 +18,12 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import dev.damaso.market.external.ibgw.AccountResult;
 import dev.damaso.market.external.ibgw.Api;
 import dev.damaso.market.external.ibgw.HistoryResult;
 import dev.damaso.market.external.ibgw.MarketdataSnapshotResult;
 import dev.damaso.market.external.ibgw.SearchResult;
+import dev.damaso.market.external.ibgw.TickleResult;
 import dev.damaso.market.operations.Date;
 import dev.damaso.market.external.ibgw.AuthStatusResult;
 import dev.damaso.market.external.ibgw.ContractInfoResult;
@@ -140,11 +142,11 @@ public class ApiImplementation implements Api {
     }
 
     @Override
-    public void tickle() {
+    public TickleResult tickle() {
         RestTemplate restTemplate0 = restTemplateConfiguration.getRestTemplate();
         String url = "%s/v1/api/tickle".formatted(baseUrl);
-        ResponseEntity<String> response = restTemplate0.postForEntity(url, null, String.class);
-        System.out.println(response.getBody());
+        ResponseEntity<TickleResult> response = restTemplate0.postForEntity(url, null, TickleResult.class);
+        return response.getBody();
     }
 
     @Retryable(value = Throwable.class, exceptionExpression = "#{message.contains('timed out')}")
@@ -265,11 +267,22 @@ public class ApiImplementation implements Api {
 
         return false;
     }
-
     public ContractInfoResult contractInfo(String conid) {
         String url = "%s/v1/api/iserver/contract/%s/info".formatted(baseUrl, conid);
         ResponseEntity<ContractInfoResult> response = restTemplate.getForEntity(url, ContractInfoResult.class);
         return response.getBody();
     }
 
+    public String account() {
+        String url = "%s/v1/api/portfolio/accounts".formatted(baseUrl);
+        ResponseEntity<AccountResult[]> response = restTemplate.getForEntity(url, AccountResult[].class);
+        return response.getBody()[0].accountId;
+    }
+
+    public void cancelOrder(String orderid) {
+        String account = this.account();
+        String url = "%s/v1/api/iserver/account/%s/order/%s".formatted(baseUrl, account, orderid);
+        System.out.println("Delete "+ url);
+        restTemplate.delete(url);
+    }
 }
