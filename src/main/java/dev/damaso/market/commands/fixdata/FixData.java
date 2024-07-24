@@ -20,6 +20,8 @@ import dev.damaso.market.repositories.SymbolRepository;
 
 @Component
 public class FixData {
+    static final private boolean NO_SAVE = false;
+
     @Autowired
     SymbolRepository symbolRepository;
 
@@ -32,9 +34,11 @@ public class FixData {
     @Autowired
     Api api;
 
+    private int totalCounter = 0;
+
     public void run() throws Exception {
-        LocalDate from = LocalDate.parse("2021-01-01");
-        LocalDate to = LocalDate.parse("2022-01-01");
+        LocalDate from = LocalDate.parse("2023-06-21");
+        LocalDate to = LocalDate.parse("2023-06-22");
         ExecutorService executor = Executors.newFixedThreadPool(10);
         Iterable<Symbol> iterableSymbol = symbolRepository.findAll();
         for (Symbol symbol : iterableSymbol) {
@@ -47,27 +51,33 @@ public class FixData {
         System.out.println("Waiting for persistence termination...");
         executor.shutdown();
         executor.awaitTermination(600, TimeUnit.SECONDS);
+        System.out.println("Total modified: " + totalCounter);
     }
 
     int saveOpenDate(Symbol symbol, LocalDate date, Integer openMinute) {
         if (openMinute == null) {
             return 0;
         }
-        ItemId itemId = new ItemId();
-        itemId.date = date;
-        itemId.symbolId = symbol.id;
-        itemId.version = 0;
-        Optional<Item> optionalItem = itemRepository.findById(itemId);
-        if (optionalItem.isPresent()) {
-            Item item = optionalItem.get();
-            if (item.sincePreOpen != openMinute) {
-                item.sincePreOpen = openMinute;
-                itemRepository.save(item);
-                // System.out.println("Fix " + symbol.shortName + ", " + symbol.id + " at " + date + " minute " + openMinute);
-                return 1;
+        if (NO_SAVE) {
+            System.out.println("Fix " + symbol.shortName + ", " + symbol.id + " at " + date + " minute " + openMinute);
+            return 1;
+        } else {
+            ItemId itemId = new ItemId();
+            itemId.date = date;
+            itemId.symbolId = symbol.id;
+            itemId.version = 0;
+            Optional<Item> optionalItem = itemRepository.findById(itemId);
+            if (optionalItem.isPresent()) {
+                Item item = optionalItem.get();
+                if (item.sincePreOpen != openMinute) {
+                    item.sincePreOpen = openMinute;
+                    itemRepository.save(item);
+                    // System.out.println("Fix " + symbol.shortName + ", " + symbol.id + " at " + date + " minute " + openMinute);
+                    return 1;
+                }
             }
+            return 0;
         }
-        return 0;
     }
 
     public void fixSymbol(Symbol symbol, LocalDate from, LocalDate to) {
@@ -104,5 +114,6 @@ public class FixData {
             counter += saveOpenDate(symbol, previousDate, openMinute);
         }
         System.out.println("Updated " + counter);
+        this.totalCounter += counter;
     }
 }

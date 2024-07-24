@@ -71,10 +71,10 @@ public class Snapshot2Fix {
         }
 
         ExecutorService executor = Executors.newFixedThreadPool(8);
-        ZonedDateTime open  = ZonedDateTime.of(2024, 4, 26, 8, 40, 0, 0, ZoneId.of("America/New_York"));
+        ZonedDateTime open  = ZonedDateTime.of(2024, 7, 12, 8, 40, 0, 0, ZoneId.of("America/New_York"));
         // Dates where snapshot failed, multiple of 10 minutes (inclusive)
-        ZonedDateTime start = ZonedDateTime.of(2024, 4, 26, 18, 10, 0, 0, ZoneId.of("Europe/Madrid"));
-        ZonedDateTime end   = ZonedDateTime.of(2024, 4, 26, 22, 0, 0, 0, ZoneId.of("Europe/Madrid"));
+        ZonedDateTime start = ZonedDateTime.of(2024, 7, 12, 18, 0, 0, 0, ZoneId.of("Europe/Madrid"));
+        ZonedDateTime end   = ZonedDateTime.of(2024, 7, 12, 21, 0, 0, 0, ZoneId.of("Europe/Madrid"));
         System.out.println(start);
         System.out.println(end);
 

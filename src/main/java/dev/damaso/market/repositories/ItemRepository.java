@@ -9,6 +9,7 @@ import org.springframework.data.repository.CrudRepository;
 import dev.damaso.market.entities.Item;
 import dev.damaso.market.entities.ItemId;
 import dev.damaso.market.entities.LastItem;
+import dev.damaso.market.entities.MissingItem;
 
 public interface ItemRepository extends CrudRepository<Item, ItemId> {
     // Exclude snapshot data since it is incomplete
@@ -29,6 +30,9 @@ public interface ItemRepository extends CrudRepository<Item, ItemId> {
 
     @Query("SELECT i FROM Item i INNER JOIN Symbol s ON i.symbolId=s.id WHERE s.ib_conid IS NOT NULL and i.date < ?1 AND i.version=?2 ORDER BY i.date ASC, i.symbolId ASC")
     Iterable<Item> findAllIBToDate(LocalDate from, int version);
+
+    @Query("SELECT i FROM Item i INNER JOIN Symbol s ON i.symbolId=s.id WHERE s.ib_conid IS NOT NULL and i.date = ?1 AND i.version=?2 ORDER BY i.symbolId ASC")
+    Iterable<Item> findAllIBByDate(LocalDate date, int version);
 
     @Query("SELECT DISTINCT i.date FROM Item i ORDER BY date ASC")
     Iterable<LocalDate> findAllDates();
@@ -52,14 +56,14 @@ public interface ItemRepository extends CrudRepository<Item, ItemId> {
     Iterable<Item> findAllBySymbolIdAndDateAndVersion(int symbolId, LocalDate date, int version);
 
     @Query(nativeQuery = true, value = """
-        SELECT symbol_id FROM (
-            SELECT I1.symbol_id, max(I2.close) as m
+        SELECT symbol_id as symbolId, avg_open AS avgOpen FROM (
+            SELECT I1.symbol_id, max(I2.close) as m, avg(I1.open) as avg_open
                 FROM market.item AS I1
-                LEFT JOIN market.item AS I2 ON I1.symbol_id = I2.symbol_id AND I2.date = '2023-08-03'
-                WHERE I1.date >= '2023-08-02' AND I1.date < '2023-08-03'
+                LEFT JOIN market.item AS I2 ON I1.symbol_id = I2.symbol_id AND I2.date = ?2
+                WHERE I1.date >= ?1 AND I1.date < ?2
                 GROUP BY I1.symbol_id
                 HAVING m is null
             ) as S
         """)
-    Iterable<Integer> findMissingItems(LocalDate since, LocalDate date);
+    Iterable<MissingItem> findMissingItems(LocalDate since, LocalDate date);
 }
