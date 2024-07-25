@@ -3,6 +3,7 @@ package dev.damaso.market.repositories;
 import java.time.LocalDate;
 import java.util.List;
 
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 
@@ -67,6 +68,7 @@ public interface ItemRepository extends CrudRepository<Item, ItemId> {
         """)
     Iterable<MissingItem> findMissingItems(LocalDate since, LocalDate date);
 
+    @Modifying()
     @Query(nativeQuery = true, value = "UPDATE item SET stagging=0 WHERE stagging=1 AND symbol_id>0 AND date>0 AND version>=0")
     void resetStagging();
 }

@@ -15,6 +15,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 
@@ -49,6 +50,7 @@ public class UpdateDailyData implements Runnable {
 
     int totalUpdated = 0;
 
+    @Transactional(transactionManager = "marketTransactionManager")
     public void run() {
         try {
             runWithException();
