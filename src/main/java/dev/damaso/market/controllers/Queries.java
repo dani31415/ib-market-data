@@ -222,6 +222,7 @@ public class Queries {
             iterableItem = itemRepository.findAllIB(0);
         }
 
+        LocalDateTime startOfUpdatedAt = LocalDateTime.of(2024,07,24,0,0,0);
         for (Item item : iterableItem) {
             int symbolOrder = symbolOrders.get(item.symbolId);
             int dateOrder = dateOrders.get(item.date);
@@ -232,9 +233,13 @@ public class Queries {
             fs[i+3] = item.sincePreOpen == null ? Float.NaN : item.sincePreOpen.floatValue();
             fs[i+4] = item.low;
             fs[i+5] = item.high;
+            fs[i+6] = 0;
             if (item.updatedAt != null) {
-                fs[i+6] = (float)item.updatedAt.toEpochSecond(ZoneOffset.UTC);
-            } else {
+                if (item.updatedAt.isAfter(startOfUpdatedAt)) {
+                    fs[i+6] = (float)item.updatedAt.toEpochSecond(ZoneOffset.UTC);
+                }
+            }
+            if (fs[i+6] == 0) {
                 // Item was available by the end of the trading day
                 LocalTime lt = LocalTime.of(21,0,0);
                 fs[i+6] = (float)item.date.toEpochSecond(lt, ZoneOffset.UTC);
