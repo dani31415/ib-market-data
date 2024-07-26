@@ -2,7 +2,9 @@ package dev.damaso.market.controllers;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -201,7 +203,7 @@ public class Queries {
             dateOrders.put(dates.get(i), i);
         }
 
-        int dim = 6;
+        int dim = 7;
         float [] fs = new float[dim*symbols.size()*dates.size()];
         for (int i = 0; i < fs.length; i += dim) {
             fs[i+3] = Float.NaN;
@@ -230,6 +232,13 @@ public class Queries {
             fs[i+3] = item.sincePreOpen == null ? Float.NaN : item.sincePreOpen.floatValue();
             fs[i+4] = item.low;
             fs[i+5] = item.high;
+            if (item.updatedAt != null) {
+                fs[i+6] = (float)item.updatedAt.toEpochSecond(ZoneOffset.UTC);
+            } else {
+                // Item was available by the end of the trading day
+                LocalTime lt = LocalTime.of(21,0,0);
+                fs[i+6] = (float)item.date.toEpochSecond(lt, ZoneOffset.UTC);
+            }
         }
  
         if (interpolate!=null && interpolate.booleanValue()) {
