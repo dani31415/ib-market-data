@@ -25,4 +25,6 @@ public interface OrderRepository extends CrudRepository<Order, Integer> {
 
     @Query("SELECT o FROM Order o WHERE o.status = 'opening' AND o.purchaseExpires IS NOT NULL ORDER BY o.purchaseExpires ASC")
     Iterable<Order> findOpeningSortedByPurchaseExpires();
+
+    Iterable<Order> findAllBySymbolId(int symbolId);
 }

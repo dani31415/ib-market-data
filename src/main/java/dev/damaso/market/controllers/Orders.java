@@ -50,7 +50,7 @@ public class Orders {
     PurchaseOperations purchaseOperations;
 
     @PostMapping("/orders")
-    public Order createOrder(@RequestBody OrderRequestDTO orderRequest) throws Exception {
+    public Order createOrder(@RequestBody OrderRequestDTO orderRequest, @RequestParam(required=false) Boolean unique) throws Exception {
         Symbol symbol = symbolRepository.findSymbolByShortName(orderRequest.symbolSrcName);
         if (symbol==null) {
             throw new Exception("Missing symbol " + orderRequest.symbolSrcName);
@@ -82,6 +82,21 @@ public class Orders {
         order.optimization = orderRequest.optimization;
         order.purchaseExpires = orderRequest.purchaseExpires;
         order.modelLastPrice = orderRequest.lastPrice;
+
+        if (unique!=null && unique.booleanValue()) {
+            Iterable<Order> existingOrders = orderRepository.findAllBySymbolId(symbol.id);
+            for (Order existingOrder : existingOrders) {
+                if (existingOrder.status.equals("created") ||
+                    existingOrder.status.equals("valid") ||
+                    existingOrder.status.equals("open") ||
+                    existingOrder.status.equals("opening") ||
+                    existingOrder.status.equals("closing")
+                ) {
+                    order.status = "duplicated";
+                }
+            }
+        }
+
         Order newOrder = orderRepository.save(order);
         return newOrder;
     }
