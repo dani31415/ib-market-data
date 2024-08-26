@@ -31,6 +31,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import org.jetbrains.bio.npy.NpyFile;
 
+import dev.damaso.market.controllers.websocket.IbWebSocketClient;
 import dev.damaso.market.entities.Item;
 import dev.damaso.market.entities.MinuteItem;
 import dev.damaso.market.entities.Period;
@@ -69,6 +70,9 @@ public class Queries {
 
     @Autowired
     ObjectMapper objectMapper;
+
+    @Autowired
+    IbWebSocketClient ibWebSocketClient;
 
     @GetMapping("/snapshot")
 	public List<SymbolSnapshot> snapshot() {
@@ -318,5 +322,12 @@ public class Queries {
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         LocalDate fromDate = LocalDate.parse(date, dtf);
         return periodRepository.computeMeanByDate(fromDate).get();
+    }
+
+    @GetMapping("/subscription")
+    public SubscriptionDTO subscription() throws Exception {
+        SubscriptionDTO subscriptionDTO = new SubscriptionDTO();
+        subscriptionDTO.subscribed = ibWebSocketClient.getSubscribed();
+        return subscriptionDTO;
     }
 }

@@ -67,6 +67,8 @@ public class IbWebSocketClient implements DisposableBean { // implements Initial
 
     public WebSocketSession webSocketSession;
 
+    public boolean subscribed;
+
     public void ensure() {
         ZonedDateTime now = ZonedDateTime.now(ZoneId.of("UTC"));
         if (Date.isNasdaqExtendedOpen(now.toLocalDateTime())) {
@@ -145,6 +147,7 @@ public class IbWebSocketClient implements DisposableBean { // implements Initial
                                 }
                             }
                         } else if (topic.equals("sor") && jsonNode.has("error")) {
+                            subscribed = false;
                             // This error occurs after subscribing when non-authenticated (after logout or authentication expired)
                             logger.info("reauthenticate due to sor error");
                             api.reauthenticateHelper();
@@ -162,6 +165,7 @@ public class IbWebSocketClient implements DisposableBean { // implements Initial
                     } else if (jsonNode.has("message")) {
                         String txtMessage = jsonNode.get("message").asText();
                         if (txtMessage.equals("waiting for session")) {
+                            subscribed = false;
                             logger.info("sending session...");
                             setSession(session);
                             subscribe(session);
@@ -170,6 +174,7 @@ public class IbWebSocketClient implements DisposableBean { // implements Initial
                         logger.info("received binary message: " + val);
                     }
                     if (!authenticated) {
+                        subscribed = false;
                         logger.info("closing connection...");
                         session.close();
                     }
@@ -224,6 +229,7 @@ public class IbWebSocketClient implements DisposableBean { // implements Initial
         String subs = "sor+{}";
         session.sendMessage(new TextMessage(subs));
         logger.info("subscribed");
+        subscribed = true;
     }
 
     @Override
@@ -232,6 +238,10 @@ public class IbWebSocketClient implements DisposableBean { // implements Initial
             logger.info("close socket on disposal");
             webSocketSession.close();
         }
+    }
+
+    public boolean getSubscribed() {
+        return this.subscribed;
     }
 
     public void updateOrder(String orderId) {
