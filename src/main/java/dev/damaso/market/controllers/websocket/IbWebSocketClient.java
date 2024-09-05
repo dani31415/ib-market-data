@@ -170,6 +170,8 @@ public class IbWebSocketClient implements DisposableBean { // implements Initial
                             if (jsonNode.has("success")) {
                                logger.info("success");
                                subscribe(session);
+                            } else if (jsonNode.has("hb")) {
+                                // Ignore heardbeats
                             } else {
                                 logger.info("received binary message: " + val);
                             }
