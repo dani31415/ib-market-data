@@ -14,8 +14,10 @@ import javax.net.ssl.TrustManager;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.Charset;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -69,12 +71,21 @@ public class IbWebSocketClient implements DisposableBean { // implements Initial
 
     public boolean subscribed;
 
+    public LocalDateTime connectedDateTime;
+
     public void ensure() {
         ZonedDateTime now = ZonedDateTime.now(ZoneId.of("UTC"));
         if (Date.isNasdaqExtendedOpen(now.toLocalDateTime())) {
             if (webSocketSession == null || !webSocketSession.isOpen()) {
                 logger.info("reconnect");
                 connect();
+            }
+            if (webSocketSession != null && webSocketSession.isOpen() && connectedDateTime!=null && !subscribed) {
+                LocalDateTime ldNow = LocalDateTime.now();
+                LocalDateTime expectedConnectedDateTime = connectedDateTime.plus(20, ChronoUnit.SECONDS);
+                if (ldNow.isBefore(expectedConnectedDateTime)) {
+                    logger.info("subscription pending");
+                }
             }
         }
     }
@@ -183,6 +194,7 @@ public class IbWebSocketClient implements DisposableBean { // implements Initial
                 @Override
                 public void afterConnectionEstablished(WebSocketSession session) {
                     logger.info("established connection");
+                    connectedDateTime = LocalDateTime.now();
                     // try {
                     //     logger.info("is open: " + session.isOpen());
                     //     // setSession(session);
@@ -203,6 +215,7 @@ public class IbWebSocketClient implements DisposableBean { // implements Initial
                 @Override
                 public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
                     logger.info("websocket closed");
+                    connectedDateTime = null;
                 }
 
                 @Override
