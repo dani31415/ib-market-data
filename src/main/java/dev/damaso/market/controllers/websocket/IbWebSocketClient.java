@@ -83,7 +83,7 @@ public class IbWebSocketClient implements DisposableBean { // implements Initial
             if (webSocketSession != null && webSocketSession.isOpen() && connectedDateTime!=null && !subscribed) {
                 LocalDateTime ldNow = LocalDateTime.now();
                 LocalDateTime expectedConnectedDateTime = connectedDateTime.plus(20, ChronoUnit.SECONDS);
-                if (ldNow.isBefore(expectedConnectedDateTime)) {
+                if (ldNow.isAfter(expectedConnectedDateTime)) {
                     logger.info("subscription pending");
                 }
             }
@@ -124,6 +124,8 @@ public class IbWebSocketClient implements DisposableBean { // implements Initial
                                 if (authenticated) {
                                     subscribe(session);
                                     updateOrder("");
+                                } else {
+                                    logger.info("no authenticated");
                                 }
                             }
                         } else if (topic.equals("sor") && !jsonNode.has("error")) {
