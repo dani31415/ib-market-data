@@ -170,8 +170,9 @@ public class IbWebSocketClient implements DisposableBean { // implements Initial
                             if (jsonNode.has("success")) {
                                logger.info("success");
                                subscribe(session);
+                            } else {
+                                logger.info("received binary message: " + val);
                             }
-                            // logger.info("received binary message: " + val);
                         } else {
                             logger.info("received binary message: " + val);
                         }
@@ -182,6 +183,8 @@ public class IbWebSocketClient implements DisposableBean { // implements Initial
                             logger.info("sending session...");
                             setSession(session);
                             subscribe(session);
+                        } else {
+                            logger.info("received binary message: " + val);
                         }
                     } else {
                         logger.info("received binary message: " + val);
