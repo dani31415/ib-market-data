@@ -34,11 +34,11 @@ public class IbOrderChanged {
             return;
         }
 
-        if (apiOrder.status.equals("Cancelled") || apiOrder.status.equals("Filled") || apiOrder.status.equals("Inactive")) {
+        if (apiOrder.order_status.equals("Cancelled") || apiOrder.order_status.equals("Filled") || apiOrder.order_status.equals("Inactive")) {
             order.active = false;
-            order.status = apiOrder.status;
+            order.status = apiOrder.order_status;
             order.closedAt = LocalDateTime.now(ZoneId.of("UTC"));
-            logger.info("deactivate order: " + order.id + " " + apiOrder.status);
+            logger.info("deactivate order: " + order.id + " " + apiOrder.order_status);
             ibOrderRepository.save(order);
         }
     }    
