@@ -20,6 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import dev.damaso.market.external.ibgw.AccountResult;
 import dev.damaso.market.external.ibgw.Api;
+import dev.damaso.market.external.ibgw.ApiIbOrder;
 import dev.damaso.market.external.ibgw.HistoryResult;
 import dev.damaso.market.external.ibgw.MarketdataSnapshotResult;
 import dev.damaso.market.external.ibgw.SearchResult;
@@ -285,4 +286,11 @@ public class ApiImplementation implements Api {
         System.out.println("Delete "+ url);
         restTemplate.delete(url);
     }
+
+    public ApiIbOrder findOrderById(String id) {
+        String url = "%s/v1/api/iserver/account/order/status/%s".formatted(id);
+        ResponseEntity<ApiIbOrder> response = restTemplate.getForEntity(url, ApiIbOrder.class);
+        return response.getBody();
+    }
+
 }

@@ -22,5 +22,6 @@ public interface Api {
     boolean nasdaqIsOpenDay(LocalDate localDate);
     ContractInfoResult contractInfo(String conid);
     void cancelOrder(String orderid);
+    ApiIbOrder findOrderById(String id);
     String account();
 }

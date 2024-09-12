@@ -133,6 +133,34 @@ CREATE PROCEDURE configureDatabase()
 
             ALTER TABLE `simulation_item` ADD COLUMN `liquidated` BIT after `early`;
         END IF;
+
+        IF @schemaVersion = '11' THEN
+            UPDATE configuration SET value='12' WHERE `key`='schemaVersion';
+
+            CREATE TABLE ib_order  (
+                `id` VARCHAR(64) PRIMARY KEY,
+                `order_id` INT,
+                `active` BIT NOT NULL,
+                `price` FLOAT NOT NULL,
+                `quantity` FLOAT NOT NULL,
+                `order_ref` VARCHAR(64),
+                `side` VARCHAR(1) NOT NULL,
+                `status` VARCHAR(64),
+                `created_at` DATETIME,
+                `updated_at` DATETIME,
+                `closed_at` DATETIME
+            ) CHARACTER SET utf8mb4;
+
+            CREATE TABLE ib_order_change  (
+                `id` INT AUTO_INCREMENT PRIMARY KEY,
+                `ib_order_id` VARCHAR(64) NOT NULL,
+                `price` FLOAT NOT NULL,
+                `quantity` FLOAT NOT NULL,
+                `created_at` DATETIME,
+                INDEX (`ib_order_id`)
+            ) CHARACTER SET utf8mb4;
+
+        END IF;
     END //
 
 DELIMITER ;
