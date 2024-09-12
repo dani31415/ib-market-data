@@ -9,6 +9,8 @@ import org.springframework.stereotype.Component;
 
 import dev.damaso.market.brokerentities.IbOrder;
 import dev.damaso.market.brokerrepositories.IbOrderRepository;
+import dev.damaso.market.external.ibgw.Api;
+import dev.damaso.market.external.ibgw.ApiIbOrder;
 
 @Component
 public class IbOrderChanges {
@@ -17,6 +19,9 @@ public class IbOrderChanges {
 
     @Autowired
     public IbOrderChanged ibOrderChanged;
+
+    @Autowired
+    public Api api;
 
     public void tick() {
         ZonedDateTime now = ZonedDateTime.now(ZoneId.of("UTC"));
@@ -28,7 +33,8 @@ public class IbOrderChanges {
     private void deactiveOrders() {
         List<IbOrder> orders = ibOrderRepository.findAllByActive(true);
         for (IbOrder order : orders) {
-            ibOrderChanged.changed(order.id);
+            ApiIbOrder apiOrder = api.findOrderById(order.id);
+            ibOrderChanged.changed(order.id, apiOrder);
         }
     }
 }

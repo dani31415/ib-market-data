@@ -13,7 +13,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import dev.damaso.market.brokerentities.IbOrder;
 import dev.damaso.market.brokerrepositories.IbOrderRepository;
-import dev.damaso.market.external.ibgw.Api;
 import dev.damaso.market.external.ibgw.ApiIbOrder;
 
 @Component
@@ -23,11 +22,8 @@ public class IbOrderChanged {
     @Autowired
     public IbOrderRepository ibOrderRepository;
 
-    @Autowired
-    public Api api;
-
     @Transactional(transactionManager = "brokerTransactionManager", isolation = Isolation.REPEATABLE_READ)
-    public void changed(String id) {
+    public void changed(String id, ApiIbOrder apiOrder) {
         Optional<IbOrder> optional = ibOrderRepository.findById(id);
         if (!optional.isPresent()) {
             return;
@@ -38,7 +34,6 @@ public class IbOrderChanged {
             return;
         }
 
-        ApiIbOrder apiOrder = api.findOrderById(id);
         if (apiOrder.status.equals("Cancelled") || apiOrder.status.equals("Filled") || apiOrder.status.equals("Inactive")) {
             order.active = false;
             order.status = apiOrder.status;
