@@ -5,6 +5,8 @@ import java.time.ZoneId;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -25,6 +27,7 @@ public class IbOrders {
     public IbOrderChangeRepository ibOrderChangeRepository;
 
     @PutMapping("/iborders")
+    @Transactional(transactionManager = "brokerTransactionManager", isolation = Isolation.REPEATABLE_READ)
     public void saveIbOrder(@RequestBody IbOrderSaveRequestDTO orderRequest) throws Exception {
         Optional<IbOrder> result = ibOrderRepository.findById(orderRequest.id);
         IbOrder order;
@@ -54,6 +57,7 @@ public class IbOrders {
     }
 
     @GetMapping("/iborders/{ibOrderId}")
+    @Transactional(transactionManager = "brokerTransactionManager", isolation = Isolation.REPEATABLE_READ)
     public IbOrder saveIbOrder(@PathVariable String ibOrderId) throws Exception {
         Optional<IbOrder> result = ibOrderRepository.findById(ibOrderId);
         if (result.isPresent()) {
