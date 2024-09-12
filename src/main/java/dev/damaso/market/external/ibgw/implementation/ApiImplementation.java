@@ -288,7 +288,7 @@ public class ApiImplementation implements Api {
     }
 
     public ApiIbOrder findOrderById(String id) {
-        String url = "%s/v1/api/iserver/account/order/status/%s".formatted(id);
+        String url = "%s/v1/api/iserver/account/order/status/%s".formatted(baseUrl, id);
         ResponseEntity<ApiIbOrder> response = restTemplate.getForEntity(url, ApiIbOrder.class);
         return response.getBody();
     }
