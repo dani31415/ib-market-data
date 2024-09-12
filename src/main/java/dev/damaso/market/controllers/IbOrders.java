@@ -53,7 +53,7 @@ public class IbOrders {
         ibOrderRepository.save(order);
     }
 
-    @GetMapping("/iborders")
+    @GetMapping("/iborders/{ibOrderId}")
     public IbOrder saveIbOrder(@PathVariable String ibOrderId) throws Exception {
         Optional<IbOrder> result = ibOrderRepository.findById(ibOrderId);
         if (result.isPresent()) {
