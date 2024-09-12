@@ -160,6 +160,8 @@ CREATE PROCEDURE configureDatabase()
                 INDEX (`ib_order_id`)
             ) CHARACTER SET utf8mb4;
 
+            ALTER TABLE `ib_order` ADD INDEX (active);
+
         END IF;
     END //
 
