@@ -79,6 +79,7 @@ public class Orders {
         order.status = orderRequest.status;
         order.minute = orderRequest.minute;
         order.buyDesiredPrice = orderRequest.buyDesiredPrice;
+        order.sellDesiredPrice = orderRequest.sellDesiredPrice;
         order.optimization = orderRequest.optimization;
         order.purchaseExpires = orderRequest.purchaseExpires;
         order.modelLastPrice = orderRequest.lastPrice;
