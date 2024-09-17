@@ -19,7 +19,7 @@ import dev.damaso.market.brokerrepositories.OrderRepository;
 import dev.damaso.market.controllers.websocket.IbWebSocketClient;
 import dev.damaso.market.external.ibgw.Api;
 import dev.damaso.market.operations.CloseOrder;
-import dev.damaso.market.operations.IbOrderChanges;
+import dev.damaso.market.operations.IbOrderScheduler;
 
 @Component
 public class Scheduler {
@@ -40,7 +40,7 @@ public class Scheduler {
     IbWebSocketClient ibWebSocketClient;
 
     @Autowired
-    IbOrderChanges ibOrderChanges;
+    IbOrderScheduler ibOrderScheduler;
 
     @Autowired
     Api api;
@@ -110,7 +110,7 @@ public class Scheduler {
             System.out.println("Disabled scheduled due to command line");
             return;
         }
-        ibOrderChanges.tick();
+        ibOrderScheduler.tick();
     }
 
 }
