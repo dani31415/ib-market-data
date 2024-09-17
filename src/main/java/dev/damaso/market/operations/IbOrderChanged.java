@@ -26,6 +26,9 @@ public class IbOrderChanged {
     @Autowired
     public IbOrderChangeRepository ibOrderChangeRepository;
 
+    @Autowired
+    public Jenkins jenkins;
+
     @Transactional(transactionManager = "brokerTransactionManager", isolation = Isolation.REPEATABLE_READ)
     public PostActions changed(String id, IbOrderChanges changes) {
         Optional<IbOrder> optional = ibOrderRepository.findById(id);
@@ -52,6 +55,7 @@ public class IbOrderChanged {
             ibOrderChange.createdAt = order.updatedAt;
             ibOrderChangeRepository.save(ibOrderChange);
 
+            postActions.setJenkins(jenkins);
             postActions.notifyJenkins = order.id;
         }
 
