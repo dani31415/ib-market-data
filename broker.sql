@@ -163,6 +163,13 @@ CREATE PROCEDURE configureDatabase()
             ALTER TABLE `ib_order` ADD INDEX (active);
 
         END IF;
+
+        IF @schemaVersion = '12' THEN
+            UPDATE configuration SET value='13' WHERE `key`='schemaVersion';
+
+            ALTER TABLE `simulation_item` ADD COLUMN `sell_prices` TEXT after `liquidated`;
+        END IF;
+
     END //
 
 DELIMITER ;
