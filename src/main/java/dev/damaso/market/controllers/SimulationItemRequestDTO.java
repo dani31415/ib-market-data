@@ -11,4 +11,5 @@ public class SimulationItemRequestDTO {
     public Boolean liquidated;
     public String modelName;
     public String simulationName;
+    public String sellPrices;
 }
