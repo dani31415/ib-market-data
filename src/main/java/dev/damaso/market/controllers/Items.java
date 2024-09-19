@@ -357,10 +357,11 @@ public class Items {
         return bs;
     }
 
-    private int snapshotMinutes(LocalDateTime local, ZonedDateTime nasdaq) {
+    private int snapshotMinutes(LocalDateTime local, ZonedDateTime nasdaq, int minutes, int offset) {
         ZonedDateTime utc = local.atZone(ZoneId.of("UTC"));
-        long minutes = nasdaq.until(utc, ChronoUnit.MINUTES);
-        int res = (int)Math.floor((minutes-1)/10.0);
+        long minute = nasdaq.until(utc, ChronoUnit.MINUTES);
+        double dMinutes = minutes;
+        int res = (int)Math.floor((minute-1-offset)/dMinutes);
         // int res2 = snapshotMinutes2(local);
         // if (res!=res2) {
         //     System.out.println(utc);
@@ -383,7 +384,7 @@ public class Items {
     }
 
     @GetMapping("/ib/snapshot")
-    public byte [] snapshot(@RequestParam String date, @RequestParam(required=false) String field) throws Exception {
+    public byte [] snapshot(@RequestParam String date, @RequestParam(required=false) String field, @RequestParam(required=false) Integer minute_group, @RequestParam(required=false) Integer offset) throws Exception {
         List<Integer> symbols = new Vector<Integer>();
         Iterable<Symbol> iterSymbols = this.symbolRepository.findAll();
         for (Symbol symbol : iterSymbols) {
@@ -400,6 +401,16 @@ public class Items {
         if (field == null) {
             field = "o";
         }
+        if (minute_group == null) {
+            minute_group = 10;
+        }
+        if (offset == null) {
+            offset = 0;
+        }
+        if (minute_group != 10 && minute_group != 5) {
+            throw new Error("Not implemented for minute_group=%d".formatted(minute_group));
+        }
+        int n_minutes = 420 / minute_group;
         int min;
         if (field.equals("o")) {
             min = -1;
@@ -418,16 +429,16 @@ public class Items {
                 if (fs != null) {
                     list.add(fs);
                 }
-                fs = new float[42][3];
-                for (int i=0;i<42;i++) {
+                fs = new float[n_minutes][3];
+                for (int i=0;i<n_minutes;i++) {
                     fs[i][0] = order;
                 }
             }
-            int m = snapshotMinutes(item.datetime, nasdaqOpen);
+            int m = snapshotMinutes(item.datetime, nasdaqOpen, minute_group, offset);
             if (m < min) {
                 m = min;
             }
-            if (m-min < 42) {
+            if (m-min < n_minutes) {
                 fs[m-min][1] = item.last;
                 fs[m-min][2] = item.volume;
             }
@@ -439,20 +450,20 @@ public class Items {
 
         // Partial difference
         for(float f[][] : list) {
-            for (int i=41; i>0; i--) {
+            for (int i=n_minutes-1; i>0; i--) {
                 f[i][2] = f[i][2] - f[i-1][2];
             }
         }
 
-        float fs2[] = new float[list.size() * 42 * 3];
+        float fs2[] = new float[list.size() * n_minutes * 3];
         for (int i=0; i<list.size(); i++) {
-            for (int j=0;j<42;j++) {
-                fs2[i*42*3 + 3*j + 0] = list.get(i)[j][0];
-                fs2[i*42*3 + 3*j + 1] = list.get(i)[j][1];
-                fs2[i*42*3 + 3*j + 2] = list.get(i)[j][2];
+            for (int j=0;j<n_minutes;j++) {
+                fs2[i*n_minutes*3 + 3*j + 0] = list.get(i)[j][0];
+                fs2[i*n_minutes*3 + 3*j + 1] = list.get(i)[j][1];
+                fs2[i*n_minutes*3 + 3*j + 2] = list.get(i)[j][2];
             }
         }
-        int [] shape = {list.size(), 42, 3};
+        int [] shape = {list.size(), n_minutes, 3};
         byte [] bs = NpyBytes.fromArray(fs2, shape);
         System.out.println("Returning: " + bs.length + "bytes");
         return bs;
