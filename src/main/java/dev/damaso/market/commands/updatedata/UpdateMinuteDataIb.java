@@ -54,29 +54,34 @@ public class UpdateMinuteDataIb implements Comparator<Symbol> {
     private void runWithException() throws Exception {
         ZonedDateTime nasdaqNow = ZonedDateTime.now(ZoneId.of("America/New_York"));
         System.out.println(nasdaqNow);
-        if (!Date.isNasdaqOpenDay(nasdaqNow.toLocalDate())) {
-            System.out.println("Is not nasdaq open day. Ignored.");
-            return;
+        LocalDate nasdaqDate = nasdaqNow.toLocalDate();
+
+        if (Date.isNasdaqOpenDay(nasdaqDate) && Date.isNasdaqAfterClose(nasdaqNow)) {
+            System.out.println("Compute current day.");
+        } else {
+            int counter = 10;
+            do {
+                nasdaqDate = nasdaqDate.plusDays(-1);
+                System.out.println("Compute previous day %d/10.".formatted(counter));
+                System.out.println(nasdaqDate);
+                counter--;
+            } while (!Date.isNasdaqOpenDay(nasdaqDate) && counter>0);
+            if (counter==0) {
+                throw new Error("Nasdaq is not open for long...");
+            }
         }
-        LocalDateTime now = LocalDateTime.now(ZoneId.of("UTC"));
-        System.out.println(now);
-        if (Date.isNasdaqOpen(now)) {
-            System.out.println("Is nasdaq open hours. Ignored.");
-            return;
-        }
-        LocalDate date = nasdaqNow.toLocalDate();
-        // date = date.plusDays(-1);
-        Integer maxSymbolId = minuteItemRepository.findMaxSymbolIdByDate(date);
+
+        Integer maxSymbolId = minuteItemRepository.findMaxSymbolIdByDate(nasdaqDate);
         if (maxSymbolId==null) {
             maxSymbolId = 0;
         }
         System.out.println("Symbols by date %d".formatted(maxSymbolId));
-        updateSymbols(date.getYear(), date.getMonthValue(), date.getDayOfMonth(), maxSymbolId);
+        updateSymbols(nasdaqDate.getYear(), nasdaqDate.getMonthValue(), nasdaqDate.getDayOfMonth(), maxSymbolId);
     }
 
     private void updateSymbols(int year, int month, int day, int startSymbol) throws Exception {
         LocalDateTime open = ZonedDateTime.of(year, month, day, 9, 0, 0, 0, ZoneId.of("America/New_York")).withZoneSameInstant(ZoneId.of("UTC")).toLocalDateTime();
-        LocalDateTime close = ZonedDateTime.of(year, month, day, 0, 0, 0, 0, ZoneId.of("America/New_York")).withZoneSameInstant(ZoneId.of("UTC")).toLocalDateTime();
+        LocalDateTime close = ZonedDateTime.of(year, month, day, 16, 0, 0, 0, ZoneId.of("America/New_York")).withZoneSameInstant(ZoneId.of("UTC")).toLocalDateTime();
 
         System.out.println("Open " + open);
         System.out.println("Close " + close);
@@ -96,7 +101,7 @@ public class UpdateMinuteDataIb implements Comparator<Symbol> {
             }
             System.out.println(historyResult.symbol);
             System.out.println(historyResult.text);
-            System.out.println(historyResult.data.size());
+            System.out.println("History points " + historyResult.data.size());
             List<MinuteItem> itemsToSave = new Vector<>();
             for (HistoryResultData data: historyResult.data) {
                 if (data.getT().compareTo(open) >= 0 && data.getT().compareTo(close) < 0 && data.v>0) {
@@ -126,8 +131,6 @@ public class UpdateMinuteDataIb implements Comparator<Symbol> {
                     exceptionList.add(ex);
                 }
             });
-
-            System.out.println(historyResult.data.get(historyResult.data.size()-1).getT());
         }
     
         executor.shutdown();
