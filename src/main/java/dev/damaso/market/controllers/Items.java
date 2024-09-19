@@ -222,7 +222,7 @@ public class Items {
     }
 
     @GetMapping("/ib/rawitems/minute2")
-    public byte [] raw10MinuteItems(@RequestParam int period, @RequestParam(required=false) Integer minute_group, @RequestParam(required=false) String field) throws Exception {
+    public byte [] raw10MinuteItems(@RequestParam int period, @RequestParam(required=false) Integer minute_group, @RequestParam(required=false) String field, @RequestParam(required=false) Integer offset) throws Exception {
         Optional<Period> optionalPeriod = periodRepository.findById(period);
         if (!optionalPeriod.isPresent()) {
             throw new ResponseStatusException(
@@ -237,8 +237,11 @@ public class Items {
         if (field == null) {
             field = "o";
         }
+        if (offset == null) {
+            offset = 0;
+        }
         int n_groups_per_day = 420 / minute_group;
-        Iterable<MinuteItemBase> allMinuteItems = minuteItemRepository.findByDateGroupByMinute(date, minute_group);
+        Iterable<MinuteItemBase> allMinuteItems = minuteItemRepository.findByDateGroupByMinute(date, minute_group, offset);
         Map<Integer, List<MinuteItemBase>> symbolItems = groupBaseBySymbol(allMinuteItems);
 
         List<Symbol> symbols = new Vector<Symbol>();
