@@ -65,7 +65,7 @@ public class UpdateMinuteDataIb implements Comparator<Symbol> {
             // if (!symbol.ib_conid.equals("265585")) {
             //     continue;
             // }
-            if (symbol.id < 1270) {
+            if (symbol.id < 7118) {
                 continue;
             }
             HistoryResult historyResult = iserverMarketdataHistory(symbol.ib_conid);
