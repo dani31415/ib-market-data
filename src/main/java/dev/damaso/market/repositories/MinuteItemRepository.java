@@ -21,6 +21,9 @@ public interface MinuteItemRepository extends CrudRepository<MinuteItem, MinuteI
     """)
     List<LastItem> findMaxDateGroupBySymbol();
 
+    @Query("SELECT MAX(mi.symbolId) FROM MinuteItem mi WHERE mi.date = ?1")
+    Integer findMaxSymbolIdByDate(LocalDate date);
+
     @Query("SELECT mi FROM MinuteItem mi WHERE symbolId=?1 ORDER BY date ASC, minute ASC")
     List<MinuteItem> findBySymbolId(int symbolId);
 

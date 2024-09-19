@@ -1,6 +1,7 @@
 package dev.damaso.market.commands.updatedata;
 
 import java.time.Duration;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -25,6 +26,7 @@ import dev.damaso.market.entities.Symbol;
 import dev.damaso.market.external.ibgw.Api;
 import dev.damaso.market.external.ibgw.HistoryResult;
 import dev.damaso.market.external.ibgw.HistoryResultData;
+import dev.damaso.market.operations.Date;
 import dev.damaso.market.repositories.MinuteItemRepository;
 import dev.damaso.market.repositories.SymbolRepository;
 
@@ -50,22 +52,42 @@ public class UpdateMinuteDataIb implements Comparator<Symbol> {
     }
 
     private void runWithException() throws Exception {
-        // ZonedDateTime open = ZonedDateTime.parse("2024-09-18T09:00:00[Asia/Calcutta]");
-        LocalDateTime open = ZonedDateTime.of(2024, 9, 18, 9, 0, 0, 0, ZoneId.of("America/New_York")).withZoneSameInstant(ZoneId.of("UTC")).toLocalDateTime();
-        LocalDateTime close = ZonedDateTime.of(2024, 9, 18, 16, 0, 0, 0, ZoneId.of("America/New_York")).withZoneSameInstant(ZoneId.of("UTC")).toLocalDateTime();
+        ZonedDateTime nasdaqNow = ZonedDateTime.now(ZoneId.of("America/New_York"));
+        System.out.println(nasdaqNow);
+        if (!Date.isNasdaqOpenDay(nasdaqNow.toLocalDate())) {
+            System.out.println("Is not nasdaq open day. Ignored.");
+            return;
+        }
+        LocalDateTime now = LocalDateTime.now(ZoneId.of("UTC"));
+        System.out.println(now);
+        if (Date.isNasdaqOpen(now)) {
+            System.out.println("Is nasdaq open hours. Ignored.");
+            return;
+        }
+        LocalDate date = nasdaqNow.toLocalDate();
+        // date = date.plusDays(-1);
+        Integer maxSymbolId = minuteItemRepository.findMaxSymbolIdByDate(date);
+        if (maxSymbolId==null) {
+            maxSymbolId = 0;
+        }
+        System.out.println("Symbols by date %d".formatted(maxSymbolId));
+        updateSymbols(date.getYear(), date.getMonthValue(), date.getDayOfMonth(), maxSymbolId);
+    }
+
+    private void updateSymbols(int year, int month, int day, int startSymbol) throws Exception {
+        LocalDateTime open = ZonedDateTime.of(year, month, day, 9, 0, 0, 0, ZoneId.of("America/New_York")).withZoneSameInstant(ZoneId.of("UTC")).toLocalDateTime();
+        LocalDateTime close = ZonedDateTime.of(year, month, day, 0, 0, 0, 0, ZoneId.of("America/New_York")).withZoneSameInstant(ZoneId.of("UTC")).toLocalDateTime();
 
         System.out.println("Open " + open);
         System.out.println("Close " + close);
+        System.out.println("Start symbol " + startSymbol);
 
         List<Exception> exceptionList = new Vector<>();
         ExecutorService executor = Executors.newFixedThreadPool(4);
 
         List<Symbol> symbols = getSymbols();
         for (Symbol symbol: symbols) {
-            // if (!symbol.ib_conid.equals("265585")) {
-            //     continue;
-            // }
-            if (symbol.id < 7118) {
+            if (symbol.id < startSymbol) {
                 continue;
             }
             HistoryResult historyResult = iserverMarketdataHistory(symbol.ib_conid);
@@ -106,8 +128,6 @@ public class UpdateMinuteDataIb implements Comparator<Symbol> {
             });
 
             System.out.println(historyResult.data.get(historyResult.data.size()-1).getT());
-            // if (historyResult.data.size() > 0)
-            //     break;
         }
     
         executor.shutdown();
