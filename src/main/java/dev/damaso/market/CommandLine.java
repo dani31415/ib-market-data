@@ -23,6 +23,7 @@ import dev.damaso.market.commands.updatedata.UpdateDailyData;
 import dev.damaso.market.commands.updatedata.UpdateDailyData2;
 import dev.damaso.market.commands.updatedata.UpdateData;
 import dev.damaso.market.commands.updatedata.UpdateMinuteData;
+import dev.damaso.market.commands.updatedata.UpdateMinuteDataIb;
 import dev.damaso.market.repositories.ConfigurationRepository;
 
 @Component
@@ -44,6 +45,9 @@ public class CommandLine implements CommandLineRunner {
 
     @Autowired
     UpdateMinuteData updateMinuteData;
+
+    @Autowired
+    UpdateMinuteDataIb updateMinuteDataIb;
 
     @Autowired
     Snapshot snapshot;
@@ -102,6 +106,8 @@ public class CommandLine implements CommandLineRunner {
             updateDailyData2.run();
         } else if (args[0].equals("update-minute-data")) {
             updateMinuteData.run();
+        } else if (args[0].equals("update-minute-data-ib")) {
+            updateMinuteDataIb.run();
         } else if (args[0].equals("snapshot")) {
             snapshot.run();
         } else if (args[0].equals("snapshot2")) {
