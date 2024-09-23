@@ -52,12 +52,21 @@ public class UpdateMinuteDataIb implements Comparator<Symbol> {
     }
 
     private void runWithException() throws Exception {
+        try {
+            api.reauthenticateHelper();
+        } catch (Throwable th) {
+            // Stops quickly if there is no access to ib
+            th.printStackTrace();
+            System.exit(1);
+        }
+
         ZonedDateTime nasdaqNow = ZonedDateTime.now(ZoneId.of("America/New_York"));
         System.out.println(nasdaqNow);
         LocalDate nasdaqDate = nasdaqNow.toLocalDate();
 
         if (Date.isNasdaqOpenDay(nasdaqDate) && Date.isNasdaqAfterClose(nasdaqNow)) {
             System.out.println("Compute current day.");
+            System.out.println(nasdaqDate);
         } else {
             int counter = 10;
             do {
