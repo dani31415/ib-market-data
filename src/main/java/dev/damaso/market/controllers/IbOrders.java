@@ -35,7 +35,11 @@ public class IbOrders {
             order = result.get();
         } else {
             order = new IbOrder();
-            order.createdAt = LocalDateTime.now(ZoneId.of("UTC"));
+            if (orderRequest.updatedAt == null) {
+                order.createdAt = LocalDateTime.now(ZoneId.of("UTC"));
+            } else {
+                order.createdAt = orderRequest.updatedAt;
+            }
             order.active = true;
         }
         order.id = orderRequest.id;
@@ -44,7 +48,11 @@ public class IbOrders {
         order.price = orderRequest.price;
         order.quantity = orderRequest.quantity;
         order.orderRef = orderRequest.orderRef;
-        order.updatedAt = LocalDateTime.now(ZoneId.of("UTC"));
+        if (orderRequest.updatedAt == null) {
+            order.updatedAt = LocalDateTime.now(ZoneId.of("UTC"));
+        } else {
+            order.updatedAt = orderRequest.updatedAt;
+        }
 
         IbOrderChange ibOrderChange = new IbOrderChange();
         ibOrderChange.ibOrderId = order.id;
