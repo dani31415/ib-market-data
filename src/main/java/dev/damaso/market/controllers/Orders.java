@@ -87,7 +87,8 @@ public class Orders {
         if (unique!=null && unique.booleanValue()) {
             Iterable<Order> existingOrders = orderRepository.findAllBySymbolId(symbol.id);
             for (Order existingOrder : existingOrders) {
-                if (existingOrder.status.equals("created") ||
+                if (existingOrder.status.equals("creating") ||
+                    existingOrder.status.equals("created") ||
                     existingOrder.status.equals("valid") ||
                     existingOrder.status.equals("open") ||
                     existingOrder.status.equals("opening") ||
