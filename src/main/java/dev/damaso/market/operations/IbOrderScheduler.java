@@ -33,11 +33,16 @@ public class IbOrderScheduler {
     private void activeTick() {
         List<IbOrder> orders = ibOrderRepository.findAllByActive(true);
         for (IbOrder order : orders) {
-            ApiIbOrder apiOrder = api.findOrderById(order.id);
-            IbOrderChanges ibOrderChanges = new IbOrderChanges();
-            ibOrderChanges.status = apiOrder.order_status;
-            ibOrderChanges.quantity = Float.parseFloat(apiOrder.size);
-            ibOrderChanged.changed(order.id, ibOrderChanges).postActions();
+            try {
+                ApiIbOrder apiOrder = api.findOrderById(order.id);
+                IbOrderChanges ibOrderChanges = new IbOrderChanges();
+                ibOrderChanges.status = apiOrder.order_status;
+                ibOrderChanges.quantity = Float.parseFloat(apiOrder.size);
+                ibOrderChanged.changed(order.id, ibOrderChanges).postActions();
+            } catch (Throwable ex) {
+                ex.printStackTrace();
+                // And continue with next order...
+            }
         }
     }
 }
