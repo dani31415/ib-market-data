@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
@@ -79,9 +80,12 @@ public class Orders {
         order.status = orderRequest.status;
         order.minute = orderRequest.minute;
         order.buyDesiredPrice = orderRequest.buyDesiredPrice;
+        order.sellDesiredPrice = orderRequest.sellDesiredPrice;
         order.optimization = orderRequest.optimization;
         order.purchaseExpires = orderRequest.purchaseExpires;
         order.modelLastPrice = orderRequest.lastPrice;
+        order.nextActionTime = orderRequest.nextActionTime;
+        order.renewalDate = orderRequest.renewalDate;
 
         if (unique!=null && unique.booleanValue()) {
             Iterable<Order> existingOrders = orderRepository.findAllBySymbolId(symbol.id);
@@ -99,6 +103,17 @@ public class Orders {
 
         Order newOrder = orderRepository.save(order);
         return newOrder;
+    }
+
+    @GetMapping("/actions")
+    @Transactional(transactionManager = "brokerTransactionManager", isolation = Isolation.REPEATABLE_READ)
+    public Order getActions() throws Exception {
+        Iterable<Order> orders = orderRepository.findNextAction();
+        Iterator<Order> iterator = orders.iterator();
+        if (iterator.hasNext()) {
+            return iterator.next();
+        }
+        return null;
     }
 
     @GetMapping("/orders")

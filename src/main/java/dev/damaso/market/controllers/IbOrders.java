@@ -2,6 +2,7 @@ package dev.damaso.market.controllers;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.Iterator;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,12 +45,16 @@ public class IbOrders {
         order.price = orderRequest.price;
         order.quantity = orderRequest.quantity;
         order.orderRef = orderRequest.orderRef;
+        if (orderRequest.status!=null && orderRequest.status.isPresent()) {
+            order.status = orderRequest.status.get();
+        }
         order.updatedAt = LocalDateTime.now(ZoneId.of("UTC"));
 
         IbOrderChange ibOrderChange = new IbOrderChange();
         ibOrderChange.ibOrderId = order.id;
         ibOrderChange.price = order.price;
         ibOrderChange.quantity = order.quantity;
+        ibOrderChange.status = order.status;
         ibOrderChange.createdAt = order.updatedAt;
         ibOrderChangeRepository.save(ibOrderChange);
 
@@ -58,10 +63,31 @@ public class IbOrders {
 
     @GetMapping("/iborders/{ibOrderId}")
     @Transactional(transactionManager = "brokerTransactionManager", isolation = Isolation.REPEATABLE_READ)
-    public IbOrder saveIbOrder(@PathVariable String ibOrderId) throws Exception {
+    public IbSavedOrderDTO saveIbOrder(@PathVariable String ibOrderId) throws Exception {
         Optional<IbOrder> result = ibOrderRepository.findById(ibOrderId);
         if (result.isPresent()) {
-            return result.get();
+            IbOrder ibOrder = result.get();
+            IbSavedOrderDTO ibSavedOrder = new IbSavedOrderDTO();
+            ibSavedOrder.id = ibOrder.id;
+            ibSavedOrder.orderId = ibOrder.orderId;
+            ibSavedOrder.active = ibOrder.active;
+            ibSavedOrder.orderRef = ibOrder.orderRef;
+            ibSavedOrder.price = ibOrder.price;
+            ibSavedOrder.quantity = ibOrder.quantity;
+            ibSavedOrder.side = ibOrder.side;
+            ibSavedOrder.status = ibOrder.status;
+            ibSavedOrder.createdAt = ibOrder.createdAt;
+            ibSavedOrder.updatedAt = ibOrder.updatedAt;
+            ibSavedOrder.closedAt = ibOrder.closedAt;
+
+            Iterable<IbOrderChange> ibOrderChange = ibOrderChangeRepository.findByOrderIdAsc(ibOrder.id);
+            Iterator<IbOrderChange> iterator = ibOrderChange.iterator();
+            if (iterator.hasNext()) {
+                IbOrderChange lastChange = iterator.next();
+                ibSavedOrder.originalQuantity = lastChange.quantity;
+                ibSavedOrder.originalPrice = lastChange.price;
+            }
+            return ibSavedOrder;
         }
         return null;
     }

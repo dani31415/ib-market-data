@@ -13,6 +13,9 @@ public class OrderRequestDTO {
     public Integer minute;
     public String date;
     public Float buyDesiredPrice;
+    public Float sellDesiredPrice;
     public String optimization;
     public LocalDateTime purchaseExpires;
+    public LocalDateTime nextActionTime;
+    public LocalDateTime renewalDate;
 }

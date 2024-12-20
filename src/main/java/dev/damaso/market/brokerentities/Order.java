@@ -25,6 +25,7 @@ public class Order {
     @Column(name = "\"order\"")
     public int order;
     public String status;
+    public LocalDateTime nextActionTime;
 
     public Float lastPrice;
     public Float modelLastPrice;

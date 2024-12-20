@@ -27,4 +27,7 @@ public interface OrderRepository extends CrudRepository<Order, Integer> {
     Iterable<Order> findOpeningSortedByPurchaseExpires();
 
     Iterable<Order> findAllBySymbolId(int symbolId);
+
+    @Query("SELECT o FROM Order o WHERE o.status in ('opening', 'closing', 'open', 'created', 'valid') ORDER BY o.nextActionTime ASC")
+    Iterable<Order> findNextAction();
 }
