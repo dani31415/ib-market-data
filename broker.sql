@@ -167,6 +167,12 @@ CREATE PROCEDURE configureDatabase()
         IF @schemaVersion = '12' THEN
             UPDATE configuration SET value='13' WHERE `key`='schemaVersion';
 
+            ALTER TABLE `simulation_item` ADD COLUMN `sell_prices` TEXT after `liquidated`;
+        END IF;
+
+        IF @schemaVersion = '13' THEN
+            UPDATE configuration SET value='14' WHERE `key`='schemaVersion';
+
             ALTER TABLE `order` ADD COLUMN next_action_time DATETIME(3) AFTER `status`;
             ALTER TABLE `ib_order_change` ADD COLUMN status VARCHAR(64) AFTER `quantity`;
         END IF;

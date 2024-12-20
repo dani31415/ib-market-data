@@ -28,5 +28,7 @@ public class SimulationItem {
     public Boolean liquidated;
     public String modelName;
     public String simulationName;
+    @Column(columnDefinition="text")
+    public String sellPrices;
     public LocalDateTime createdAt;
 }

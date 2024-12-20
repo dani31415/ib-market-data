@@ -41,6 +41,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.damaso.market.external.ibgw.Api;
 import dev.damaso.market.external.ibgw.TickleResult;
 import dev.damaso.market.operations.Date;
+import dev.damaso.market.operations.IbOrderChanged;
+import dev.damaso.market.operations.IbOrderChanges;
 
 @Component
 public class IbWebSocketClient implements DisposableBean { // implements InitializingBean {
@@ -66,6 +68,9 @@ public class IbWebSocketClient implements DisposableBean { // implements Initial
 
     @Autowired
     RestTemplate restTemplate;
+ 
+    @Autowired
+    public IbOrderChanged ibOrderChanged;
 
     public WebSocketSession webSocketSession;
 
@@ -136,27 +141,31 @@ public class IbWebSocketClient implements DisposableBean { // implements Initial
                                 if (argNode.has("status")) {
                                     status = argNode.get("status").asText();
                                 }
-                                if (status.equals("PartialFill") || status.equals("Filled")) {
-                                    double filledQuantity = 0.0;
-                                    if (argNode.has("filledQuantity")) {
-                                        filledQuantity = argNode.get("filledQuantity").asDouble();
+                                if (argNode.has("orderId")) {
+                                    String orderId = argNode.get("orderId").asText();
+                                    IbOrderChanges changes = new IbOrderChanges();
+                                    changes.status = status;
+                                    changes.quantity = null;
+                                    if (status.equals("PartialFill") || status.equals("Filled")) {
+                                        double filledQuantity = 0.0;
+                                        if (argNode.has("filledQuantity")) {
+                                            filledQuantity = argNode.get("filledQuantity").asDouble();
+                                        }
+                                        if (filledQuantity > 0) {
+                                            logger.info("order args: " + val);
+                                            double remainingQuantity = 0.0;
+                                            if (argNode.has("remainingQuantity")) {
+                                                remainingQuantity = argNode.get("remainingQuantity").asDouble();
+                                            }
+                                            String side = "UNKNOWN";
+                                            if (argNode.has("side")) {
+                                                side = argNode.get("side").asText();
+                                            }
+                                            logger.info("order trade %s %s %.2f %.2f".formatted(side, status, remainingQuantity, filledQuantity));
+                                            changes.quantity = (float)remainingQuantity;
+                                        }
                                     }
-                                    if (filledQuantity > 0) {
-                                        logger.info("order args: " + val);
-                                        double remainingQuantity = 0.0;
-                                        if (argNode.has("remainingQuantity")) {
-                                            remainingQuantity = argNode.get("remainingQuantity").asDouble();
-                                        }
-                                        String side = "UNKNOWN";
-                                        if (argNode.has("side")) {
-                                            side = argNode.get("side").asText();
-                                        }
-                                        logger.info("order trade %s %s %.2f %.2f".formatted(side, status, remainingQuantity, filledQuantity));
-                                        if (argNode.has("orderId")) {
-                                            String orderId = argNode.get("orderId").asText();
-                                            updateOrder(orderId);
-                                        }
-                                    }
+                                    ibOrderChanged.changed(orderId, changes).postActions();
                                 }
                             }
                         } else if (topic.equals("sor") && jsonNode.has("error")) {
