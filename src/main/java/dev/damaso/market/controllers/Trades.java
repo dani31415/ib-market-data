@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import dev.damaso.market.brokerentities.Order;
 import dev.damaso.market.brokerentities.Trade;
+import dev.damaso.market.brokerentities.TradeSideEnum;
 import dev.damaso.market.brokerrepositories.OrderRepository;
 import dev.damaso.market.brokerrepositories.TradeRepository;
 import dev.damaso.market.operations.Date;
@@ -34,6 +35,24 @@ public class Trades {
             return 0;
         }
         return quantity;
+    }
+
+    @GetMapping("/orders/{orderId}/trades/sell")
+    double sumSizeTradesSell(@PathVariable int orderId) {
+        Optional<Double> sum = tradeRepository.sumSizeBySide(orderId, TradeSideEnum.S);
+        if (sum.isPresent()) {
+            return sum.get();
+        }
+        return 0.0;
+    }
+
+    @GetMapping("/orders/{orderId}/trades/buy")
+    double sumSizeTradesBuy(@PathVariable int orderId) {
+        Optional<Double> sum = tradeRepository.sumSizeBySide(orderId, TradeSideEnum.B);
+        if (sum.isPresent()) {
+            return sum.get();
+        }
+        return 0.0;
     }
 
     @GetMapping("/orders/{orderId}/trades")

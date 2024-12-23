@@ -78,4 +78,7 @@ public class Order {
 
     @Column(columnDefinition="text")
     public String optimization;
+
+    @Column(columnDefinition="text")
+    public String attempts;
 }

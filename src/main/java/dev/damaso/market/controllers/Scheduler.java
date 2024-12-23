@@ -55,7 +55,7 @@ public class Scheduler {
         }
     }
 
-    @Scheduled(fixedRate = RATE)
+    // @Scheduled(fixedRate = RATE)
     public void closeOrders() throws InterruptedException {
         if (MarketApplication.webApplicationType == WebApplicationType.NONE) {
             System.out.println("Disabled scheduled due to command line");
@@ -95,7 +95,7 @@ public class Scheduler {
         }
     }
 
-    @Scheduled(fixedRate = WEBSOCKET_RATE)
+    // @Scheduled(fixedRate = WEBSOCKET_RATE)
     public void ensureIbWebSocketClient() throws InterruptedException {
         if (MarketApplication.webApplicationType == WebApplicationType.NONE) {
             System.out.println("Disabled scheduled due to command line");
@@ -104,7 +104,7 @@ public class Scheduler {
         ibWebSocketClient.ensure();
     }
 
-    @Scheduled(fixedRate = ORDER_RATE)
+    // @Scheduled(fixedRate = ORDER_RATE)
     public void orderUpdates() throws InterruptedException {
         if (MarketApplication.webApplicationType == WebApplicationType.NONE) {
             System.out.println("Disabled scheduled due to command line");

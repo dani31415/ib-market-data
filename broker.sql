@@ -176,6 +176,12 @@ CREATE PROCEDURE configureDatabase()
             ALTER TABLE `order` ADD COLUMN next_action_time DATETIME(3) AFTER `status`;
             ALTER TABLE `ib_order_change` ADD COLUMN status VARCHAR(64) AFTER `quantity`;
         END IF;
+
+        IF @schemaVersion = '14' THEN
+            UPDATE configuration SET value='15' WHERE `key`='schemaVersion';
+
+            ALTER TABLE `order` ADD COLUMN `attempts` TEXT;
+        END IF;
     END //
 
 DELIMITER ;
