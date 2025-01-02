@@ -182,6 +182,13 @@ CREATE PROCEDURE configureDatabase()
 
             ALTER TABLE `order` ADD COLUMN `attempts` TEXT;
         END IF;
+
+        IF @schemaVersion = '15' THEN
+            UPDATE configuration SET value='16' WHERE `key`='schemaVersion';
+
+            ALTER TABLE `order` ADD COLUMN `sell_stop_order_id` VARCHAR(100) AFTER `sell_order_id`;
+            ALTER TABLE `order` ADD COLUMN `sell_stop_desired_price` FLOAT AFTER `sell_desired_price`;
+        END IF;
     END //
 
 DELIMITER ;

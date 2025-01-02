@@ -81,6 +81,7 @@ public class Orders {
         order.minute = orderRequest.minute;
         order.buyDesiredPrice = orderRequest.buyDesiredPrice;
         order.sellDesiredPrice = orderRequest.sellDesiredPrice;
+        order.sellStopDesiredPrice = orderRequest.sellStopDesiredPrice;
         order.optimization = orderRequest.optimization;
         order.purchaseExpires = orderRequest.purchaseExpires;
         order.modelLastPrice = orderRequest.lastPrice;
@@ -142,7 +143,9 @@ public class Orders {
         Order order = orderRepository.findById(id).orElseThrow(NotFoundException::new);
         ObjectReader objectReader = objectMapper.readerForUpdating(order);
         Order updatedOrder = objectReader.readValue(inputJson);
-        updatedOrder.updatedAt = LocalDateTime.now(ZoneId.of("UTC"));
+        // if (updatedOrder.updatedAt == null) {
+        //     updatedOrder.updatedAt = LocalDateTime.now(ZoneId.of("UTC"));
+        // }
         orderRepository.save(updatedOrder);
         return updatedOrder;
     }

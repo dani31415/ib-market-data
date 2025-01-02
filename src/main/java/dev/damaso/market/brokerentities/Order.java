@@ -47,6 +47,7 @@ public class Order {
     
     public String buyOrderId;
     public String sellOrderId;
+    public String sellStopOrderId;
 
     public Float buyOrderPrice;
     public Float buyPositionPrice;
@@ -54,6 +55,7 @@ public class Order {
     public Float sellOrderPrice;
     public Float sellPositionPrice;
     public Float sellDesiredPrice;
+    public Float sellStopDesiredPrice;
 
     public Float askPriceAtBuyOrder;
     public Float lastPriceAtBuyOrder;
