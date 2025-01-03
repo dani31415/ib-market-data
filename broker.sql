@@ -189,6 +189,13 @@ CREATE PROCEDURE configureDatabase()
             ALTER TABLE `order` ADD COLUMN `sell_stop_order_id` VARCHAR(100) AFTER `sell_order_id`;
             ALTER TABLE `order` ADD COLUMN `sell_stop_desired_price` FLOAT AFTER `sell_desired_price`;
         END IF;
+
+        IF @schemaVersion = '16' THEN
+            UPDATE configuration SET value='17' WHERE `key`='schemaVersion';
+
+            ALTER TABLE `ib_order` ADD COLUMN `type` VARCHAR(64) AFTER `status`;
+            ALTER TABLE `ib_order_change` ADD COLUMN `type` VARCHAR(64) AFTER `status`;
+        END IF;
     END //
 
 DELIMITER ;

@@ -12,6 +12,7 @@ public class IbOrderSaveRequestDTO {
     public float price;
     public float quantity;
     public Optional<String> status;
+    public Optional<String> type;
     public TradeSideEnum side;
     public LocalDateTime updatedAt;
 }

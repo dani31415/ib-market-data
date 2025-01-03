@@ -52,6 +52,9 @@ public class IbOrders {
         if (orderRequest.status!=null && orderRequest.status.isPresent()) {
             order.status = orderRequest.status.get();
         }
+        if (orderRequest.type!=null && orderRequest.type.isPresent()) {
+            order.type = orderRequest.type.get();
+        }
         if (orderRequest.updatedAt == null) {
             order.updatedAt = LocalDateTime.now(ZoneId.of("UTC"));
         } else {
@@ -63,6 +66,7 @@ public class IbOrders {
         ibOrderChange.price = order.price;
         ibOrderChange.quantity = order.quantity;
         ibOrderChange.status = order.status;
+        ibOrderChange.type = order.type;
         ibOrderChange.createdAt = order.updatedAt;
         ibOrderChangeRepository.save(ibOrderChange);
 
@@ -84,6 +88,7 @@ public class IbOrders {
             ibSavedOrder.quantity = ibOrder.quantity;
             ibSavedOrder.side = ibOrder.side;
             ibSavedOrder.status = ibOrder.status;
+            ibSavedOrder.type = ibOrder.type;
             ibSavedOrder.createdAt = ibOrder.createdAt;
             ibSavedOrder.updatedAt = ibOrder.updatedAt;
             ibSavedOrder.closedAt = ibOrder.closedAt;

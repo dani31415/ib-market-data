@@ -20,6 +20,7 @@ public class IbOrder {
     @Enumerated(EnumType.STRING)
     public TradeSideEnum side;
     public String status;
+    public String type;
     public LocalDateTime createdAt;
     public LocalDateTime updatedAt;
     public LocalDateTime closedAt;

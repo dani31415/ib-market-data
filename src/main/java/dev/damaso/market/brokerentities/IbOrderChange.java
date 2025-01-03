@@ -17,5 +17,6 @@ public class IbOrderChange {
     public float price;
     public float quantity;
     public String status;
+    public String type;
     public LocalDateTime createdAt;
 }
