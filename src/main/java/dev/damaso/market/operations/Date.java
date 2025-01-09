@@ -94,6 +94,7 @@ public class Date {
             "2024-12-25", // Christmas
 
             "2025-01-01", // new year's day
+            "2025-01-09", // National Day of Mourning for President Jimmy Carter
             "2025-01-20", // birthday of Martin Luther King, Jr
             "2025-02-17", // Washington's birthday
             "2025-04-18", // Good Friday
