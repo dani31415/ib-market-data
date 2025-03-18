@@ -28,7 +28,7 @@ public interface SymbolRepository extends CrudRepository<Symbol, Integer> {
         SELECT s
             FROM Symbol s 
             INNER JOIN Item i
-            ON s.id = i.symbolId AND i.version = 0 AND i.date = ?1 AND i.volume > ?2
+            ON s.id = i.symbolId AND i.version = 0 AND i.date = ?1 AND (i.volume > ?2 or i.open * i.volume > ?2)
             ORDER BY s.id ASC
     """)
     Iterable<Symbol> findAllActive(LocalDate date, long volume);
