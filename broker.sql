@@ -202,6 +202,13 @@ CREATE PROCEDURE configureDatabase()
 
             ALTER TABLE `order` ADD COLUMN `buy_stop_desired_price` FLOAT AFTER `buy_desired_price`;
         END IF;
+
+        IF @schemaVersion = '18' THEN
+            UPDATE configuration SET value='19' WHERE `key`='schemaVersion';
+
+            ALTER TABLE `order` ADD COLUMN `buy_update_price_factor` FLOAT AFTER `buy_stop_desired_price`;
+            ALTER TABLE `order` ADD COLUMN `purchase_updates` DATETIME AFTER `purchase_expires`;
+        END IF;
     END //
 
 DELIMITER ;
