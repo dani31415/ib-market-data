@@ -98,7 +98,8 @@ public class Orders {
                     existingOrder.status.equals("valid") ||
                     existingOrder.status.equals("open") ||
                     existingOrder.status.equals("opening") ||
-                    existingOrder.status.equals("closing")
+                    existingOrder.status.equals("closing") ||
+                    existingOrder.status.equals("failed") && existingOrder.description.toLowerCase().contains("permission")
                 ) {
                     order.status = "duplicated";
                 }
