@@ -5,6 +5,7 @@ public class SimulationItemRequestDTO {
     public int period;
     public Integer minute;
     public int order;
+    public Float lastPrice;
     public Float purchase;
     public Float gains;
     public Float early;

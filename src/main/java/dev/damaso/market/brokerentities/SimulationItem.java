@@ -22,6 +22,7 @@ public class SimulationItem {
     public Integer symbolId;
     public String ib_conid;
     public String symbolSrcName;
+    public Float lastPrice;
     public Float purchase;
     public Float gains;
     public Float early;

@@ -68,6 +68,7 @@ public class Simulation {
             item.symbolSrcName = simulationItemRequest.symbol;
             item.ib_conid = conid;
             item.createdAt = LocalDateTime.now(ZoneId.of("UTC"));
+            item.lastPrice = simulationItemRequest.lastPrice;
             item.purchase = simulationItemRequest.purchase;
             item.gains = simulationItemRequest.gains;
             item.early = simulationItemRequest.early;
@@ -101,6 +102,7 @@ public class Simulation {
             sir.symbolId = item.symbolId;
             sir.ib_conid = item.ib_conid;
             sir.symbolSrcName = item.symbolSrcName;
+            sir.lastPrice = item.lastPrice;
             sir.purchase = item.purchase;
             sir.gains = item.gains;
             sir.early = item.early;
