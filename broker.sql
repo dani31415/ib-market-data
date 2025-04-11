@@ -216,6 +216,16 @@ CREATE PROCEDURE configureDatabase()
             ALTER TABLE `simulation_item` ADD COLUMN `last_price` float after `minute`;
         END IF;
 
+        IF @schemaVersion = '20' THEN
+            UPDATE configuration SET value='21' WHERE `key`='schemaVersion';
+
+            CREATE TABLE `mean`  (
+                `period` INT,
+                `model_name` VARCHAR(100),
+                `mean` FLOAT,
+                PRIMARY KEY (`period`, `model_name`)
+            ) CHARACTER SET utf8mb4;
+        END IF;
     END //
 
 DELIMITER ;
