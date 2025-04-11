@@ -30,7 +30,7 @@ public class MeanController {
     @PostMapping("/means")
     public boolean createSimulationItem(@RequestBody Mean meanRequest) throws Exception {
         Optional<Period> optionalPeriod = periodRepository.findById(meanRequest.period);
-        if (!optionalPeriod.isPresent()) {
+        if (optionalPeriod.isPresent()) {
             meanRequest.date = optionalPeriod.get().date;
         }
         meanRepository.save(meanRequest);
@@ -57,7 +57,7 @@ public class MeanController {
         meanId.modelName = modelName;
         List<Mean> list = new ArrayList<>();
         Optional<Mean> optionalMean = meanRepository.findById(meanId);
-        if (!optionalMean.isPresent()) {
+        if (optionalMean.isPresent()) {
             list.add(optionalMean.get());
         }
         return list;
