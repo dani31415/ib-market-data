@@ -2,6 +2,8 @@ package dev.damaso.market.controllers;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,12 +29,19 @@ public class MeanController {
 
     @PostMapping("/means")
     public boolean createSimulationItem(@RequestBody Mean meanRequest) throws Exception {
+        Optional<Period> optionalPeriod = periodRepository.findById(meanRequest.period);
+        if (!optionalPeriod.isPresent()) {
+            meanRequest.date = optionalPeriod.get().date;
+        }
         meanRepository.save(meanRequest);
         return true;
     }
 
     @GetMapping("/means")
-    public Optional<Mean> getSimulationItems(@RequestParam(required=false) Integer period, @RequestParam(required=false) String date, String modelName) throws Exception {
+    public Iterable<Mean> getSimulationItems(@RequestParam(required=false) Integer period, @RequestParam(required=false) String date, @RequestParam(required=false) String modelName) throws Exception {
+        if (period==null && date==null && modelName==null) {
+            return meanRepository.findAll();
+        }
         if (date != null) {
             DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
             LocalDate localDate = LocalDate.parse(date, dtf);
@@ -46,6 +55,11 @@ public class MeanController {
         MeanId meanId = new MeanId();
         meanId.period = period;
         meanId.modelName = modelName;
-        return meanRepository.findById(meanId);
+        List<Mean> list = new ArrayList<>();
+        Optional<Mean> optionalMean = meanRepository.findById(meanId);
+        if (!optionalMean.isPresent()) {
+            list.add(optionalMean.get());
+        }
+        return list;
     }
 }

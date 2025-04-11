@@ -1,5 +1,7 @@
 package dev.damaso.market.brokerentities;
 
+import java.time.LocalDate;
+
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.IdClass;
@@ -12,4 +14,5 @@ public class Mean {
     @Id
     public String modelName;
     public Float mean;
+    public LocalDate date;
 }

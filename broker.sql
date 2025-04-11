@@ -223,6 +223,7 @@ CREATE PROCEDURE configureDatabase()
                 `period` INT,
                 `model_name` VARCHAR(100),
                 `mean` FLOAT,
+                `date` DATE,
                 PRIMARY KEY (`period`, `model_name`)
             ) CHARACTER SET utf8mb4;
         END IF;
