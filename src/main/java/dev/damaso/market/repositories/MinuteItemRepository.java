@@ -47,4 +47,7 @@ public interface MinuteItemRepository extends CrudRepository<MinuteItem, MinuteI
         inner join market.minute_item as ct on ct.symbol_id = T.symbol_id and ct.date=T.date and ct.minute=T.c
     """)
     Iterable<MinuteItemBase> findByDateGroupByMinute(LocalDate date, int minute, int offset);
+
+    @Query(nativeQuery= true, value = "SELECT DISTINCT(mi.date) FROM minute_item mi ORDER BY date ASC")
+    Iterable<java.sql.Date> findDistinctDates();
 }
