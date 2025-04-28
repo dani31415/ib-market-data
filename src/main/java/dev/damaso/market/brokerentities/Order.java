@@ -41,6 +41,7 @@ public class Order {
 
     public LocalDateTime renewalDate;
     public LocalDateTime purchaseExpires;
+    public LocalDateTime purchaseUpdates;
     public boolean liquidating;
     public LocalDateTime createdAt;
     public LocalDateTime updatedAt;
@@ -53,6 +54,7 @@ public class Order {
     public Float buyPositionPrice;
     public Float buyDesiredPrice;
     public Float buyStopDesiredPrice;
+    public Float buyUpdatePriceFactor;
     public Float sellOrderPrice;
     public Float sellPositionPrice;
     public Float sellDesiredPrice;

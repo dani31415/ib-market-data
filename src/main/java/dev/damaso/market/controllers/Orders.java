@@ -80,6 +80,7 @@ public class Orders {
         order.status = orderRequest.status;
         order.minute = orderRequest.minute;
         order.buyDesiredPrice = orderRequest.buyDesiredPrice;
+        order.buyUpdatePriceFactor = orderRequest.buyUpdatePriceFactor;
         order.buyStopDesiredPrice = orderRequest.buyStopDesiredPrice;
         order.sellDesiredPrice = orderRequest.sellDesiredPrice;
         order.sellStopDesiredPrice = orderRequest.sellStopDesiredPrice;
@@ -97,7 +98,8 @@ public class Orders {
                     existingOrder.status.equals("valid") ||
                     existingOrder.status.equals("open") ||
                     existingOrder.status.equals("opening") ||
-                    existingOrder.status.equals("closing")
+                    existingOrder.status.equals("closing") ||
+                    existingOrder.status.equals("failed") && existingOrder.description.toLowerCase().contains("permission")
                 ) {
                     order.status = "duplicated";
                 }

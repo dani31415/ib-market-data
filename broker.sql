@@ -202,6 +202,31 @@ CREATE PROCEDURE configureDatabase()
 
             ALTER TABLE `order` ADD COLUMN `buy_stop_desired_price` FLOAT AFTER `buy_desired_price`;
         END IF;
+
+        IF @schemaVersion = '18' THEN
+            UPDATE configuration SET value='19' WHERE `key`='schemaVersion';
+
+            ALTER TABLE `order` ADD COLUMN `buy_update_price_factor` FLOAT AFTER `buy_stop_desired_price`;
+            ALTER TABLE `order` ADD COLUMN `purchase_updates` DATETIME AFTER `purchase_expires`;
+        END IF;
+
+        IF @schemaVersion = '19' THEN
+            UPDATE configuration SET value='20' WHERE `key`='schemaVersion';
+
+            ALTER TABLE `simulation_item` ADD COLUMN `last_price` float after `minute`;
+        END IF;
+
+        IF @schemaVersion = '20' THEN
+            UPDATE configuration SET value='21' WHERE `key`='schemaVersion';
+
+            CREATE TABLE `mean`  (
+                `period` INT,
+                `model_name` VARCHAR(100),
+                `mean` FLOAT,
+                `date` DATE,
+                PRIMARY KEY (`period`, `model_name`)
+            ) CHARACTER SET utf8mb4;
+        END IF;
     END //
 
 DELIMITER ;
