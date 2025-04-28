@@ -67,7 +67,7 @@ public class MinuteItemDump {
             }
         }
         executor.shutdown();
-        executor.awaitTermination(600, TimeUnit.SECONDS);
+        executor.awaitTermination(60000, TimeUnit.SECONDS);
         System.out.println("Done!");
 
     }
