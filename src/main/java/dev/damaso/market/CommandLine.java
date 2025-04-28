@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
+import dev.damaso.market.commands.dump.MinuteItemDump;
 import dev.damaso.market.commands.explore.Explore;
 import dev.damaso.market.commands.fixdata.FixDailyData;
 import dev.damaso.market.commands.fixdata.FixDailyData2;
@@ -91,6 +92,9 @@ public class CommandLine implements CommandLineRunner {
     @Autowired
     FixDailyData2 fixDailyData2;
 
+    @Autowired
+    MinuteItemDump minuteItemDump;
+
     @Override
     public void run(String... args) throws Exception {
         if (args.length==0) {
@@ -136,6 +140,8 @@ public class CommandLine implements CommandLineRunner {
             performance.run();
         } else if (args[0].equals("ping-services")) {
             pingServices.run();
+        } else if (args[0].equals("minute-item-dump")) {
+            minuteItemDump.run();
         } else if (args[0].equals("dummy")) {
             System.out.println("Dummy command");
             // pingServices.run();
