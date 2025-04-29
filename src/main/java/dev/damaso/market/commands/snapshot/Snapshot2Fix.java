@@ -108,7 +108,7 @@ public class Snapshot2Fix {
                             // Values account to close
                             ZonedDateTime saveTime = itemTime.plus(5, ChronoUnit.MINUTES);
                             ZonedDateTime utcSaveTime = saveTime.withZoneSameInstant(ZoneId.of("UTC"));
-                            System.out.println(saveTime);
+                            // System.out.println(saveTime);
                             // System.out.println(item.c);
                             // System.out.println(volume);
                             Snapshot snapshot = new Snapshot();
