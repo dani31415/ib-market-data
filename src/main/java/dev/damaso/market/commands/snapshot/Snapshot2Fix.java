@@ -71,22 +71,22 @@ public class Snapshot2Fix {
         }
 
         ExecutorService executor = Executors.newFixedThreadPool(8);
-        ZonedDateTime open  = ZonedDateTime.of(2024, 7, 12, 8, 40, 0, 0, ZoneId.of("America/New_York"));
-        // Dates where snapshot failed, multiple of 10 minutes (inclusive)
-        ZonedDateTime start = ZonedDateTime.of(2024, 7, 12, 18, 0, 0, 0, ZoneId.of("Europe/Madrid"));
-        ZonedDateTime end   = ZonedDateTime.of(2024, 7, 12, 21, 0, 0, 0, ZoneId.of("Europe/Madrid"));
+        ZonedDateTime open  = ZonedDateTime.of(2025, 4, 28, 8, 40, 0, 0, ZoneId.of("America/New_York"));
+        // Dates where snapshot failed, multiple of 5 minutes (inclusive)
+        ZonedDateTime start = ZonedDateTime.of(2025, 4, 28, 15, 0, 0, 0, ZoneId.of("Europe/Madrid"));
+        ZonedDateTime end   = ZonedDateTime.of(2025, 4, 28, 22, 0, 0, 0, ZoneId.of("Europe/Madrid"));
         System.out.println(start);
         System.out.println(end);
 
         ZonedDateTime start0 = start;
         start = start.plus(-11, ChronoUnit.MINUTES);
-        end = end.plus(-10, ChronoUnit.MINUTES);
+        end = end.plus(-5, ChronoUnit.MINUTES);
         for (Symbol symbol : pendingSymbolList) {
             if (symbol.id <= 0) {
                 continue;
             }
             try {
-                HistoryResult historyResult = this.api.iserverMarketdataHistory(symbol.ib_conid, "4d", "10min", true);
+                HistoryResult historyResult = this.api.iserverMarketdataHistory(symbol.ib_conid, "4d", "5min", true);
                 System.out.println("conid: " + symbol.ib_conid + " id: " + symbol.id + " len: " + historyResult.data.size());
                 long volume = 0;
                 List<Snapshot> snapshots = new Vector<>();
@@ -106,7 +106,7 @@ public class Snapshot2Fix {
                         volume += item.v*100;
                         if (open.compareTo(itemTime) <= 0 && itemTime.compareTo(end) <= 0) {
                             // Values account to close
-                            ZonedDateTime saveTime = itemTime.plus(10, ChronoUnit.MINUTES);
+                            ZonedDateTime saveTime = itemTime.plus(5, ChronoUnit.MINUTES);
                             ZonedDateTime utcSaveTime = saveTime.withZoneSameInstant(ZoneId.of("UTC"));
                             System.out.println(saveTime);
                             // System.out.println(item.c);
