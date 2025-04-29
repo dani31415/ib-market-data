@@ -323,6 +323,17 @@ CREATE PROCEDURE configureDatabase()
             -- ALTER TABLE `simulation_item` DROP `group_guid` `purchase` float
         END IF;
 
+        -- Version 26 --> 27
+        IF @schemaVersion = '26' THEN
+            UPDATE configuration SET value='27' WHERE `key`='schemaVersion';
+
+            CREATE TABLE minute_item_update  (
+                `date` date,
+                `symbol_id` INT,
+                `updated_at` date,
+                PRIMARY KEY (`date`, `symbol_id`)
+            ) CHARACTER SET utf8mb4;
+        END IF;
     END //
 
 
