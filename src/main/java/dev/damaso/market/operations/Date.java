@@ -165,4 +165,31 @@ public class Date {
     static public void main(String args []) {
         System.out.println("Hello world");
     }
+
+    static public LocalDate previousOpenDay(LocalDateTime localDateTime_ny)
+    {
+        // If current day open
+        //   1. Before 9:00, return localDateTime
+        //   2. After 9:00, returm localDateTime + 1
+        LocalDate current = localDateTime_ny.toLocalDate();
+        boolean isOpenDay = isNasdaqOpenDay(localDateTime_ny.toLocalDate());
+        if (isOpenDay) {
+            if (localDateTime_ny.getHour() >= 16) {
+                return current;
+            }
+            // current = current.plusDays(-1);
+            // logNextOpenDay(localDateTime_ny, localDateTime, current);
+            // return current;
+        }
+        // Till open day
+        do {
+            current = current.plusDays(-1);
+            isOpenDay = isNasdaqOpenDay(current);
+        } while (!isOpenDay);
+        // logNextOpenDay(localDateTime_ny, localDateTime, current);
+        if (!isNasdaqOpenDay(current)) {
+            throw new Error("Must be an open day");
+        }
+        return current;
+    }
 }

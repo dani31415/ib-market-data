@@ -2,6 +2,7 @@ package dev.damaso.market.repositories;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
@@ -32,6 +33,9 @@ public interface MinuteItemRepository extends CrudRepository<MinuteItem, MinuteI
 
     @Query("SELECT mi FROM MinuteItem mi WHERE symbolId=?1 AND date=?2 ORDER BY minute ASC")
     Iterable<MinuteItem> findBySymbolIdAndDate(int symbolId, LocalDate date);
+
+    @Query(nativeQuery = true, value="SELECT * FROM minute_item mi WHERE symbol_id=?1 AND date=?2 LIMIT 1")
+    Optional<MinuteItem> hasSymbolIdAndDate(int symbolId, LocalDate date);
 
     @Query("SELECT mi FROM MinuteItem mi WHERE symbolId=?1 AND date>=?2 AND date<?3 ORDER BY date ASC, minute ASC")
     Iterable<MinuteItem> findBySymbolIdAndDateRange(int symbolId, LocalDate from, LocalDate to);

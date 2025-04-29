@@ -12,6 +12,7 @@ import dev.damaso.market.commands.fixdata.FixData;
 import dev.damaso.market.commands.fixdata.FixData2;
 import dev.damaso.market.commands.localdata.LoadData;
 import dev.damaso.market.commands.means.UpdateMeans;
+import dev.damaso.market.commands.minuteupdate.MinuteUpdate;
 import dev.damaso.market.commands.openminute.FixOpenMinuteForDay;
 import dev.damaso.market.commands.openminute.OpenMinute2;
 import dev.damaso.market.commands.performance.Performance;
@@ -95,6 +96,9 @@ public class CommandLine implements CommandLineRunner {
     @Autowired
     MinuteItemDump minuteItemDump;
 
+    @Autowired
+    MinuteUpdate minuteUpdate;
+
     @Override
     public void run(String... args) throws Exception {
         if (args.length==0) {
@@ -142,6 +146,8 @@ public class CommandLine implements CommandLineRunner {
             pingServices.run();
         } else if (args[0].equals("minute-item-dump")) {
             minuteItemDump.run();
+        } else if (args[0].equals("minute-update")) {
+            minuteUpdate.run();
         } else if (args[0].equals("dummy")) {
             System.out.println("Dummy command");
             // pingServices.run();
