@@ -80,6 +80,9 @@ public class UpdateMinuteDataIb implements Comparator<Symbol> {
             }
         }
 
+        nasdaqDate = LocalDate.of(2025,7,8);
+        System.out.println(nasdaqDate);
+
         Integer maxSymbolId = minuteItemRepository.findMaxSymbolIdByDate(nasdaqDate);
         if (maxSymbolId==null) {
             maxSymbolId = 0;
