@@ -80,8 +80,8 @@ public class UpdateMinuteDataIb implements Comparator<Symbol> {
             }
         }
 
-        nasdaqDate = LocalDate.of(2025,7,8);
-        System.out.println(nasdaqDate);
+        // nasdaqDate = LocalDate.of(2025,7,10);
+        System.out.println("Retrieve date: " + nasdaqDate);
 
         Integer maxSymbolId = minuteItemRepository.findMaxSymbolIdByDate(nasdaqDate);
         if (maxSymbolId==null) {
@@ -191,7 +191,7 @@ public class UpdateMinuteDataIb implements Comparator<Symbol> {
 
     private HistoryResult iserverMarketdataHistory(String ib_conid) {
         try {
-            HistoryResult historyResult = api.iserverMarketdataHistory(ib_conid, "2d", "1min", true);
+            HistoryResult historyResult = api.iserverMarketdataHistory(ib_conid, "3d", "1min", true);
             return historyResult;
         } catch (HttpServerErrorException.InternalServerError ex) {
             System.out.println("Error for " + ib_conid);
