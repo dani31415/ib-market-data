@@ -56,11 +56,19 @@ public class EoddataApiImplementation implements EoddataApi {
         if (this.token == null || this.tokenUsage > 1000) {
             String user = env.getProperty("EODDATA_USER");
             String password = env.getProperty("EODDATA_PASSWORD");
+            System.out.println("User: " + user.replaceAll(".", "*"));
+            System.out.println("Password: " + password.replaceAll(".", "*"));
             String url = String.format("%s/data.asmx/Login?Username=%s&Password=%s", baseUrl, user, password);
             ResponseEntity<LoginResponse> loginResponse = xmlRestTemplate.getForEntity(url, LoginResponse.class);
             LoginResponse login = loginResponse.getBody();
             this.tokenUsage = 0;
             this.token = login.token;
+            if (this.token == null) {
+                if (login.message != null) {
+                    throw new Error(login.message);
+                }
+                throw new Error("Missing token");
+            }
             return this.token;
         }
         this.tokenUsage ++;

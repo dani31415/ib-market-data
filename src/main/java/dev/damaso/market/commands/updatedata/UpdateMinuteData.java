@@ -10,6 +10,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -22,6 +23,7 @@ import org.springframework.stereotype.Component;
 
 import dev.damaso.market.entities.LastItem;
 import dev.damaso.market.entities.MinuteItem;
+import dev.damaso.market.entities.MinuteItemUpdate;
 import dev.damaso.market.entities.Symbol;
 import dev.damaso.market.external.eoddata.EodQuote;
 import dev.damaso.market.external.eoddata.EoddataApi;
@@ -53,27 +55,58 @@ public class UpdateMinuteData implements Runnable {
         }
     }
 
+    public void runFix() {
+        try {
+            runFixWithException();
+        } catch (Exception exception) {
+            throw new Error(exception);
+        }
+    }
+
+    private void runFixWithException() throws Exception {
+        LocalDate [] from = { 
+            LocalDate.of(2025, 7, 8),
+            LocalDate.of(2025, 7, 11),
+            LocalDate.of(2025, 7, 16),
+            LocalDate.of(2025, 7, 22),
+            LocalDate.of(2025, 7, 23),
+        };
+
+        for (LocalDate f : from) {
+            runWithException(f);
+        }
+    }
+
     private void runWithException() throws Exception {
+        runWithException(null);
+    }
+
+    private void runWithException(LocalDate from0) throws Exception {
         connection = this.dataSource.getConnection();
+        log("Getting EOD token...");
+        if (eoddataApi.getToken() == null) {
+            throw new Exception("Failed token");
+        }
+        log("Valid EOD token.");
 
         log("Getting last update date...");
         List<LastItem> lastItems = minuteItemRepository.findMaxDateGroupBySymbol();
         log("Done");
 
-        log("Getting EOD token...");
-        if (eoddataApi.getToken() == null) {
-            throw new Exception("Failed token");
-        }
-        log("Done");
+        LocalDateTime time_ny = LocalDateTime.now(ZoneId.of("America/New_York"));
+        LocalDate to;
 
-        LocalDate to = LocalDate.now();
-
-        // Modify the "to" date to discard non yet available data
-        LocalDateTime time = LocalDateTime.now(ZoneId.of("America/New_York"));
-        int minute = time.getHour() * 60 + time.getMinute();
-        if (minute < 16 * 60 + 5) {
-            to = to.plusDays(-1);
+        if (from0 == null) {
+            to = LocalDate.now();
+            // Modify the "to" date to discard non yet available data
+            int minute = time_ny.getHour() * 60 + time_ny.getMinute();
+            if (minute < 16 * 60 + 5) {
+                to = to.plusDays(-1);
+            }
+        } else {
+            to = from0;
         }
+
         log("Getting data up to (inclusive) " + to.toString());
 
         // Get all symbols at once
@@ -90,11 +123,15 @@ public class UpdateMinuteData implements Runnable {
             if (symbol != null) {
                 if (!symbol.disabled && symbol.ib_conid != null) {
                     LocalDate from;
-                    if (lastItem.getDate() != null) {
-                        from = lastItem.getDate();
-                        from = from.plusDays(1); // next day
+                    if (from0 == null) {
+                        if (lastItem.getDate() != null) {
+                            from = lastItem.getDate();
+                            from = from.plusDays(1); // next day
+                        } else {
+                            from = LocalDate.now().plusDays(-5); // some days
+                        }
                     } else {
-                        from = LocalDate.now().plusDays(-5); // some days
+                        from = from0;
                     }
                     // Optimization to avoid a call to eod when there is no need
                     if (from.compareTo(to) > 0) {
@@ -111,6 +148,7 @@ public class UpdateMinuteData implements Runnable {
                         FileOutputStream fos = new FileOutputStream("/var/lib/mysql-files/market.txt");
                         BufferedOutputStream bos = new BufferedOutputStream(fos);
                         Writer writer = new OutputStreamWriter(bos);
+                        HashSet<String> minuteItemUpdated = new HashSet<>();
 
                         log(symbol.shortName + ": " + quotes.size());
                         for (EodQuote quote : quotes) {
@@ -137,6 +175,12 @@ public class UpdateMinuteData implements Runnable {
                                 minuteItem.source
                             );
                             writer.write(line);
+
+                            String key = String.format("%d %s", minuteItem.symbolId, minuteItem.date);
+                            if (!minuteItemUpdated.contains(key)) { // only once
+                                saveMinuteItemUpdateAt(minuteItem.symbolId, minuteItem.date, time_ny);
+                                minuteItemUpdated.add(key);
+                            }
                         }
 
                         bos.flush();
@@ -184,5 +228,14 @@ public class UpdateMinuteData implements Runnable {
 
     private void log(String str) {
         System.out.println("UpdateMinuteData: " + str);
+    }
+
+    private void saveMinuteItemUpdateAt(int symbolId, LocalDate date, LocalDateTime time_ny)
+    {
+        LocalDate updatedAt = dev.damaso.market.operations.Date.previousOpenDay(time_ny);
+        MinuteItemUpdate minuteItemUpdate = new MinuteItemUpdate();
+        minuteItemUpdate.symbolId = symbolId;
+        minuteItemUpdate.date = date;
+        minuteItemUpdate.updatedAt = updatedAt;
     }
 }

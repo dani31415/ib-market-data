@@ -7,4 +7,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class LoginResponse {
     @XmlAttribute(name="Token")
     public String token;
+    @XmlAttribute(name="Message")
+    public String message;
 }

@@ -20,6 +20,7 @@ import dev.damaso.market.commands.pingservices.PingServices;
 import dev.damaso.market.commands.snapshot.Snapshot;
 import dev.damaso.market.commands.snapshot.Snapshot2;
 import dev.damaso.market.commands.snapshot.Snapshot2Fix;
+import dev.damaso.market.commands.snapshot.Snapshot2Fix2;
 import dev.damaso.market.commands.symbols.SymbolListUpdater;
 import dev.damaso.market.commands.updatedata.UpdateDailyData;
 import dev.damaso.market.commands.updatedata.UpdateDailyData2;
@@ -59,6 +60,9 @@ public class CommandLine implements CommandLineRunner {
 
     @Autowired
     Snapshot2Fix snapshot2Fix;
+
+    @Autowired
+    Snapshot2Fix2 snapshot2Fix2;
 
     @Autowired
     FixDailyData fixDailyData;
@@ -114,6 +118,8 @@ public class CommandLine implements CommandLineRunner {
             updateDailyData2.run();
         } else if (args[0].equals("update-minute-data")) {
             updateMinuteData.run();
+        } else if (args[0].equals("update-minute-data-fix")) {
+            updateMinuteData.runFix();
         } else if (args[0].equals("update-minute-data-ib")) {
             updateMinuteDataIb.run();
         } else if (args[0].equals("snapshot")) {
@@ -122,6 +128,8 @@ public class CommandLine implements CommandLineRunner {
             snapshot2.run();
         } else if (args[0].equals("snapshot2-fix")) {
             snapshot2Fix.run();
+        } else if (args[0].equals("snapshot2-fix2")) {
+            snapshot2Fix2.run();
         } else if (args[0].equals("fix-dailydata-2")) {
             fixDailyData2.run();
         } else if (args[0].equals("daily-fix")) {
