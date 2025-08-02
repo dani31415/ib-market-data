@@ -65,11 +65,8 @@ public class UpdateMinuteData implements Runnable {
 
     private void runFixWithException() throws Exception {
         LocalDate [] from = { 
-            LocalDate.of(2025, 7, 8),
-            LocalDate.of(2025, 7, 11),
-            LocalDate.of(2025, 7, 16),
-            LocalDate.of(2025, 7, 22),
-            LocalDate.of(2025, 7, 23),
+            LocalDate.of(2025, 7, 31),
+            LocalDate.of(2025, 8, 1),
         };
 
         for (LocalDate f : from) {
