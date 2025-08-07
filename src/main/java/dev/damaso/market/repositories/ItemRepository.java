@@ -71,4 +71,7 @@ public interface ItemRepository extends CrudRepository<Item, ItemId> {
     @Modifying()
     @Query(nativeQuery = true, value = "UPDATE item SET stagging=0 WHERE stagging=1 AND symbol_id>0 AND date>0 AND version>=0")
     void resetStagging();
+
+    @Query("SELECT MAX(i.symbolId) FROM Item i WHERE i.date = ?1 AND i.close > 0")
+    Integer findMaxSymbolIdByDate(LocalDate date);
 }
