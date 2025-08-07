@@ -84,11 +84,20 @@ public class UpdateDailyData implements Runnable {
         List<Exception> exceptionList = new Vector<>();
         ExecutorService executor = Executors.newFixedThreadPool(4);
 
-        Integer maxSymbolId = itemRepository.findMaxSymbolIdByDate(today);
+        LocalDate lastDay;
+        LocalDateTime now_ny = LocalDateTime.now(ZoneId.of("America/New_York"));
+        if (now_ny.getHour() < 9) {
+            lastDay = now_ny.toLocalDate().plusDays(-1);
+        } else {
+            lastDay = now_ny.toLocalDate();
+        }
+
+        log("Data up to date: " + lastDay.toString());
+        Integer maxSymbolId = itemRepository.findMaxSymbolIdByDate(lastDay);
         if (maxSymbolId==null) {
             maxSymbolId = 0;
         }
-        System.out.println("Symbols start by %d".formatted(maxSymbolId));
+        log("Symbols start by %d".formatted(maxSymbolId));
 
         for(LastItem lastItem : lastItems) {
             try {

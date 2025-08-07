@@ -110,7 +110,7 @@ public class UpdateMinuteData implements Runnable {
         if (maxSymbolId==null) {
             maxSymbolId = 0;
         }
-        System.out.println("Symbols start by %d".formatted(maxSymbolId));
+        log("Symbols start by %d".formatted(maxSymbolId));
 
         // Get all symbols at once
         Map<Integer, Symbol> symbolCache = new HashMap<>();
