@@ -106,6 +106,12 @@ public class UpdateMinuteData implements Runnable {
 
         log("Getting data up to (inclusive) " + to.toString());
 
+        Integer maxSymbolId = minuteItemRepository.findMaxSymbolIdByDate(to);
+        if (maxSymbolId==null) {
+            maxSymbolId = 0;
+        }
+        System.out.println("Symbols start by %d".formatted(maxSymbolId));
+
         // Get all symbols at once
         Map<Integer, Symbol> symbolCache = new HashMap<>();
         for (LastItem lastItem: lastItems) {
@@ -118,6 +124,9 @@ public class UpdateMinuteData implements Runnable {
         for (LastItem lastItem: lastItems) {
             Symbol symbol = symbolCache.get(lastItem.getSymbolId());
             if (symbol != null) {
+                if (symbol.id < maxSymbolId) {
+                    continue;
+                }
                 if (!symbol.disabled && symbol.ib_conid != null) {
                     LocalDate from;
                     if (from0 == null) {
