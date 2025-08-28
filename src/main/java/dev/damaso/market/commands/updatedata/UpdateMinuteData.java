@@ -32,6 +32,8 @@ import dev.damaso.market.repositories.SymbolRepository;
 
 @Component
 public class UpdateMinuteData implements Runnable {
+    static final boolean FAST = false;
+
     @Autowired
     SymbolRepository symbolRepository;
 
@@ -133,12 +135,17 @@ public class UpdateMinuteData implements Runnable {
                         if (lastItem.getDate() != null) {
                             from = lastItem.getDate();
                             from = from.plusDays(1); // next day
-                            LocalDate from_min = LocalDate.now().plusDays(-5); // some days
-                            if (from_min.compareTo(from) > 0) {
-                                continue;
+                            if (FAST) {
+                                // Update only if it is a delay of 5 days
+                                LocalDate from_min = LocalDate.now().plusDays(-5); // some days
+                                if (from_min.compareTo(from) > 0) {
+                                    continue;
+                                }
+                            } else {
+                                // Some symbols do not have data and requesting too many days is slow.
+                                LocalDate from_min = LocalDate.now().plusDays(-60); // some days
+                                from = maxLocalDate(from_min, from);
                             }
-                            // LocalDate from_min = LocalDate.now().plusDays(-250); // some days
-                            // from = maxLocalDate(from_min, from);
                         } else {
                             from = LocalDate.now().plusDays(-5); // some days
                         }
