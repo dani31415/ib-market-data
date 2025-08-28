@@ -133,8 +133,12 @@ public class UpdateMinuteData implements Runnable {
                         if (lastItem.getDate() != null) {
                             from = lastItem.getDate();
                             from = from.plusDays(1); // next day
-                            LocalDate from_min = LocalDate.now().plusDays(-250); // some days
-                            from = maxLocalDate(from_min, from);
+                            LocalDate from_min = LocalDate.now().plusDays(-5); // some days
+                            if (from_min.compareTo(from) > 0) {
+                                continue;
+                            }
+                            // LocalDate from_min = LocalDate.now().plusDays(-250); // some days
+                            // from = maxLocalDate(from_min, from);
                         } else {
                             from = LocalDate.now().plusDays(-5); // some days
                         }
