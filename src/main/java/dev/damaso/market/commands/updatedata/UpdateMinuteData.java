@@ -17,6 +17,7 @@ import java.util.Optional;
 
 import javax.sql.DataSource;
 
+import org.aspectj.apache.bcel.classfile.Code;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
@@ -245,6 +246,10 @@ public class UpdateMinuteData implements Runnable {
                 return eoddataApi.quotes(from, to, shortName);
             } catch (Throwable th) {
                 if (th.getMessage().contains("There were no records")) {
+                    log(th.getMessage());
+                    return null;
+                }
+                if (th.getMessage().contains("Invalid Symbol Code entered")) {
                     log(th.getMessage());
                     return null;
                 }
