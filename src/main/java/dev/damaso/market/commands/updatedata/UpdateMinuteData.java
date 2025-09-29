@@ -259,8 +259,8 @@ public class UpdateMinuteData implements Runnable {
                     throw new Error("Error", th);
                 }
                 try {
-                    log("Reattempt in 30s...");
-                    Thread.sleep(30000);
+                    log("Reattempt in 60s...");
+                    Thread.sleep(60000);
                 } catch (InterruptedException ex) {
                     throw new Error("Interrupted", ex);
                 }
