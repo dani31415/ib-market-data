@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import dev.damaso.market.external.eoddata.EoddataApi;
+import dev.damaso.market.utils.RestTemplateConfiguration;
 import dev.damaso.market.external.eoddata.EodQuote;
 import dev.damaso.market.external.eoddata.EodSymbol;
 
@@ -31,6 +32,9 @@ public class EoddataApiImplementation implements EoddataApi {
 
     @Autowired
     private RestTemplate jsonRestTemplate;
+
+    @Autowired
+    RestTemplateConfiguration restTemplateConfiguration;
 
     // http://ws.eoddata.com/data.asmx
     String baseUrl = "http://ws.eoddata.com";
@@ -131,7 +135,8 @@ public class EoddataApiImplementation implements EoddataApi {
         String toStr = to.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
         String url = String.format("https://api.eoddata.com/Quote/List/NASDAQ/%s?ApiKey=%s&FromDateStamp=%s&ToDateStamp=%s&Interval=1", symbol, apiKey, fromStr, toStr);
         System.out.println(url);
-        ResponseEntity<EodQuote[]> response = jsonRestTemplate.getForEntity(url, EodQuote[].class);
+        RestTemplate restTemplate = restTemplateConfiguration.getRestTemplate();
+        ResponseEntity<EodQuote[]> response = restTemplate.getForEntity(url, EodQuote[].class);
         EodQuote[] quotes = response.getBody();
         return Arrays.asList(quotes);
     }
