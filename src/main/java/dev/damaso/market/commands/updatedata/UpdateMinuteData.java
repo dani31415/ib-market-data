@@ -82,11 +82,27 @@ public class UpdateMinuteData implements Runnable {
 
     private void runWithException(LocalDate from0) throws Exception {
         connection = this.dataSource.getConnection();
-        log("Getting EOD token...");
-        if (eoddataApi.getToken() == null) {
-            throw new Exception("Failed token");
-        }
-        log("Valid EOD token.");
+        // log("Getting EOD token...");
+        // if (eoddataApi.getToken() == null) {
+        //     throw new Exception("Failed token");
+        // }
+        // log("Valid EOD token.");
+        // {
+        //     System.out.println("Hello world!");
+        //     LocalDate from = LocalDate.of(2025, 9, 26);
+        //     LocalDate to = LocalDate.of(2025, 9, 27);
+        //     List<EodQuote> quotes = eoddataApi.quotes(from, to, "AAPL");
+        //     System.out.println(quotes.size());
+        //     EodQuote quote = quotes.get(0);
+        //     System.out.println(quote.symbol);
+        //     System.out.println(quote.dateTime);
+        //     System.out.println(quote.open);
+        //     System.out.println(quote.high);
+        //     System.out.println(quote.low);
+        //     System.out.println(quote.close);
+        //     System.out.println(quote.volume);
+        // }
+        // if (true) return;
 
         log("Getting last update date...");
         List<LastItem> lastItems = minuteItemRepository.findMaxDateGroupBySymbol();

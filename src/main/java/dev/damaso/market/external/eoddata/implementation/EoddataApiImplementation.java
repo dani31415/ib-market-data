@@ -3,6 +3,7 @@ package dev.damaso.market.external.eoddata.implementation;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +28,9 @@ public class EoddataApiImplementation implements EoddataApi {
     private Environment env;
 
     private RestTemplate xmlRestTemplate;
+
+    @Autowired
+    private RestTemplate jsonRestTemplate;
 
     // http://ws.eoddata.com/data.asmx
     String baseUrl = "http://ws.eoddata.com";
@@ -109,8 +113,7 @@ public class EoddataApiImplementation implements EoddataApi {
     }
 
     @Retryable(value = Throwable.class, exceptionExpression = "#{message.contains('timed out')}")
-    @Override
-    public List<EodQuote> quotes(LocalDate from, LocalDate to, String symbol) {
+    public List<EodQuote> quotesOld(LocalDate from, LocalDate to, String symbol) {
         String token = this.getToken();
         String fromStr = from.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
         String toStr = to.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
@@ -120,4 +123,16 @@ public class EoddataApiImplementation implements EoddataApi {
         return quotes;
     }
 
+    @Retryable(value = Throwable.class, exceptionExpression = "#{message.contains('timed out')}")
+    @Override
+    public List<EodQuote> quotes(LocalDate from, LocalDate to, String symbol) {
+        String apiKey = env.getProperty("EODDATA_APIKEY");
+        String fromStr = from.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+        String toStr = to.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+        String url = String.format("https://api.eoddata.com/Quote/List/NASDAQ/%s?ApiKey=%s&FromDateStamp=%s&ToDateStamp=%s&Interval=1", symbol, apiKey, fromStr, toStr);
+        System.out.println(url);
+        ResponseEntity<EodQuote[]> response = jsonRestTemplate.getForEntity(url, EodQuote[].class);
+        EodQuote[] quotes = response.getBody();
+        return Arrays.asList(quotes);
+    }
 }
