@@ -244,6 +244,10 @@ public class UpdateMinuteData implements Runnable {
             try {
                 return eoddataApi.quotes(from, to, shortName);
             } catch (Throwable th) {
+                if (th.getMessage().contains("There were no records")) {
+                    log(th.getMessage());
+                    return null;
+                }
                 if (!th.getMessage().contains("timed out") || attempts>10) {
                     throw new Error("Error", th);
                 }
