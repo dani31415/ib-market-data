@@ -253,7 +253,9 @@ public class UpdateMinuteData implements Runnable {
                     log(th.getMessage());
                     return null;
                 }
-                if (!th.getMessage().contains("timed out") || attempts>10) {
+                boolean doReattempt = th.getMessage().contains("timed out") || th.getMessage().contains("429 Too Many Requests");
+                
+                if (!doReattempt || attempts>10) {
                     throw new Error("Error", th);
                 }
                 try {
