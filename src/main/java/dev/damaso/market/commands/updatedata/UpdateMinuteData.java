@@ -139,6 +139,8 @@ public class UpdateMinuteData implements Runnable {
             }
         }
 
+        to = to.plusDays(1); // now the "to" date is exclusive
+
         for (LastItem lastItem: lastItems) {
             Symbol symbol = symbolCache.get(lastItem.getSymbolId());
             if (symbol != null) {
@@ -169,7 +171,7 @@ public class UpdateMinuteData implements Runnable {
                         from = from0;
                     }
                     // Optimization to avoid a call to eod when there is no need
-                    if (from.compareTo(to) > 0) {
+                    if (from.compareTo(to) >= 0) {
                         continue;
                     }
                     List<EodQuote> quotes;
