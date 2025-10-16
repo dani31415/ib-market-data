@@ -121,19 +121,21 @@ public class Snapshot2 {
             state.cHalted = 0;
             for (MarketdataSnapshotResult msr : marketData) {
                 int symbolIdx = findByConid(pendingSymbolList, msr.conid);
-                pendingSymbolList.remove(symbolIdx);
+                if (symbolIdx>=0) {
+                    pendingSymbolList.remove(symbolIdx);
 
-                // Create stats
-                Snapshot ms = convert(msr, state);
-                if (ms.status == SymbolSnapshotStatusEnum.NORMAL) {
-                    // state.openMarketData.add(ms);
-                    state.cNormal ++;
-                } else if (ms.status == SymbolSnapshotStatusEnum.CLOSED) {
-                    state.cClosed ++;
-                } else if (ms.status == SymbolSnapshotStatusEnum.HALTED) {
-                    state.cHalted ++;
-                } else {
-                    state.cError ++;
+                    // Create stats
+                    Snapshot ms = convert(msr, state);
+                    if (ms.status == SymbolSnapshotStatusEnum.NORMAL) {
+                        // state.openMarketData.add(ms);
+                        state.cNormal ++;
+                    } else if (ms.status == SymbolSnapshotStatusEnum.CLOSED) {
+                        state.cClosed ++;
+                    } else if (ms.status == SymbolSnapshotStatusEnum.HALTED) {
+                        state.cHalted ++;
+                    } else {
+                        state.cError ++;
+                    }
                 }
             }
             System.out.println("Number of open: " + state.openMarketData.size());
