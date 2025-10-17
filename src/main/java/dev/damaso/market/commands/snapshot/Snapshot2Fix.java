@@ -71,10 +71,11 @@ public class Snapshot2Fix {
         }
 
         ExecutorService executor = Executors.newFixedThreadPool(8);
-        ZonedDateTime open  = ZonedDateTime.of(2025, 6, 24, 8, 40, 0, 0, ZoneId.of("America/New_York"));
+        // Time is correct at 8:40
+        ZonedDateTime open  = ZonedDateTime.of(2025, 10, 16, 8, 40, 0, 0, ZoneId.of("America/New_York"));
         // Dates where snapshot failed, multiple of 5 minutes (inclusive)
-        ZonedDateTime start = ZonedDateTime.of(2025, 6, 24, 9, 0, 0, 0, ZoneId.of("Europe/Madrid"));
-        ZonedDateTime end   = ZonedDateTime.of(2025, 6, 24, 17, 5, 0, 0, ZoneId.of("Europe/Madrid"));
+        ZonedDateTime start = ZonedDateTime.of(2025, 10, 16, 15, 0, 0, 0, ZoneId.of("Europe/Madrid"));
+        ZonedDateTime end   = ZonedDateTime.of(2025, 10, 16, 16, 45, 0, 0, ZoneId.of("Europe/Madrid"));
         System.out.println(start + "  " + start.withZoneSameInstant(ZoneId.of("UTC")));
         System.out.println(end + "  " + end.withZoneSameInstant(ZoneId.of("UTC")));
 
@@ -124,9 +125,10 @@ public class Snapshot2Fix {
                     }
                 }
                 executor.submit( () -> {
+                    System.out.println("save  id: " + symbol.id + " len: " + snapshots.size());
                     snapshotRepository.saveAll(snapshots);
                 });
-                // break; // save one
+                break; // save one
             } catch (HttpServerErrorException.InternalServerError ex) {
                 if (!symbol.disabled) {
                     System.out.println("Failed");
