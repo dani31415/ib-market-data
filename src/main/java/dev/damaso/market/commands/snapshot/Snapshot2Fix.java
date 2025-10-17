@@ -128,7 +128,7 @@ public class Snapshot2Fix {
                     System.out.println("save  id: " + symbol.id + " len: " + snapshots.size());
                     snapshotRepository.saveAll(snapshots);
                 });
-                break; // save one
+                // break; // save one
             } catch (HttpServerErrorException.InternalServerError ex) {
                 if (!symbol.disabled) {
                     System.out.println("Failed");
