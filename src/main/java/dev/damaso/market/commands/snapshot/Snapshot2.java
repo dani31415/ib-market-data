@@ -94,7 +94,7 @@ public class Snapshot2 {
         do {
             iteration += 1;
             iterator = pendingSymbolList.iterator();
-            int batchSize = 200;
+            int batchSize = 100;
             List<String> conids;
             List<MarketdataSnapshotResult> marketData = new Vector<>();
             System.out.println("Attempt snapshot for number of symbols: " + pendingSymbolList.size());
