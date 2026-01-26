@@ -48,7 +48,7 @@ public class Snapshot2Fix2 {
     Api api;
 
     public void run() throws Exception {
-        LocalDate dayToRecover = LocalDate.of(2025,12,12);
+        LocalDate dayToRecover = LocalDate.of(2025,12,15);
         int counter = 0;
         int lastSymbol = -1;
         Iterable<MinuteItemBase> allMinuteItems = minuteItemRepository.findByDateGroupByMinute(dayToRecover, 5, 0);
