@@ -77,6 +77,11 @@ public class Snapshot2Fix2 {
 
             snapshots.add(snapshot);
             counter++;
+            if (counter % 1000 == 0) {
+                System.out.println("Saving " + counter + "...");
+                snapshotRepository.saveAll(snapshots);
+                snapshots.clear();
+            }
             lastSymbol = snapshot.symbolId;
         }
 
