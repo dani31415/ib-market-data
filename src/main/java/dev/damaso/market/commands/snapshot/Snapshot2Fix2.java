@@ -48,7 +48,7 @@ public class Snapshot2Fix2 {
     Api api;
 
     public void run() throws Exception {
-        LocalDate dayToRecover = LocalDate.of(2025,05,16);
+        LocalDate dayToRecover = LocalDate.of(2025,12,12);
         int counter = 0;
         int lastSymbol = -1;
         Iterable<MinuteItemBase> allMinuteItems = minuteItemRepository.findByDateGroupByMinute(dayToRecover, 5, 0);
@@ -80,8 +80,10 @@ public class Snapshot2Fix2 {
             lastSymbol = snapshot.symbolId;
         }
 
-        System.out.println("Fix errors");
-        System.out.println(fixErrors(snapshots));
+        // No need to fix errors after new api was released
+        // System.out.println("Fix errors");
+        // System.out.println(fixErrors(snapshots));
+
         snapshotRepository.saveAll(snapshots);
         // for (dev.damaso.market.entities.Snapshot mib2 : snapshots)
         // {
