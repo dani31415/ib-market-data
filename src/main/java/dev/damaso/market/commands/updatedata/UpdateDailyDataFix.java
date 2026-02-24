@@ -30,51 +30,59 @@ public class UpdateDailyDataFix implements Runnable {
 
     public void run() {
         LocalDate localDate = LocalDate.of(2025,10,13);
-        LocalDate localDateTo = localDate.plusDays(1);
-        Iterable<MinuteItemVolume> minuteItems = minuteItemRepository.findMinVolume(localDate);
-        for (MinuteItemVolume item : minuteItems) {
-            if (item.getVolume() > 0) {
-                System.out.println("IGNORE: " + item.getSymbolId());
+        LocalDate localDateTo = LocalDate.of(2025,12,22);
+        for (;localDate.compareTo(localDateTo)<0;localDate = localDate.plusDays(1)) {
+            // Discard date
+            if (localDate.equals(LocalDate.of(2025,10,15))) {
                 continue;
             }
-            Optional<Symbol> optionalSymbol = symbolRepository.findById(item.getSymbolId());
-            if (optionalSymbol.isPresent()) {
-                Symbol symbol = optionalSymbol.get();
-                String shortName = symbol.shortName;
-                if (shortName.endsWith(".OLD")) {
-                    String[] oldNamesList = symbol.oldNames.split(",");
-                    String shortName0 = shortName;
-                    shortName = oldNamesList[oldNamesList.length-1];
-                    System.out.println(shortName0 + " ----> " + shortName);
-                }
-                List<EodQuote> eodQuotes = getQuotesWithReattempts(localDate, localDateTo, shortName);
-                if (eodQuotes != null) {
-                    List<MinuteItem> toSave = new Vector<>();
-                    float sumOpen = (float)0.0;
-                    int nOpen = 0;
-                    for (EodQuote quote : eodQuotes) {
-                        sumOpen += quote.open;
-                        nOpen += 1;
-                        MinuteItem minuteItem = new MinuteItem();
-                        minuteItem.open = quote.open;
-                        minuteItem.high = quote.high;
-                        minuteItem.low = quote.low;
-                        minuteItem.close = quote.close;
-                        minuteItem.volume = quote.volume;
-                        minuteItem.source = 1;
-                        minuteItem.symbolId = symbol.id;
-                        minuteItem.date = quote.dateTime.toLocalDate();
-                        minuteItem.minute = computeMinute(quote.dateTime);
-                        toSave.add(minuteItem);
-                    }
 
-                    float savedOpen = item.getOpen();
-                    float newOpen = sumOpen / nOpen;
-                    if (newOpen < savedOpen / 2.0 || newOpen > savedOpen * 2.0) {
-                        System.out.println("DISCARD: " + shortName + ": " + savedOpen + " "  + newOpen + " " + toSave.size());
-                    } else {
-                        System.out.println(shortName + "(" + item.getSymbolId() + ")" + ": " + savedOpen + " "  + newOpen + " " + toSave.size());
-                        minuteItemRepository.saveAll(toSave);
+            Iterable<MinuteItemVolume> minuteItems = minuteItemRepository.findMinVolume(localDate);
+            LocalDate localDateEodTo = localDate.plusDays(1);
+            for (MinuteItemVolume item : minuteItems) {
+                if (item.getVolume() > 0) {
+                    System.out.println("IGNORE: " + item.getSymbolId());
+                    continue;
+                }
+                Optional<Symbol> optionalSymbol = symbolRepository.findById(item.getSymbolId());
+                if (optionalSymbol.isPresent()) {
+                    Symbol symbol = optionalSymbol.get();
+                    String shortName = symbol.shortName;
+                    if (shortName.endsWith(".OLD")) {
+                        String[] oldNamesList = symbol.oldNames.split(",");
+                        String shortName0 = shortName;
+                        shortName = oldNamesList[oldNamesList.length-1];
+                        System.out.println(shortName0 + " ----> " + shortName);
+                    }
+                    List<EodQuote> eodQuotes = getQuotesWithReattempts(localDate, localDateEodTo, shortName);
+                    if (eodQuotes != null) {
+                        List<MinuteItem> toSave = new Vector<>();
+                        float sumOpen = (float)0.0;
+                        int nOpen = 0;
+                        for (EodQuote quote : eodQuotes) {
+                            sumOpen += quote.open;
+                            nOpen += 1;
+                            MinuteItem minuteItem = new MinuteItem();
+                            minuteItem.open = quote.open;
+                            minuteItem.high = quote.high;
+                            minuteItem.low = quote.low;
+                            minuteItem.close = quote.close;
+                            minuteItem.volume = quote.volume;
+                            minuteItem.source = 1;
+                            minuteItem.symbolId = symbol.id;
+                            minuteItem.date = quote.dateTime.toLocalDate();
+                            minuteItem.minute = computeMinute(quote.dateTime);
+                            toSave.add(minuteItem);
+                        }
+
+                        float savedOpen = item.getOpen();
+                        float newOpen = sumOpen / nOpen;
+                        if (newOpen < savedOpen / 2.0 || newOpen > savedOpen * 2.0) {
+                            System.out.println("DISCARD: " + shortName + ": " + savedOpen + " "  + newOpen + " " + toSave.size());
+                        } else {
+                            System.out.println(localDate + ": " + shortName + "(" + item.getSymbolId() + ")" + ": " + savedOpen + " "  + newOpen + " " + toSave.size());
+                            minuteItemRepository.saveAll(toSave);
+                        }
                     }
                 }
             }
