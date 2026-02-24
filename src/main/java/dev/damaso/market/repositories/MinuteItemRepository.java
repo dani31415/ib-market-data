@@ -61,6 +61,7 @@ public interface MinuteItemRepository extends CrudRepository<MinuteItem, MinuteI
     SELECT min(volume) as volume, avg(open) as open, symbol_id as symbolId FROM market.minute_item 
         where date = ?1
         group by symbol_id
+        order by symbol_id asc
     """)
     Iterable<MinuteItemVolume> findMinVolume(LocalDate date);
 }

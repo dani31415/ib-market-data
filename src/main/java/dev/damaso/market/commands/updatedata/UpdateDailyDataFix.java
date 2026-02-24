@@ -30,7 +30,7 @@ public class UpdateDailyDataFix implements Runnable {
 
     public void run() {
         LocalDate localDate0 = LocalDate.of(2025,10,13);
-        int start0 = 9000; // help continue
+        int start0 = 9160; // help continue
         LocalDate localDateTo = LocalDate.of(2025,12,22);
         for (LocalDate localDate=localDate0;localDate.compareTo(localDateTo)<0;localDate = localDate.plusDays(1)) {
             // Discard date
