@@ -29,9 +29,10 @@ public class UpdateDailyDataFix implements Runnable {
     EoddataApi eoddataApi;
 
     public void run() {
-        LocalDate localDate = LocalDate.of(2025,10,13);
+        LocalDate localDate0 = LocalDate.of(2025,10,13);
+        int start0 = 9000; // help continue
         LocalDate localDateTo = LocalDate.of(2025,12,22);
-        for (;localDate.compareTo(localDateTo)<0;localDate = localDate.plusDays(1)) {
+        for (LocalDate localDate=localDate0;localDate.compareTo(localDateTo)<0;localDate = localDate.plusDays(1)) {
             // Discard date
             if (localDate.equals(LocalDate.of(2025,10,15))) {
                 continue;
@@ -40,6 +41,13 @@ public class UpdateDailyDataFix implements Runnable {
             Iterable<MinuteItemVolume> minuteItems = minuteItemRepository.findMinVolume(localDate);
             LocalDate localDateEodTo = localDate.plusDays(1);
             for (MinuteItemVolume item : minuteItems) {
+                if (localDate.equals(localDate0)) {
+                    if (item.getSymbolId() < start0) {
+                        System.out.println("IGNORE: " + item.getSymbolId());
+                        continue;
+                    }
+                }
+
                 if (item.getVolume() > 0) {
                     System.out.println("IGNORE: " + item.getSymbolId());
                     continue;
