@@ -24,6 +24,7 @@ import dev.damaso.market.commands.snapshot.Snapshot2Fix2;
 import dev.damaso.market.commands.symbols.SymbolListUpdater;
 import dev.damaso.market.commands.updatedata.UpdateDailyData;
 import dev.damaso.market.commands.updatedata.UpdateDailyData2;
+import dev.damaso.market.commands.updatedata.UpdateDailyDataFix;
 import dev.damaso.market.commands.updatedata.UpdateData;
 import dev.damaso.market.commands.updatedata.UpdateMinuteData;
 import dev.damaso.market.commands.updatedata.UpdateMinuteDataIb;
@@ -45,6 +46,9 @@ public class CommandLine implements CommandLineRunner {
 
     @Autowired
 	UpdateDailyData2 updateDailyData2;
+
+    @Autowired
+	UpdateDailyDataFix updateDailyDataFix;
 
     @Autowired
     UpdateMinuteData updateMinuteData;
@@ -116,6 +120,8 @@ public class CommandLine implements CommandLineRunner {
             updateDailyData.run();
         } else if (args[0].equals("update-daily-data2")) {
             updateDailyData2.run();
+        } else if (args[0].equals("update-daily-data-fix")) {
+            updateDailyDataFix.run();
         } else if (args[0].equals("update-minute-data")) {
             updateMinuteData.run();
         } else if (args[0].equals("update-minute-data-fix")) {

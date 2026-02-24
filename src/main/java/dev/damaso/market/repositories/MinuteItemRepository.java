@@ -11,6 +11,7 @@ import dev.damaso.market.entities.LastItem;
 import dev.damaso.market.entities.MinuteItem;
 import dev.damaso.market.entities.MinuteItemBase;
 import dev.damaso.market.entities.MinuteItemId;
+import dev.damaso.market.entities.MinuteItemVolume;
 
 public interface MinuteItemRepository extends CrudRepository<MinuteItem, MinuteItemId> {
     // Exclude snapshot data since it is incomplete
@@ -54,4 +55,12 @@ public interface MinuteItemRepository extends CrudRepository<MinuteItem, MinuteI
 
     @Query(nativeQuery= true, value = "SELECT DISTINCT(mi.date) FROM minute_item mi ORDER BY date ASC")
     Iterable<java.sql.Date> findDistinctDates();
+
+
+    @Query(nativeQuery= true, value = """
+    SELECT min(volume) as volume, avg(open) as open, symbol_id as symbolId FROM market.minute_item 
+        where date = ?1
+        group by symbol_id
+    """)
+    Iterable<MinuteItemVolume> findMinVolume(LocalDate date);
 }
