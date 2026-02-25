@@ -29,8 +29,9 @@ public class UpdateDailyDataFix implements Runnable {
     EoddataApi eoddataApi;
 
     public void run() {
-        LocalDate localDate0 = LocalDate.of(2025,10,13);
-        int start0 = 9160; // help continue
+        // LocalDate localDate0 = LocalDate.of(2025,10,13);
+        LocalDate localDate0 = LocalDate.of(2025,10,29);
+        int start0 = 8739; // help continue
         LocalDate localDateTo = LocalDate.of(2025,12,22);
         for (LocalDate localDate=localDate0;localDate.compareTo(localDateTo)<0;localDate = localDate.plusDays(1)) {
             // Discard date
