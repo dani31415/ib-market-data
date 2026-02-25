@@ -241,16 +241,15 @@ public class UpdateMinuteData implements Runnable {
 
     private List<EodQuote> getQuotesWithReattempts(LocalDate from, LocalDate to, String shortName) {
         int attempts = 0;
+        int wait = 10000;
         while (true) {
             try {
                 return eoddataApi.quotes(from, to, shortName);
             } catch (Throwable th) {
                 if (th.getMessage().contains("There were no records")) {
-                    log(th.getMessage());
                     return null;
                 }
                 if (th.getMessage().contains("Invalid Symbol Code entered")) {
-                    log(th.getMessage());
                     return null;
                 }
                 boolean doReattempt = th.getMessage().contains("timed out") || th.getMessage().contains("429 Too Many Requests");
@@ -259,8 +258,9 @@ public class UpdateMinuteData implements Runnable {
                     throw new Error("Error", th);
                 }
                 try {
-                    log("Reattempt in 60s...");
-                    Thread.sleep(60000);
+                    System.out.println("Reattempt in "+ wait +"s...");
+                    Thread.sleep(wait);
+                    wait += 10000;
                 } catch (InterruptedException ex) {
                     throw new Error("Interrupted", ex);
                 }
