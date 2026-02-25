@@ -237,6 +237,7 @@ public class UpdateMinuteData implements Runnable {
                 }
             }
         }
+        log("Done!");
     }
 
     private List<EodQuote> getQuotesWithReattempts(LocalDate from, LocalDate to, String shortName) {
